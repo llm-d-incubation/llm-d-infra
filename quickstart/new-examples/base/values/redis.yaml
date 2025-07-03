@@ -1,0 +1,29 @@
+
+enabled: true
+auth:
+  enabled: false
+  existingSecretPasswordKey: ""
+  existingSecret: ""
+architecture: standalone
+image:
+  registry: quay.io
+  repository: sclorg/redis-7-c9s
+  tag: c9s
+master:
+  kind: Deployment
+  resources:
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+  persistence:
+    enabled: false
+  pdb:
+    create: false
+  service:
+    ports:
+      redis: 8100
+networkPolicy:
+  enabled: false

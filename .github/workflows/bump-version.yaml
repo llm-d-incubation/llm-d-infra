@@ -86,7 +86,7 @@ jobs:
         id: get_version
         uses: mikefarah/yq@8bf425b4d1344db7cd469a8d10a390876e0c77fd # v4.45.1
         with:
-          cmd: yq ".version" charts/llm-d/Chart.yaml
+          cmd: yq ".version" charts/llm-d-infra/Chart.yaml
 
       - uses: actions-ecosystem/action-bump-semver@34e334551143a5301f38c830e44a22273c6ff5c5  # v1
         if: steps.command.outputs.command-name == 'bump'
@@ -99,7 +99,7 @@ jobs:
         if: steps.command.outputs.command-name == 'bump'
         uses: mikefarah/yq@8bf425b4d1344db7cd469a8d10a390876e0c77fd # v4.45.1
         with:
-          cmd: yq -i '.version = "${{ steps.semver.outputs.new_version }}"' charts/llm-d/Chart.yaml
+          cmd: yq -i '.version = "${{ steps.semver.outputs.new_version }}"' charts/llm-d-infra/Chart.yaml
 
       - name: Run pre-commit
         if: steps.command.outputs.command-name == 'bump'

@@ -61,8 +61,8 @@ Then run:
 pre-commit install
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm dependency update charts/llm-d
-helm dependency build charts/llm-d
+helm dependency update charts/llm-d-infra
+helm dependency build charts/llm-d-infra
 
 pre-commit run -a
 ```
@@ -74,7 +74,7 @@ For every Pull Request submitted, ensure the following steps have been done:
 3. Run `helm template` on the changes you're making to ensure they are correctly rendered into Kubernetes manifests.
 4. Lint tests has been run for the Chart using the [Chart Testing](https://github.com/helm/chart-testing) tool and the `ct lint` command.
 5. Ensure variables are documented in `values.yaml`. See section [Documenting Variables](#documenting-variables) below.
-6. Update the version number in the [`charts/llm-d/Chart.yaml`](charts/llm-d/Chart.yaml) file using
+6. Update the version number in the [`charts/llm-d-infra/Chart.yaml`](charts/llm-d-infra/Chart.yaml) file using
    [semantic versioning](https://semver.org/). Follow the `X.Y.Z` format so the nature of the changes is reflected in the
    chart.
    - `X` (major) is incremented for breaking changes,
@@ -151,9 +151,9 @@ helmlint.................................................................Failed
 - hook id: helmlint
 - exit code: 1
 
-==> Linting /Users/rcook/git/llm-d-deployer/charts/llm-d
+==> Linting /Users/rcook/git/llm-d-deployer/charts/llm-d-infra
 [ERROR] templates/: template: llm-d/templates/modelservice/presets/basic-gpu-with-nixl-preset.yaml:6:8: executing "llm-d/templates/modelservice/presets/basic-gpu-with-nixl-preset.yaml" at <include "common.labels.standard" .>: error calling include: template: no template "common.labels.standard" associated with template "gotpl"
-[WARNING] /Users/rcook/git/llm-d-deployer/charts/llm-d: chart directory is missing these dependencies: common,redis
+[WARNING] /Users/rcook/git/llm-d-deployer/charts/llm-d-infra: chart directory is missing these dependencies: common,redis
 
 Error: 1 chart(s) linted, 1 chart(s) failed
 
@@ -162,7 +162,7 @@ markdownlint-cli2....................................(no files to check)Skipped
 ```
 
 - Ensure that you have the up-to-date version of Helm installed.
-- Check if you have the required dependencies installed and updated. You can do this by running `helm dependency update charts/llm-d`.
+- Check if you have the required dependencies installed and updated. You can do this by running `helm dependency update charts/llm-d-infra`.
 - If you are using a custom values file, ensure that it is correctly formatted and does not contain any syntax errors.
 
 #### PR check `Lint Charts / Lint Metadata (pull_request)` is failing
@@ -193,7 +193,7 @@ git rebase main
 # Now the rebase conflict occurs.
 
 # Now edit the `Chart.yaml` file and bump the version number to the next version. See step 5 above.
-git add charts/llm-d/Chart.yaml
+git add charts/llm-d-infra/Chart.yaml
 pre-commit run helm-docs
 git add .
 # Now the merge conflict is resolved, you can continue with the rebase.
@@ -206,7 +206,7 @@ git push -f origin <your-branch>
 #### See your changes in the chart
 
 ```bash
-helm template charts/llm-d
+helm template charts/llm-d-infra
 ```
 
 #### Quickly filter out the `helm template` output
@@ -214,7 +214,7 @@ helm template charts/llm-d
 For example, to see the `eppDeployment` from all rendered `ConfigMap`s:
 
 ```bash
-helm template charts/llm-d | yq 'select(.kind == "ConfigMap") | .data.eppDeployment'
+helm template charts/llm-d-infra | yq 'select(.kind == "ConfigMap") | .data.eppDeployment'
 ```
 
 #### Double templating in modelservice presets/base config

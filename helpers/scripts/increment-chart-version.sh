@@ -36,7 +36,7 @@ fi
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
 # Path to your Chart.yaml
-CHART_FILE="${REPO_ROOT}/charts/llm-d/Chart.yaml"
+CHART_FILE="${REPO_ROOT}/charts/llm-d-infra/Chart.yaml"
 
 FEATURE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 

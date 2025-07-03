@@ -1,0 +1,313 @@
+List:
+- EPP deployment
+- EPP service
+- inferencepool
+- RBAC:
+    -
+
+Manifests:
+---
+# oc get deployment meta-llama-llama-3-2-3b-instruct-epp -o yaml | yq
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/gateway: llm-d-inference-gateway
+    llm-d.ai/epp: meta-llama-llama-3-2-3b-instruct-epp
+  name: meta-llama-llama-3-2-3b-instruct-epp
+  namespace: llm-d
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/gateway: llm-d-inference-gateway
+      llm-d.ai/epp: meta-llama-llama-3-2-3b-instruct-epp
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/gateway: llm-d-inference-gateway
+        llm-d.ai/epp: meta-llama-llama-3-2-3b-instruct-epp
+    spec:
+      containers:
+        - args:
+            - --poolName
+            - meta-llama-llama-3-2-3b-instruct-inference-pool
+            - --poolNamespace
+            - llm-d
+            - -v
+            - "4"
+            - --zap-encoder
+            - json
+            - --grpcPort
+            - "9002"
+            - --grpcHealthPort
+            - "9003"
+          env:
+            - name: ENABLE_KVCACHE_AWARE_SCORER
+              value: "false"
+            - name: ENABLE_LOAD_AWARE_SCORER
+              value: "true"
+            - name: ENABLE_PREFIX_AWARE_SCORER
+              value: "true"
+            - name: ENABLE_SESSION_AWARE_SCORER
+              value: "false"
+            - name: KVCACHE_AWARE_SCORER_WEIGHT
+              value: "1"
+            - name: KVCACHE_INDEXER_REDIS_ADDR
+            - name: LOAD_AWARE_SCORER_WEIGHT
+              value: "1"
+            - name: PD_ENABLED
+              value: "false"
+            - name: PD_PROMPT_LEN_THRESHOLD
+              value: "10"
+            - name: PREFILL_ENABLE_KVCACHE_AWARE_SCORER
+              value: "false"
+            - name: PREFILL_ENABLE_LOAD_AWARE_SCORER
+              value: "false"
+            - name: PREFILL_ENABLE_PREFIX_AWARE_SCORER
+              value: "false"
+            - name: PREFILL_ENABLE_SESSION_AWARE_SCORER
+              value: "false"
+            - name: PREFILL_KVCACHE_AWARE_SCORER_WEIGHT
+              value: "1"
+            - name: PREFILL_KVCACHE_INDEXER_REDIS_ADDR
+            - name: PREFILL_LOAD_AWARE_SCORER_WEIGHT
+              value: "1"
+            - name: PREFILL_PREFIX_AWARE_SCORER_WEIGHT
+              value: "1"
+            - name: PREFILL_SESSION_AWARE_SCORER_WEIGHT
+              value: "1"
+            - name: PREFIX_AWARE_SCORER_WEIGHT
+              value: "2"
+            - name: SESSION_AWARE_SCORER_WEIGHT
+              value: "1"
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: HF_TOKEN
+                  name: llm-d-hf-token
+          image: ghcr.io/llm-d/llm-d-inference-scheduler:0.0.4
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            grpc:
+              port: 9003
+              service: envoy.service.ext_proc.v3.ExternalProcessor
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: epp
+          ports:
+            - containerPort: 9002
+              name: grpc
+              protocol: TCP
+            - containerPort: 9003
+              name: grpc-health
+              protocol: TCP
+            - containerPort: 9090
+              name: metrics
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            grpc:
+              port: 9003
+              service: envoy.service.ext_proc.v3.ExternalProcessor
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 256m
+              memory: 500Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: meta-llama-llama-3-2-3b-instruct-epp-sa
+      serviceAccountName: meta-llama-llama-3-2-3b-instruct-epp-sa
+      terminationGracePeriodSeconds: 30
+---
+# oc get service meta-llama-llama-3-2-3b-instruct-epp-service -o yaml | yq
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2025-07-07T14:42:32Z"
+  labels:
+    app.kubernetes.io/gateway: llm-d-inference-gateway
+    llm-d.ai/epp: meta-llama-llama-3-2-3b-instruct-epp
+    llmd.ai/gather-metrics: "true"
+  name: meta-llama-llama-3-2-3b-instruct-epp-service
+  namespace: llm-d
+  ownerReferences:
+    - apiVersion: llm-d.ai/v1alpha1
+      kind: ModelService
+      name: meta-llama-llama-3-2-3b-instruct
+      uid: 2a96daa8-2686-4b05-b6e1-1cd0f91e3379
+  resourceVersion: "150326633"
+  uid: a5086377-609a-434a-bb96-3bd23d353a4c
+spec:
+  clusterIP: 172.30.42.39
+  clusterIPs:
+    - 172.30.42.39
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: grpc
+      port: 9002
+      protocol: TCP
+      targetPort: 9002
+    - name: grpc-health
+      port: 9003
+      protocol: TCP
+      targetPort: 9003
+    - name: metrics
+      port: 9090
+      protocol: TCP
+      targetPort: 9090
+  selector:
+    app.kubernetes.io/gateway: llm-d-inference-gateway
+    llm-d.ai/epp: meta-llama-llama-3-2-3b-instruct-epp
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+# oc get inferencepool meta-llama-llama-3-2-3b-instruct-inference-pool -o yaml | yq
+apiVersion: inference.networking.x-k8s.io/v1alpha2
+kind: InferencePool
+metadata:
+  creationTimestamp: "2025-07-07T14:42:32Z"
+  generation: 1
+  labels:
+    llm-d.ai/inferenceServing: "true"
+    llm-d.ai/model: meta-llama-llama-3-2-3b-instruct
+  name: meta-llama-llama-3-2-3b-instruct-inference-pool
+  namespace: llm-d
+spec:
+  extensionRef:
+    failureMode: FailClose
+    group: ""
+    kind: Service
+    name: meta-llama-llama-3-2-3b-instruct-epp-service
+  selector:
+    llm-d.ai/inferenceServing: "true"
+    llm-d.ai/model: meta-llama-llama-3-2-3b-instruct
+  targetPortNumber: 8000
+status:
+  parent:
+    - conditions:
+        - lastTransitionTime: "2025-07-07T14:42:32Z"
+          message: Referenced by an HTTPRoute accepted by the parentRef Gateway
+          observedGeneration: 1
+          reason: Accepted
+          status: "True"
+          type: Accepted
+        - lastTransitionTime: "2025-07-07T14:42:32Z"
+          message: Referenced ExtensionRef resolved successfully
+          observedGeneration: 1
+          reason: ResolvedRefs
+          status: "True"
+          type: ResolvedRefs
+      parentRef:
+        apiVersion: gateway.networking.k8s.io/v1
+        kind: Gateway
+        name: llm-d-inference-gateway
+        namespace: llm-d
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    meta.helm.sh/release-name: llm-d
+    meta.helm.sh/release-namespace: llm-d
+  creationTimestamp: "2025-07-02T14:03:34Z"
+  labels:
+    app.kubernetes.io/component: modelservice
+    app.kubernetes.io/instance: llm-d
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: llm-d
+    app.kubernetes.io/version: "0.1"
+    helm.sh/chart: llm-d-1.0.20
+  name: llm-d-modelservice-endpoint-picker
+  resourceVersion: "150326410"
+  uid: e1e2e5df-3772-46ce-b3b0-a3d496e1f8e7
+rules:
+- apiGroups:
+  - inference.networking.x-k8s.io
+  resources:
+  - inferencepools
+  - inferencemodels
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+# oc get clusterrolebinding meta-llama-llama-3-2-3b-instruct-endpoint-picker -o yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    meta.helm.sh/release-name: llm-d
+    meta.helm.sh/release-namespace: llm-d
+  creationTimestamp: "2025-07-07T14:42:27Z"
+  labels:
+    app.kubernetes.io/component: sample-application
+    app.kubernetes.io/instance: llm-d
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: llm-d
+    app.kubernetes.io/version: "0.1"
+    helm.sh/chart: llm-d-1.0.20
+  name: meta-llama-llama-3-2-3b-instruct-endpoint-picker
+  resourceVersion: "150326451"
+  uid: 1986750b-7b46-451e-aa16-5550cf465ee8
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: llm-d-modelservice-epp-metrics-scrape
+subjects:
+- kind: ServiceAccount
+  name: meta-llama-llama-3-2-3b-instruct-epp-sa
+  namespace: llm-d

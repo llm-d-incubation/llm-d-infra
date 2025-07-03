@@ -1,0 +1,37 @@
+
+inferenceExtension:
+  replicas: 2
+  image:
+    name: epp
+    hub: ghcr.io/llm-d/llm-d-inference-scheduler
+    tag: 0.0.4
+    pullPolicy: Always
+  extProcPort: 9003
+  env:
+    env:
+      ENABLE_KVCACHE_AWARE_SCORER: "false"
+      KVCACHE_AWARE_SCORER_WEIGHT: "1"
+      ENABLE_PREFIX_AWARE_SCORER: "true"
+      PREFIX_AWARE_SCORER_WEIGHT: "2"
+      ENABLE_LOAD_AWARE_SCORER: "true"
+      LOAD_AWARE_SCORER_WEIGHT: "1"
+      ENABLE_SESSION_AWARE_SCORER: "false"
+      SESSION_AWARE_SCORER_WEIGHT: "1"
+      PD_ENABLED: "false"
+      PD_PROMPT_LEN_THRESHOLD: "10"
+      PREFILL_ENABLE_KVCACHE_AWARE_SCORER: "false"
+      PREFILL_KVCACHE_AWARE_SCORER_WEIGHT: "1"
+      PREFILL_ENABLE_LOAD_AWARE_SCORER: "false"
+      PREFILL_LOAD_AWARE_SCORER_WEIGHT: "1"
+      PREFILL_ENABLE_PREFIX_AWARE_SCORER: "false"
+      PREFILL_PREFIX_AWARE_SCORER_WEIGHT: "1"
+      PREFILL_ENABLE_SESSION_AWARE_SCORER: "false"
+      PREFILL_SESSION_AWARE_SCORER_WEIGHT: "1"
+
+inferencePool:
+  targetPortNumber: 8000
+  modelServerType: vllm # vllm, triton-tensorrt-llm
+  modelServers: # REQUIRED
+    matchLabels:
+      llm-d.ai/inferenceServing: "true"
+      llm-d.ai/model: llama-32-3b-instruct

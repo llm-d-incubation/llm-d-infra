@@ -2,7 +2,7 @@ SHELL := /usr/bin/env bash
 
 # Defaults
 NAMESPACE ?= hc4ai-operator
-CHART ?= charts/llm-d
+CHART ?= charts/llm-d-infra
 
 
 .PHONY: help
@@ -46,7 +46,7 @@ helm-uninstall: ## Uninstall the Helm release
 .Phony: bump-modelservice-crd
 bump-modelservice-crd:
 	git clone git@github.com:llm-d/llm-d-model-service.git
-	kustomize build llm-d-model-service/config/crd > charts/llm-d/crds/modelservice-crd.yaml
+	kustomize build llm-d-model-service/config/crd > charts/llm-d-infra/crds/modelservice-crd.yaml
 	rm -rf llm-d-model-service
 
 .Phony: bump-chart-version

@@ -24,7 +24,7 @@ CWD=$( dirname -- "$( readlink -f -- "$0"; )"; )
 
 ## Populate manifests
 MODE=${1:-apply} # allowed values "apply" or "delete"
-BACKEND=${2:-$(helm show values $CWD/../charts/llm-d --jsonpath '{.gateway.gatewayClassName}')}
+BACKEND=${2:-$(helm show values $CWD/../charts/llm-d-infra --jsonpath '{.gateway.gatewayClassName}')}
 if [[ "$MODE" == "apply" ]]; then
     LOG_ACTION_NAME="Installing"
 else

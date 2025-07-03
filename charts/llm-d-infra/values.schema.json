@@ -1,0 +1,316 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+        "clusterDomain": {
+            "default": "cluster.local",
+            "description": "Default Kubernetes cluster domain",
+            "required": [],
+            "title": "clusterDomain"
+        },
+        "common": {
+            "additionalProperties": true,
+            "description": "Parameters for bitnami.common dependency",
+            "required": [],
+            "title": "common"
+        },
+        "commonAnnotations": {
+            "additionalProperties": true,
+            "description": "Annotations to add to all deployed objects",
+            "required": [],
+            "title": "commonAnnotations"
+        },
+        "commonLabels": {
+            "additionalProperties": true,
+            "description": "Labels to add to all deployed objects",
+            "required": [],
+            "title": "commonLabels"
+        },
+        "extraDeploy": {
+            "description": "Array of extra objects to deploy with the release",
+            "items": {
+                "required": [],
+                "type": [
+                    "string",
+                    "object"
+                ]
+            },
+            "required": [],
+            "title": "extraDeploy"
+        },
+        "fullnameOverride": {
+            "default": "",
+            "description": "String to fully override common.names.fullname",
+            "required": [],
+            "title": "fullnameOverride"
+        },
+        "gateway": {
+            "additionalProperties": false,
+            "default": "See below",
+            "description": "Gateway configuration",
+            "properties": {
+                "annotations": {
+                    "additionalProperties": true,
+                    "description": "Additional annotations provided to the Gateway resource",
+                    "required": [],
+                    "title": "annotations"
+                },
+                "enabled": {
+                    "default": "true",
+                    "description": "Deploy resources related to Gateway",
+                    "required": [],
+                    "title": "enabled"
+                },
+                "fullnameOverride": {
+                    "default": "",
+                    "description": "String to fully override gateway.fullname",
+                    "required": [],
+                    "title": "fullnameOverride"
+                },
+                "gatewayClassName": {
+                    "default": "istio",
+                    "description": "Gateway class that determines the backend used. Currently supported values: \"istio\", \"kgateway\", \"gke-l7-rilb\", or \"gke-l7-regional-external-managed\"",
+                    "required": [],
+                    "title": "gatewayClassName"
+                },
+                "kGatewayParameters": {
+                    "additionalProperties": false,
+                    "description": "Special parameters applied to kGateway via GatewayParameters resource",
+                    "properties": {
+                        "proxyUID": {
+                            "default": false,
+                            "description": " type: [number, boolean] @schema",
+                            "required": [],
+                            "title": "proxyUID",
+                            "type": [
+                                "number",
+                                "boolean"
+                            ]
+                        }
+                    },
+                    "required": [],
+                    "title": "kGatewayParameters",
+                    "type": "object"
+                },
+                "listeners": {
+                    "description": " items:  type: object  properties:    name:      description: Name is the name of the Listener. This name MUST be unique within a Gateway      type: string    path:      description: Path to expose via Ingress      type: string    port:      description: Port is the network port. Multiple listeners may use the same port, subject to the Listener compatibility rules      type: integer      minimum: 1      maximum: 65535    protocol:      description: Protocol specifies the network protocol this listener expects to receive      type: string @schema Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled",
+                    "items": {
+                        "properties": {
+                            "name": {
+                                "description": "Name is the name of the Listener. This name MUST be unique within a Gateway",
+                                "required": [],
+                                "type": "string"
+                            },
+                            "path": {
+                                "description": "Path to expose via Ingress",
+                                "required": [],
+                                "type": "string"
+                            },
+                            "port": {
+                                "description": "Port is the network port. Multiple listeners may use the same port, subject to the Listener compatibility rules",
+                                "maximum": 65535,
+                                "minimum": 1,
+                                "required": [],
+                                "type": "integer"
+                            },
+                            "protocol": {
+                                "description": "Protocol specifies the network protocol this listener expects to receive",
+                                "required": [],
+                                "type": "string"
+                            }
+                        },
+                        "required": [],
+                        "type": "object"
+                    },
+                    "required": [],
+                    "title": "listeners"
+                },
+                "nameOverride": {
+                    "default": "",
+                    "description": "String to partially override gateway.fullname",
+                    "required": [],
+                    "title": "nameOverride"
+                },
+                "serviceType": {
+                    "default": "NodePort",
+                    "description": "Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: [\"LoadBalancer\", \"NodePort\"]",
+                    "required": [],
+                    "title": "serviceType"
+                }
+            },
+            "required": [],
+            "title": "gateway"
+        },
+        "global": {
+            "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+            "required": [],
+            "title": "global",
+            "type": "object"
+        },
+        "ingress": {
+            "additionalProperties": false,
+            "default": "See below",
+            "description": "Ingress configuration",
+            "properties": {
+                "annotations": {
+                    "additionalProperties": true,
+                    "description": "Additional annotations for the Ingress resource",
+                    "required": [],
+                    "title": "annotations"
+                },
+                "clusterRouterBase": {
+                    "default": "",
+                    "description": "used as part of the host dirivation if not specified from OCP cluster domain (dont edit)",
+                    "required": [],
+                    "title": "clusterRouterBase"
+                },
+                "enabled": {
+                    "default": "true",
+                    "description": "Deploy Ingress",
+                    "required": [],
+                    "title": "enabled"
+                },
+                "extraHosts": {
+                    "description": "List of additional hostnames to be covered with this ingress record (e.g. a CNAME) <!-- E.g. extraHosts:   - name: llm-d.env.example.com     path: / (Optional)     pathType: Prefix (Optional)     port: 7007 (Optional) -->",
+                    "items": {
+                        "required": []
+                    },
+                    "required": [],
+                    "title": "extraHosts"
+                },
+                "extraTls": {
+                    "description": "The TLS configuration for additional hostnames to be covered with this ingress record. <br /> Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls <!-- E.g. extraTls:   - hosts:     - llm-d.env.example.com     secretName: llm-d-env -->",
+                    "items": {
+                        "description": "IngressTLS describes the transport layer security associated with an ingress.",
+                        "properties": {
+                            "hosts": {
+                                "description": "hosts is a list of hosts included in the TLS certificate. The values in this list must match the name/s used in the tlsSecret. Defaults to the wildcard host setting for the loadbalancer controller fulfilling this Ingress, if left unspecified.",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "type": "array",
+                                "x-kubernetes-list-type": "atomic"
+                            },
+                            "secretName": {
+                                "description": "secretName is the name of the secret used to terminate TLS traffic on port 443. Field is left optional to allow TLS routing based on SNI hostname alone. If the SNI host in a listener conflicts with the \"Host\" header field used by an IngressRule, the SNI host is used for termination and value of the \"Host\" header is used for routing.",
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "required": [],
+                    "title": "extraTls"
+                },
+                "host": {
+                    "default": "",
+                    "description": "Hostname to be used to expose the NodePort service to the inferencing gateway",
+                    "required": [],
+                    "title": "host"
+                },
+                "ingressClassName": {
+                    "default": "",
+                    "description": "Name of the IngressClass cluster resource which defines which controller will implement the resource (e.g nginx)",
+                    "required": [],
+                    "title": "ingressClassName"
+                },
+                "path": {
+                    "default": "/",
+                    "description": "Path to be used to expose the full route to access the inferencing gateway",
+                    "required": [],
+                    "title": "path"
+                },
+                "tls": {
+                    "additionalProperties": false,
+                    "description": "Ingress TLS parameters",
+                    "properties": {
+                        "enabled": {
+                            "default": "false",
+                            "description": "Enable TLS configuration for the host defined at `ingress.host` parameter",
+                            "required": [],
+                            "title": "enabled"
+                        },
+                        "secretName": {
+                            "default": "",
+                            "description": "The name to which the TLS Secret will be called",
+                            "required": [],
+                            "title": "secretName"
+                        }
+                    },
+                    "required": [],
+                    "title": "tls"
+                }
+            },
+            "required": [],
+            "title": "ingress"
+        },
+        "kubeVersion": {
+            "default": "",
+            "description": "Override Kubernetes version",
+            "required": [],
+            "title": "kubeVersion"
+        },
+        "nameOverride": {
+            "default": "",
+            "description": "String to partially override common.names.fullname",
+            "required": [],
+            "title": "nameOverride"
+        },
+        "test": {
+            "additionalProperties": false,
+            "description": "Helm tests",
+            "properties": {
+                "enabled": {
+                    "default": "false",
+                    "description": "Enable rendering of helm test resources",
+                    "required": [],
+                    "title": "enabled"
+                },
+                "image": {
+                    "additionalProperties": false,
+                    "description": "See below",
+                    "properties": {
+                        "imagePullPolicy": {
+                            "default": "Always",
+                            "description": "Specify a imagePullPolicy",
+                            "required": [],
+                            "title": "imagePullPolicy"
+                        },
+                        "pullSecrets": {
+                            "description": "Optionally specify an array of imagePullSecrets (evaluated as templates)",
+                            "items": {
+                                "required": [],
+                                "type": "string"
+                            },
+                            "required": [],
+                            "title": "pullSecrets"
+                        },
+                        "registry": {
+                            "default": "quay.io",
+                            "description": "Test connection pod image registry",
+                            "required": [],
+                            "title": "registry"
+                        },
+                        "repository": {
+                            "default": "curl/curl",
+                            "description": "Test connection pod image repository. Note that the image needs to have both the `sh` and `curl` binaries in it.",
+                            "required": [],
+                            "title": "repository"
+                        },
+                        "tag": {
+                            "default": "latest",
+                            "description": "Test connection pod image tag. Note that the image needs to have both the `sh` and `curl` binaries in it.",
+                            "required": [],
+                            "title": "tag"
+                        }
+                    },
+                    "required": [],
+                    "title": "image"
+                }
+            },
+            "required": [],
+            "title": "test"
+        }
+    },
+    "required": [],
+    "type": "object"
+}

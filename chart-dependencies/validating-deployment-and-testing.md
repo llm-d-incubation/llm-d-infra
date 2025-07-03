@@ -233,7 +233,7 @@ Once the stack has been deployed and you have verified the relevant pieces we ca
 REPO_ROOT=$(realpath $(git rev-parse --show-toplevel))
 NAMESPACE=${NAMESPACE:="demo-ns"} # whats defaulted for demo install
 DECODE_POD_NAME=$(kubectl get pod -n ${NAMESPACE} | grep "decode" | head -n 1 | awk '{print $1}')
-LMCACHE_CONTAINER_NAME=$(cat "${REPO_ROOT}/charts/llm-d/values.yaml" | yq .vllm.name)-decode # how its calculated in templates
+LMCACHE_CONTAINER_NAME=$(cat "${REPO_ROOT}/charts/llm-d-infra/values.yaml" | yq .vllm.name)-decode # how its calculated in templates
 
 # Workaround for pretty print
 INFERENCE_REQUEST=$(kubectl exec -n "${NAMESPACE}" "${DECODE_POD_NAME}" -c "${LMCACHE_CONTAINER_NAME}" -- /bin/sh -c '

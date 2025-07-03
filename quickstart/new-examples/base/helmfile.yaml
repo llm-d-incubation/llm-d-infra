@@ -1,0 +1,36 @@
+repositories:
+  - name: llm-d
+    url: https://github.com/llm-d/llm-d-deployer
+
+releases:
+  - name: llm-d-deployer
+    namespace: llm-d
+    chart: llm-d/llm-d-deployer
+    values:
+      - values/deployer.yaml
+
+  # First modelservice
+  - name: modelservice-mixtral
+    namespace: llm-d
+    chart: llm-d/llm-d-modelservice
+    values:
+      - values/modelservice-mixtral.yaml
+
+  - name: inferencepool-mixtral
+    namespace: llm-d
+    chart: llm-d/inferencepool
+    values:
+      - values/inferencepool-mixtral.yaml
+
+  # Second modelservice
+  - name: modelservice-gemma
+    namespace: llm-d
+    chart: llm-d/llm-d-modelservice
+    values:
+      - values/modelservice-gemma.yaml
+
+  - name: inferencepool-gemma
+    namespace: llm-d
+    chart: llm-d/inferencepool
+    values:
+      - values/inferencepool-gemma.yaml

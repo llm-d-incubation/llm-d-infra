@@ -177,14 +177,14 @@ kubectl label namespace <NAMESPACE> \
 
 ### Customizing your deployment
 
-The helm charts can be customized by modifying the [values.yaml](../charts/llm-d/values.yaml) file.  However, it is recommended to override values in the `values.yaml` by creating a custom yaml file and passing it to the installer using the `--values-file` flag.
+The helm charts can be customized by modifying the [values.yaml](../charts/llm-d-infra/values.yaml) file.  However, it is recommended to override values in the `values.yaml` by creating a custom yaml file and passing it to the installer using the `--values-file` flag.
 Several examples are provided in the [examples](./examples) directory.  You would invoke the installer with the following command:
 
 ```bash
 ./llmd-installer.sh --values-file ./examples/base.yaml
 ```
 
-These files are designed to be used as a starting point to customize your deployment.  Refer to the [values.yaml](../charts/llm-d/values.yaml) file for all the possible options.
+These files are designed to be used as a starting point to customize your deployment.  Refer to the [values.yaml](../charts/llm-d-infra/values.yaml) file for all the possible options.
 
 #### Sample Application and Model Configuration
 

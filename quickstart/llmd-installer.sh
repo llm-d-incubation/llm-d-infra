@@ -12,19 +12,12 @@ SCRIPT_DIR=""
 REPO_ROOT=""
 INSTALL_DIR=""
 CHART_DIR=""
-HF_NAME=""
-HF_KEY=""
 PROXY_UID=""
 VALUES_FILE="values.yaml"
 DEBUG=""
 KUBERNETES_CONTEXT=""
-SKIP_INFRA=false
-INFRA_ONLY=false
-DOWNLOAD_ONLY=false
 DISABLE_METRICS=false
 MONITORING_NAMESPACE="llm-d-monitoring"
-DOWNLOAD_MODEL=""
-DOWNLOAD_TIMEOUT="600"
 GATEWAY_TYPE="istio"
 HELM_RELEASE_NAME="llm-d"
 
@@ -48,12 +41,7 @@ Options:
   -f, --values-file PATH           Path to Helm values.yaml file (default: values.yaml)
   -u, --uninstall                  Uninstall the llm-d components from the current cluster
   -d, --debug                      Add debug mode to the helm install
-  -i, --skip-infra                 Skip the infrastructure components of the installation
-  -e, --infra-only                 Only deploy infrastructure components
-  -b, --download-pvc-only          Only download model to a PVC
   -m, --disable-metrics-collection Disable metrics collection (Prometheus will not be installed)
-  -D, --download-model             Download the model to PVC from Hugging Face
-  -t, --download-timeout           Timeout for model download job
   -k, --minikube                   Deploy on an existing minikube instance with hostPath storage
   -g, --context                    Supply a specific Kubernetes context
   -j, --gateway                    Select gateway type (istio, kgateway, gke-l7-rilb, gke-l7-regional-external-managed) (default: istio)
@@ -97,7 +85,7 @@ check_dependencies() {
     die "Detected yq is not mikefarah’s yq. Please install the required yq from https://github.com/mikefarah/yq?tab=readme-ov-file#install"
   fi
 
-  local required_cmds=(git yq jq helm kubectl kustomize make)
+  local required_cmds=(git yq jq helm helmfile kubectl kustomize make)
   for cmd in "${required_cmds[@]}"; do
     check_cmd "$cmd"
   done
@@ -134,12 +122,7 @@ parse_args() {
       -f|--values-file)                VALUES_FILE="$2"; shift 2 ;;
       -u|--uninstall)                  ACTION="uninstall"; shift ;;
       -d|--debug)                      DEBUG="--debug"; shift;;
-      -i|--skip-infra)                 SKIP_INFRA=true; shift;;
-      -e|--infra-only)                 INFRA_ONLY=true; shift;;
-      -b|--download-pvc-only)          DOWNLOAD_ONLY=true; shift;;
       -m|--disable-metrics-collection) DISABLE_METRICS=true; shift;;
-      -D|--download-model)             DOWNLOAD_MODEL="$2"; shift 2 ;;
-      -t|--download-timeout)           DOWNLOAD_TIMEOUT="$2"; shift 2 ;;
       -k|--minikube)                   USE_MINIKUBE=true; shift ;;
       -g|--context)                    KUBERNETES_CONTEXT="$2"; shift 2 ;;
       -j|--gateway)                    GATEWAY_TYPE="$2"; shift 2 ;;
@@ -197,7 +180,7 @@ setup_env() {
   SCRIPT_DIR=$(realpath "$(pwd)")
   REPO_ROOT=$(git rev-parse --show-toplevel)
   INSTALL_DIR=$(realpath "${REPO_ROOT}/quickstart")
-  CHART_DIR=$(realpath "${REPO_ROOT}/charts/llm-d")
+  CHART_DIR=$(realpath "${REPO_ROOT}/charts/llm-d-infra")
 
   if [[ "$SCRIPT_DIR" != "$INSTALL_DIR" ]]; then
     die "Script must be run from ${INSTALL_DIR}"
@@ -217,14 +200,6 @@ setup_env() {
   fi
 }
 
-validate_hf_token() {
-  if [[ "$ACTION" == "install" ]]; then
-    # HF_TOKEN from the env
-    [[ -n "${HF_TOKEN:-}" ]] || die "HF_TOKEN not set; Run: export HF_TOKEN=<your_token>"
-    log_success "HF_TOKEN validated"
-  fi
-}
-
 validate_gateway_type() {
   case "${GATEWAY_TYPE}" in
     istio|kgateway|gke-l7-rilb|gke-l7-regional-external-managed)
@@ -236,181 +211,10 @@ validate_gateway_type() {
   log_success "Gateway type validated"
 }
 
-setup_minikube_storage() {
-  log_info "📦 Setting up Minikube hostPath RWX Shared Storage..."
-  log_info "🔄 Creating PV and PVC for llama model (PVC name: ${PVC_NAME})…"
-  $KCMD apply -f - <<EOF
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: ${MODEL_PV_NAME}
-  finalizers: []
-spec:
-  storageClassName: manual
-  capacity:
-    storage: ${STORAGE_SIZE}
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  hostPath:
-    path: ${HOSTPATH_DIR}
-    type: DirectoryOrCreate
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: ${PVC_NAME}
-  namespace: ${NAMESPACE}
-spec:
-  storageClassName: manual
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: ${STORAGE_SIZE}
-  volumeName: ${MODEL_PV_NAME}
-EOF
-  log_success "llama model PV and PVC (${PVC_NAME}) created."
-}
-
-create_pvc_and_download_model_if_needed() {
-  YQ_TYPE=$(yq --version 2>/dev/null | grep -q 'version' && echo 'go' || echo 'py')
-  MODEL_ARTIFACT_URI=$(cat ${VALUES_PATH} | yq .sampleApplication.model.modelArtifactURI)
-  PROTOCOL="${MODEL_ARTIFACT_URI%%://*}"
-
-  verify_env() {
-    if [[ -z "${MODEL_ARTIFACT_URI}" ]]; then
-        log_error "No Model Artifact URI set. Please set the \`.sampleApplication.model.modelArtifactURI\` in the values file."
-        exit 1
-    fi
-    if [[ -z "${HF_TOKEN_SECRET_NAME}" ]]; then
-        log_error "Error, no HF token secret name. Please set the \`.sampleApplication.model.auth.hfToken.name\` in the values file."
-        exit 1
-    fi
-    if [[ -z "${HF_TOKEN_SECRET_KEY}" ]]; then
-        log_error "Error, no HF token secret key. Please set the \`.sampleApplication.model.auth.hfToken.key\` in the values file."
-        exit 1
-    fi
-    if [[ -z "${PVC_NAME}" ]]; then
-        log_error "Invalid \$MODEL_ARTIFACT_URI, could not parse PVC name out of \`.sampleApplication.model.modelArtifactURI\`."
-        exit 1
-    fi
-    if [[ -z "${MODEL_PATH}" ]]; then
-        log_error "Invalid \$MODEL_ARTIFACT_URI, could not parse Model Path out of \`.sampleApplication.model.modelArtifactURI\`."
-        exit 1
-    fi
-  }
-
-  case "$PROTOCOL" in
-  pvc)
-    # Used in both conditionals, for logging in else
-    PVC_AND_MODEL_PATH="${MODEL_ARTIFACT_URI#*://}"
-    PVC_NAME="${PVC_AND_MODEL_PATH%%/*}"
-    MODEL_PATH="${PVC_AND_MODEL_PATH#*/}"
-    if [[ -n "${DOWNLOAD_MODEL}" ]]; then
-      log_info "💾 Provisioning model storage…"
-
-    if [[ "${DOWNLOAD_MODEL}" != */* ]]; then
-        log_error "Error, --download-model ${DOWNLOAD_MODEL} is not in Hugging Face compliant format <org>/<repo>."
-        exit 1
-    fi
-
-      HF_TOKEN_SECRET_NAME=$(cat ${VALUES_PATH} | yq .sampleApplication.model.auth.hfToken.name)
-      HF_TOKEN_SECRET_KEY=$(cat ${VALUES_PATH} | yq .sampleApplication.model.auth.hfToken.key)
-
-      DOWNLOAD_MODEL_JOB_TEMPLATE_FILE_PATH=$(realpath "${REPO_ROOT}/helpers/k8s/load-model-on-pvc-template.yaml")
-
-      verify_env
-
-      # If using Minikube, provision hostPath PV/PVC instead of default storage
-      if [[ "${USE_MINIKUBE}" == "true" ]]; then
-        log_info "⚙️ Minikube mode: setting up hostPath storage"
-        setup_minikube_storage
-      else
-        # verify storage class exists
-        log_info "🔍 Checking storage class \"${STORAGE_CLASS}\"..."
-        if ! $KCMD get storageclass "${STORAGE_CLASS}" &>/dev/null; then
-          log_error "Storage class \`${STORAGE_CLASS}\` not found. Please create it or pass --storage-class with a valid class."
-          exit 1
-        fi
-        # apply the storage manifest
-        eval "echo \"$(cat ${REPO_ROOT}/helpers/k8s/model-storage-rwx-pvc-template.yaml)\"" \
-          | $KCMD apply -n "${NAMESPACE}" -f -
-        log_success "PVC \`${PVC_NAME}\` created with storageClassName ${STORAGE_CLASS} and size ${STORAGE_SIZE}"
-      fi
-
-      log_info "🚀 Launching model download job..."
-      if [[ "${YQ_TYPE}" == "go" ]]; then
-        yq eval "
-        (.spec.template.spec.containers[0].env[] | select(.name == \"MODEL_PATH\")).value = \"${MODEL_PATH}\" |
-        (.spec.template.spec.containers[0].env[] | select(.name == \"HF_MODEL_ID\")).value = \"${DOWNLOAD_MODEL}\" |
-        (.spec.template.spec.containers[0].env[] | select(.name == \"HF_TOKEN\")).valueFrom.secretKeyRef.name = \"${HF_TOKEN_SECRET_NAME}\" |
-        (.spec.template.spec.containers[0].env[] | select(.name == \"HF_TOKEN\")).valueFrom.secretKeyRef.key = \"${HF_TOKEN_SECRET_KEY}\" |
-        (.spec.template.spec.volumes[] | select(.name == \"model-cache\")).persistentVolumeClaim.claimName = \"${PVC_NAME}\"
-        " "${DOWNLOAD_MODEL_JOB_TEMPLATE_FILE_PATH}" | $KCMD apply -n ${NAMESPACE} -f -
-      elif [[ "${YQ_TYPE}" == "py" ]]; then
-        $KCMD apply -f ${DOWNLOAD_MODEL_JOB_TEMPLATE_FILE_PATH} --dry-run=client -o yaml |
-        yq -r | \
-        jq \
-        --arg modelPath "${MODEL_PATH}" \
-        --arg hfModelId "${DOWNLOAD_MODEL}" \
-        --arg hfTokenSecretName "${HF_TOKEN_SECRET_NAME}" \
-        --arg hfTokenSecretKey "${HF_TOKEN_SECRET_KEY}" \
-        --arg pvcName "${PVC_NAME}" \
-        '
-        (.spec.template.spec.containers[] | select(.name == "downloader").env[] | select(.name == "MODEL_PATH")).value = $modelPath |
-        (.spec.template.spec.containers[] | select(.name == "downloader").env[] | select(.name == "HF_MODEL_ID")).value = $hfModelId |
-        (.spec.template.spec.containers[] | select(.name == "downloader").env[] | select(.name == "HF_TOKEN")).valueFrom.secretKeyRef.name = $hfTokenSecretName |
-        (.spec.template.spec.containers[] | select(.name == "downloader").env[] | select(.name == "HF_TOKEN")).valueFrom.secretKeyRef.key = $hfTokenSecretKey |
-        (.spec.template.spec.volumes[] | select(.name == "model-cache")).persistentVolumeClaim.claimName = $pvcName
-        ' | yq -y | $KCMD apply -n ${NAMESPACE} -f -
-      else
-        log_error "unrecognized yq distro -- error"
-        exit 1
-      fi
-
-      log_info "⏳ Waiting 30 seconds pod to start running model download job ..."
-      $KCMD wait --for=condition=Ready pod/$($KCMD get pod --selector=job-name=download-model -o json | jq -r '.items[0].metadata.name') --timeout=60s || {
-        log_error "🙀 No pod picked up model download job";
-        log_info "Please check your storageclass configuration for the \`download-model\` - if the PVC fails to spin the job will never get a pod"
-        $KCMD logs job/download-model -n "${NAMESPACE}";
-      }
-
-      log_info "⏳ Waiting up to ${DOWNLOAD_TIMEOUT}s for model download job to complete; this may take a while depending on connection speed and model size..."
-      $KCMD wait --for=condition=complete --timeout=${DOWNLOAD_TIMEOUT}s job/download-model -n "${NAMESPACE}" || {
-        log_error "🙀 Model download job failed or timed out";
-        JOB_POD=$($KCMD get pod --selector=job-name=download-model -o json | jq -r '.items[0].metadata.name')
-        $KCMD logs pod/${JOB_POD} -n "${NAMESPACE}";
-        exit 1;
-      }
-
-      log_success "Model downloaded"
-    else
-      log_info "⏭️ Model download to PVC skipped: \`--download-model\` arg not set, assuming PVC ${PVC_NAME} exists and contains model at path: \`${MODEL_PATH}\`."
-    fi
-    ;;
-  hf)
-    log_info "⏭️ Model download to PVC skipped: BYO model via HF repo_id selected."
-    echo "protocol hf chosen - models will be downloaded JIT in inferencing pods."
-    ;;
-  *)
-    log_error "🤮 Unsupported protocol: $PROTOCOL. Check back soon for more supported types of model source 😉."
-    exit 1
-    ;;
-  esac
-}
-
 install() {
-  if [[ "${SKIP_INFRA}" == "false" ]]; then
-    log_info "🏗️ Installing GAIE Kubernetes infrastructure…"
-    bash ../chart-dependencies/ci-deps.sh apply ${GATEWAY_TYPE}
-    log_success "GAIE infra applied"
-  fi
-
-  if [[ "${INFRA_ONLY}" == "true" ]]; then
-    log_info "Option \"-e/--infra-only\" specified, will end execution"
-    return 0
-  fi
+  log_info "🏗️ Installing GAIE Kubernetes infrastructure…"
+  bash ../chart-dependencies/ci-deps.sh apply ${GATEWAY_TYPE}
+  log_success "GAIE infra applied"
 
   if $KCMD get namespace "${MONITORING_NAMESPACE}" &>/dev/null; then
     log_info "🧹 Cleaning up existing monitoring namespace..."
@@ -424,28 +228,9 @@ install() {
   cd "${CHART_DIR}"
   resolve_values
 
-  log_info "🔐 Creating/updating HF token secret..."
-  HF_NAME=$(yq -r .sampleApplication.model.auth.hfToken.name "${VALUES_PATH}")
-  HF_KEY=$(yq -r .sampleApplication.model.auth.hfToken.key  "${VALUES_PATH}")
-  $KCMD delete secret "${HF_NAME}" -n "${NAMESPACE}" --ignore-not-found
-  $KCMD create secret generic "${HF_NAME}" \
-    --namespace "${NAMESPACE}" \
-    --from-literal="${HF_KEY}=${HF_TOKEN}" \
-    --dry-run=client -o yaml | $KCMD apply -n "${NAMESPACE}" -f -
-  log_success "HF token secret created"
-
   # can be fetched non-invasily if using kgateway or not
   fetch_kgateway_proxy_uid
 
-  log_info "📜 Applying modelservice CRD..."
-  $KCMD apply -f crds/modelservice-crd.yaml
-  log_success "ModelService CRD applied"
-
-  create_pvc_and_download_model_if_needed
-  if [[ "${DOWNLOAD_ONLY}" == "true" ]]; then
-    log_info "Option \"-b/--download-pvc-only\" specified, will end execution"
-    return 0
-  fi
 
   $HCMD repo add bitnami  https://charts.bitnami.com/bitnami
   log_info "🛠️ Building Helm chart dependencies..."
@@ -485,30 +270,6 @@ install() {
     log_info "Metrics collection enabled"
   fi
 
-  METRICS_ARGS=()
-  if [[ "${metrics_enabled}" == "true" ]]; then
-    METRICS_ARGS=(
-      --set modelservice.metrics.enabled=true
-    )
-  else
-    METRICS_ARGS=(
-      --set modelservice.metrics.enabled=false
-      --set modelservice.epp.metrics.enabled=false
-      --set modelservice.vllm.metrics.enabled=false
-    )
-  fi
-
-# Override model configuration if --download-model is specified
-MODEL_OVERRIDE_ARGS=()
-if [[ -n "${DOWNLOAD_MODEL}" ]]; then
-  log_info "Overriding model configuration with user-specified model: ${DOWNLOAD_MODEL}"
-  MODEL_OVERRIDE_ARGS=(
-    --set sampleApplication.model.modelName="${DOWNLOAD_MODEL}"
-    --set sampleApplication.model.modelArtifactURI="hf://${DOWNLOAD_MODEL}"
-  )
-  log_success "Model will be overridden: ${DOWNLOAD_MODEL}"
-fi
-
   log_info "🚚 Deploying llm-d chart with ${VALUES_PATH}..."
   $HCMD upgrade -i ${HELM_RELEASE_NAME} . \
     ${DEBUG} \
@@ -518,49 +279,16 @@ fi
     --set gateway.gatewayClassName="${GATEWAY_TYPE}" \
     --set gateway.kGatewayParameters.proxyUID="${PROXY_UID}" \
     --set ingress.clusterRouterBase="${BASE_OCP_DOMAIN}" \
-    "${METRICS_ARGS[@]}" \
     "${MODEL_OVERRIDE_ARGS[@]+"${MODEL_OVERRIDE_ARGS[@]}"}"
   log_success "$HELM_RELEASE_NAME deployed"
-
-  post_install
 
   log_success "🎉 Installation complete."
 }
 
-# function called right before the installer exits
-post_install() {
-  # download-model pod deletion if it exists and in a succeeded phase
-  local pod
-  pod=$($KCMD get pods -n "${NAMESPACE}" \
-    -l job-name=download-model \
-    -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-  if [[ -z "$pod" ]]; then
-    return
-  fi
-  local phase
-  phase=$($KCMD get pod "$pod" -n "${NAMESPACE}" \
-    -o jsonpath='{.status.phase}' 2>/dev/null || true)
-  if [[ "$phase" == "Succeeded" ]]; then
-    $KCMD delete pod "$pod" -n "${NAMESPACE}" --ignore-not-found || true
-    log_success "🧹 download-model pod deleted"
-  else
-    log_info "→ Pod ${pod} phase is ${phase}; skipping delete."
-  fi
-}
-
 uninstall() {
-  if [[ "${SKIP_INFRA}" == "false" ]]; then
-    log_info "🗑️ Tearing down GAIE Kubernetes infrastructure…"
-    bash ../chart-dependencies/ci-deps.sh delete ${GATEWAY_TYPE}
-  fi
-  MODEL_ARTIFACT_URI=$($KCMD get modelservice --ignore-not-found -n ${NAMESPACE} -o yaml | yq '.items[].spec.modelArtifacts.uri')
-  PROTOCOL="${MODEL_ARTIFACT_URI%%://*}"
-  if [[ "${PROTOCOL}" == "pvc" ]]; then
-    INFERENCING_DEPLOYMENT=$($KCMD get deployments --ignore-not-found  -n ${NAMESPACE} -l llm-d.ai/inferenceServing=true | tail -n 1 | awk '{print $1}')
-    PVC_NAME=$( $KCMD get deployments --ignore-not-found  $INFERENCING_DEPLOYMENT -n ${NAMESPACE} -o yaml | yq '.spec.template.spec.volumes[] | select(has("persistentVolumeClaim"))' | yq .claimName)
-    PV_NAME=$($KCMD get pvc ${PVC_NAME} --ignore-not-found  -n ${NAMESPACE} -o yaml | yq .spec.volumeName)
-    $KCMD delete job download-model --ignore-not-found || true
-  fi
+  log_info "🗑️ Tearing down GAIE Kubernetes infrastructure…"
+  bash ../chart-dependencies/ci-deps.sh delete ${GATEWAY_TYPE}
+
   log_info "🗑️ Uninstalling llm-d chart..."
   $HCMD uninstall ${HELM_RELEASE_NAME} --ignore-not-found --namespace "${NAMESPACE}" || true
 
@@ -735,7 +463,6 @@ main() {
   # Check cluster reachability as a pre-requisite
   check_cluster_reachability
 
-  validate_hf_token
   validate_gateway_type
 
   if [[ "$ACTION" == "install" ]]; then
