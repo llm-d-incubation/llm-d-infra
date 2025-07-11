@@ -96,4 +96,6 @@ if ! command -v kustomize &> /dev/null; then
   rm kustomize.tar.gz
 fi
 
+# Install helmfile
+
 echo "All tools installed successfully."

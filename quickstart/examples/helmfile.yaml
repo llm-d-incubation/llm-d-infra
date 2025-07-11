@@ -1,0 +1,54 @@
+repositories:
+  - name: llm-d-modelservice
+    url: https://llm-d-incubation.github.io/llm-d-modelservice/
+
+releases:
+  - name: istio-base
+    namespace: istio-system
+    chart: oci://gcr.io/istio-testing/charts/base
+    version: 1.27-alpha.0551127f00634403cddd4634567e65a8ecc499a7
+    createNamespace: true
+    installed: true
+
+  - name: istiod
+    namespace: istio-system
+    chart: oci://gcr.io/istio-testing/charts/istiod
+    version: 1.27-alpha.0551127f00634403cddd4634567e65a8ecc499a7
+    installed: true
+    wait: true
+    set:
+      - name: tag
+        value: 1.27-alpha.0551127f00634403cddd4634567e65a8ecc499a7
+      - name: hub
+        value: gcr.io/istio-testing
+
+  - name: infra-facebook
+    namespace: llm-d
+    chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
+    version: 1.0.1
+    installed: true
+    needs:
+      - istio-system/istio-base
+      - istio-system/istiod
+    values:
+      - llm-d-infra/istio-values.yaml
+
+  - name: ms-facebook
+    namespace: llm-d
+    chart: llm-d-modelservice/llm-d-modelservice
+    version: 0.0.8
+    installed: true
+    needs:
+      - llm-d/infra-facebook
+    values:
+      - ms-facebook/values.yaml
+
+  - name: gaie-facebook
+    namespace: llm-d
+    chart: oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/inferencepool
+    version: v0
+    installed: true
+    needs:
+      - llm-d/infra-facebook
+    values:
+      - gaie-facebook/values.yaml

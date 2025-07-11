@@ -1,0 +1,19 @@
+gateway:
+  enabled: true
+  gatewayClassName: istio
+  listeners:
+    - name: default
+      path: /
+      port: 80
+      protocol: HTTP
+  serviceType: NodePort
+ingress:
+  enabled: false
+extraDeploy:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: llm-d-hf-token
+    type: Opaque
+    data:
+      HF_TOKEN: <YOUR_HF_TOKEN_B64_ENCODED>
