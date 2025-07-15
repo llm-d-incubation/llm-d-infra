@@ -1,0 +1,267 @@
+multinode: true
+
+modelArtifacts:
+  uri: "hf://Qwen/Qwen3-30B-A3B-FP8"
+  size: 100Gi
+  authSecretName: "llm-d-hf-token"
+
+routing:
+  modelName: Qwen/Qwen3-30B-A3B-FP8
+  servicePort: 8000
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: infra-wide-pd-inference-gateway
+
+  inferenceModel:
+    create: true
+
+  inferencePool:
+    create: false
+    name: gaie-pd
+
+  httpRoute:
+    create: true
+
+  epp:
+    create: false
+
+decode:
+  create: true
+  replicas: 1
+  acceleratorTypes:
+    labelKey: gpu.nvidia.com/model
+    labelValues:
+      - H200
+  parallelism:
+    data: 8 # these will be derived based performance testing
+    tensor: 1 # these will be derived based performance testing
+  containers:
+    - name: vllm-worker-decode
+      image: "quay.io/tms/vllm-dev-deepep:0.1.0"
+      imagePullPolicy: Always
+      workingDir: /code
+      command: ["/bin/bash","-c"]
+      modelCommand: "custom"
+      args:
+        - |
+          ###################################################
+          # Figure out which GPU to use when 'privileged: true'
+          # vLLM requires that CPU_VISIBLE_DEVICES is set to device ordinals,
+          # so we need to remap the GPU UUIDs to indices.
+
+          echo "NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES"
+          ALLOCATED_GPU_UUID=$(ls "$NVIDIA_VISIBLE_DEVICES" | head -n 1)
+          echo "Allocated GPU UUID:  $ALLOCATED_GPU_UUID"
+          GPU_MAP_DATA=$(nvidia-smi --query-gpu=uuid,index --format=csv,noheader)
+          echo "nvidia-smi output for UUIDs and indices:"
+          echo "$GPU_MAP_DATA"
+
+          export ALLOCATED_GPU_INDEX=$(
+            echo "$GPU_MAP_DATA" |
+            awk -F',' -v target_uuid="$ALLOCATED_GPU_UUID" '
+              {
+                gsub(/^[ \t]+|[ \t]+$/, "", $1)
+                if ($1 == target_uuid) {
+                  gsub(/^[ \t]+|[ \t]+$/, "", $2)
+                  print $2
+                  exit
+                }
+              }'
+          )
+
+          echo "Using GPU Device ID: $ALLOCATED_GPU_INDEX"
+          #################
+          # RUN vLLM
+          #################
+          export CUDA_VISIBLE_DEVICES=${ALLOCATED_GPU_INDEX}
+
+          vllm serve \
+            Qwen/Qwen3-30B-A3B-FP8 \
+            --port 8200 \
+            --disable-log-requests \
+            --enable-expert-parallel \
+            --tensor-parallel-size $TP_SIZE \
+            --data-parallel-size $(LWS_GROUP_SIZE) \
+            --data-parallel-address $(LWS_LEADER_ADDRESS) \
+            --data-parallel-rpc-port 5555 \
+            --data-parallel-rank $(LWS_WORKER_INDEX) \
+            --trust-remote-code  \
+            --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
+      env:
+        - name: VLLM_RANDOMIZE_DP_DUMMY_INPUTS
+          value: "1"
+        - name: TP_SIZE
+          value: "1"
+        - name: VLLM_USE_DEEP_GEMM
+          value: "1"
+        - name: VLLM_ALL2ALL_BACKEND
+          value: "naive" # TEMP workaround to avoid issues with nvshmem
+        - name: NVIDIA_GDRCOPY
+          value: "enabled"
+        # - name: NVSHMEM_DEBUG
+        #   value: "INFO"
+        # - name: NVSHMEM_REMOTE_TRANSPORT
+        #   value: "ibgda"
+        # - name: NVSHMEM_IB_ENABLE_IBGDA
+        #   value: "true"
+        # - name: NVSHMEM_BOOTSTRAP_UID_SOCK_IFNAME
+        #   value: "eth0"
+        - name: GLOO_SOCKET_IFNAME
+          value: "eth0"
+        - name: NCCL_SOCKET_IFNAME
+          value: "eth0"
+        - name: NCCL_IB_HCA
+          value: "ibp"
+        - name: VLLM_LOGGING_LEVEL
+          value: "DEBUG"
+        - name: HF_HUB_CACHE
+          value: /huggingface-cache
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: llm-d-hf-token
+              key: HF_TOKEN
+        - name: VLLM_NIXL_SIDE_CHANNEL_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+      securityContext:
+        privileged: true
+        capabilities:
+          add:
+          - "IPC_LOCK"
+          - "SYS_RAWIO"
+      resources:
+        limits:
+          memory: 128Gi
+          ephemeral-storage: 64Gi
+          nvidia.com/gpu: "1"
+          rdma/ib: 1
+        requests:
+          cpu: 8
+          memory: 128Gi
+          ephemeral-storage: 64Gi
+          nvidia.com/gpu: "1"
+          rdma/ib: 1
+      mountModelVolume: false
+
+prefill:
+  create: true
+  replicas: 1
+  acceleratorTypes:
+    labelKey: gpu.nvidia.com/model
+    labelValues:
+      - H200
+  parallelism:
+    data: 8 # these will be derived based performance testing
+    tensor: 1 # these will be derived based performance testing
+  containers:
+    - name: vllm-worker-prefill
+      image: "quay.io/tms/vllm-dev-deepep:0.1.0"
+      imagePullPolicy: Always
+      workingDir: /code
+      command: ["/bin/bash","-c"]
+      modelCommand: "custom"
+      args:
+        - |
+          ###################################################
+          # Figure out which GPU to use when 'privileged: true'
+          # vLLM requires that CPU_VISIBLE_DEVICES is set to device ordinals,
+          # so we need to remap the GPU UUIDs to indices.
+
+          echo "NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES"
+          ALLOCATED_GPU_UUID=$(ls "$NVIDIA_VISIBLE_DEVICES" | head -n 1)
+          echo "Allocated GPU UUID:  $ALLOCATED_GPU_UUID"
+          GPU_MAP_DATA=$(nvidia-smi --query-gpu=uuid,index --format=csv,noheader)
+          echo "nvidia-smi output for UUIDs and indices:"
+          echo "$GPU_MAP_DATA"
+
+          export ALLOCATED_GPU_INDEX=$(
+            echo "$GPU_MAP_DATA" |
+            awk -F',' -v target_uuid="$ALLOCATED_GPU_UUID" '
+              {
+                gsub(/^[ \t]+|[ \t]+$/, "", $1)
+                if ($1 == target_uuid) {
+                  gsub(/^[ \t]+|[ \t]+$/, "", $2)
+                  print $2
+                  exit
+                }
+              }'
+          )
+
+          echo "Using GPU Device ID: $ALLOCATED_GPU_INDEX"
+          #################
+          # RUN vLLM
+          #################
+          export CUDA_VISIBLE_DEVICES=${ALLOCATED_GPU_INDEX}
+
+          vllm serve \
+            Qwen/Qwen3-30B-A3B-FP8 \
+            --port 8080 \
+            --disable-log-requests \
+            --enable-expert-parallel \
+            --tensor-parallel-size $TP_SIZE \
+            --data-parallel-size $(LWS_GROUP_SIZE) \
+            --data-parallel-address $(LWS_LEADER_ADDRESS) \
+            --data-parallel-rpc-port 5555 \
+            --data-parallel-rank $(LWS_WORKER_INDEX) \
+            --trust-remote-code \
+            --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
+      env:
+        - name: VLLM_RANDOMIZE_DP_DUMMY_INPUTS
+          value: "1"
+        - name: TP_SIZE
+          value: "1"
+        - name: VLLM_USE_DEEP_GEMM
+          value: "1"
+        - name: VLLM_ALL2ALL_BACKEND
+          value: "naive" # TEMP workaround to avoid issues with nvshmem
+        - name: NVIDIA_GDRCOPY
+          value: "enabled"
+        # - name: NVSHMEM_DEBUG
+        #   value: "INFO"
+        # - name: NVSHMEM_REMOTE_TRANSPORT
+        #   value: "ibgda"
+        # - name: NVSHMEM_IB_ENABLE_IBGDA
+        #   value: "true"
+        # - name: NVSHMEM_BOOTSTRAP_UID_SOCK_IFNAME
+        #   value: "eth0"
+        - name: GLOO_SOCKET_IFNAME
+          value: "eth0"
+        - name: NCCL_SOCKET_IFNAME
+          value: "eth0"
+        - name: NCCL_IB_HCA
+          value: "ibp"
+        - name: VLLM_LOGGING_LEVEL
+          value: "DEBUG"
+        - name: HF_HUB_CACHE
+          value: /huggingface-cache
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: llm-d-hf-token
+              key: HF_TOKEN
+        - name: VLLM_NIXL_SIDE_CHANNEL_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+      securityContext:
+        privileged: true
+        capabilities:
+          add:
+          - "IPC_LOCK"
+          - "SYS_RAWIO"
+      resources:
+        limits:
+          memory: 128Gi
+          ephemeral-storage: 64Gi
+          nvidia.com/gpu: "1"
+          rdma/ib: 1
+        requests:
+          cpu: 8
+          memory: 128Gi
+          ephemeral-storage: 64Gi
+          nvidia.com/gpu: "1"
+          rdma/ib: 1
+      mountModelVolume: false
