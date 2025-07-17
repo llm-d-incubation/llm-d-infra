@@ -1,0 +1,117 @@
+multinode: false
+
+modelArtifacts:
+  uri: "hf://Qwen/Qwen3-0.6B"
+  size: 20Gi
+  authSecretName: "llm-d-hf-token"
+
+routing:
+  modelName: Qwen/Qwen3-0.6B
+  servicePort: 8000
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: infra-pd-mini-inference-gateway
+  
+  proxy:
+    image: quay.io/grpereir/llm-d-routing-sidecar:0.5.0-rc.2
+    connector: nixl
+
+  inferenceModel:
+    create: false
+
+  inferencePool:
+    create: false
+    name: gaie-pd-mini
+
+  httpRoute:
+    create: true
+
+  epp:
+    create: false
+
+decode:
+  create: true
+  replicas: 1
+  containers:
+  - name: "vllm"
+    image: "robertgouldshaw2/vllm-nixl:nixl-oh-debug-fixed-0.3" # TODO(rob): update to llm-d image
+    modelCommand: vllmServe
+    args:
+      - "--block-size"
+      - "128"
+      - "--kv-transfer-config"
+      - '{"kv_connector":"NixlConnector", "kv_role":"kv_both"}'
+      - "--disable-log-requests"
+      - "--disable-uvicorn-access-log"
+    env:
+      - name: VLLM_NIXL_SIDE_CHANNEL_HOST
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+      requests:
+        nvidia.com/gpu: "1"
+    mountModelVolume: true
+    volumeMounts:
+    - name: metrics-volume
+      mountPath: /.config
+    - name: shm
+      mountPath: /dev/shm
+    - name: cache-volume
+      mountPath: /.cache
+  volumes:
+  - name: metrics-volume
+    emptyDir: {}
+  - name: shm
+    emptyDir:
+      medium: Memory
+      sizeLimit: "16Gi"
+  - name: cache-volume
+    emptyDir: {}
+
+prefill:
+  create: true
+  replicas: 2
+  containers:
+  - name: "vllm"
+    image: "robertgouldshaw2/vllm-nixl:nixl-oh-debug-fixed-0.3" # TODO(rob): update to llm-d image
+    modelCommand: vllmServe
+    args:
+      - "--block-size"
+      - "128"
+      - "--kv-transfer-config"
+      - '{"kv_connector":"NixlConnector", "kv_role":"kv_both"}'
+      - "--disable-log-requests"
+      - "--disable-uvicorn-access-log"
+    env:
+      - name: VLLM_IS_PREFILL # TODO(rob): remove once we bump vllm version
+        value: "1"
+      - name: VLLM_NIXL_SIDE_CHANNEL_HOST
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+      requests:
+        nvidia.com/gpu: "1"
+    mountModelVolume: true
+    volumeMounts:
+    - name: metrics-volume
+      mountPath: /.config
+    - name: shm
+      mountPath: /dev/shm
+    - name: cache-volume
+      mountPath: /.cache
+  volumes:
+  - name: metrics-volume
+    emptyDir: {}
+  - name: shm
+    emptyDir:
+      medium: Memory
+      sizeLimit: "16Gi"
+  - name: cache-volume
+    emptyDir: {}
