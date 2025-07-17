@@ -14,8 +14,8 @@ releases:
   - name: gaie-wide-ep
     namespace: llm-d
     chart: oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/inferencepool
-    # version: v0.5.0-rc2
-    version: v0
+    version: v0.5.0-rc.2
+    # version: v0
     installed: true
     needs:
       - llm-d/infra-wide-ep
@@ -27,7 +27,7 @@ releases:
   - name: ms-wide-ep
     namespace: llm-d
     chart: llm-d-modelservice/llm-d-modelservice
-    version: 0.0.12
+    version: 0.0.13
     installed: true
     needs:
       - llm-d/gaie-wide-ep
