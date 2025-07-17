@@ -47,35 +47,50 @@ decode:
       args:
         - |
           ###################################################
-          # Figure out which GPU to use when 'privileged: true'
-          # vLLM requires that CPU_VISIBLE_DEVICES is set to device ordinals,
-          # so we need to remap the GPU UUIDs to indices.
+          # Figure out which GPU to use when 'privileged: true'.
+          # NVIDIA_VISIBLE_DEVICES tells us which GPU UUIDs to use, but
+          # vLLM requires that CPU_VISIBLE_DEVICES is set to device ordinals.
+          # This remaps the GPU UUIDs to indices.
 
-          echo "NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES"
-          ALLOCATED_GPU_UUID=$(ls "$NVIDIA_VISIBLE_DEVICES" | head -n 1)
-          echo "Allocated GPU UUID:  $ALLOCATED_GPU_UUID"
-          GPU_MAP_DATA=$(nvidia-smi --query-gpu=uuid,index --format=csv,noheader)
-          echo "nvidia-smi output for UUIDs and indices:"
+          # --- 1. Collect the UUIDs that the container has access to -------------------
+          mapfile -t ALLOCATED_GPU_UUIDS < <(ls -1 "$NVIDIA_VISIBLE_DEVICES" | sort)
+
+          echo "Allocated GPU UUIDs (${#ALLOCATED_GPU_UUIDS[@]} found):"
+          printf '  • %s\n' "${ALLOCATED_GPU_UUIDS[@]}"
+
+          # --- 2. Build a map of UUID → index from nvidia‑smi --------------------------
+          GPU_MAP_DATA="$(nvidia-smi --query-gpu=uuid,index --format=csv,noheader)"
+          echo "nvidia-smi uuid,index pairs:"
           echo "$GPU_MAP_DATA"
 
-          export ALLOCATED_GPU_INDEX=$(
-            echo "$GPU_MAP_DATA" |
-            awk -F',' -v target_uuid="$ALLOCATED_GPU_UUID" '
-              {
-                gsub(/^[ \t]+|[ \t]+$/, "", $1)
-                if ($1 == target_uuid) {
-                  gsub(/^[ \t]+|[ \t]+$/, "", $2)
-                  print $2
-                  exit
-                }
-              }'
-          )
+          declare -a ALLOCATED_GPU_INDICES=()
 
-          echo "Using GPU Device ID: $ALLOCATED_GPU_INDEX"
+          for uuid in "${ALLOCATED_GPU_UUIDS[@]}"; do
+            idx="$(
+              printf '%s\n' "$GPU_MAP_DATA" |
+              awk -F',' -v target_uuid="$uuid" '
+                {
+                  gsub(/^[ \t]+|[ \t]+$/, "", $1)   # trim spaces in $1 (uuid)
+                  if ($1 == target_uuid) {
+                    gsub(/^[ \t]+|[ \t]+$/, "", $2) # trim spaces in $2 (index)
+                    print $2
+                    exit
+                  }
+                }'
+            )"
+            if [ -n "$idx" ]; then
+              ALLOCATED_GPU_INDICES+=("$idx")
+            else
+              echo "⚠️  Warning: UUID $uuid not found in nvidia‑smi output" >&2
+            fi
+          done
+
+
+          echo "Using GPU Device ID: $ALLOCATED_GPU_INDICES"
           #################
           # RUN vLLM
           #################
-          export CUDA_VISIBLE_DEVICES=${ALLOCATED_GPU_INDEX}
+          export CUDA_VISIBLE_DEVICES=${ALLOCATED_GPU_INDICES}
 
           vllm serve \
             Qwen/Qwen3-30B-A3B-FP8 \
