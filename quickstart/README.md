@@ -141,21 +141,24 @@ After executing install script, you can find the resources will be created accor
 - istio-system
 
 ```bash
-$ kubectl get pods,svc -n istio-system
-NAME                                        READY   STATUS    RESTARTS   AGE
-pod/istio-ingressgateway-6d996747bc-6jlb7   1/1     Running   0          3m42s
-pod/istiod-774dfd9b6-b5xps                  1/1     Running   0          3m42s
+kubectl get pods,svc -n istio-system
+```
 
-NAME                            TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                                      AGE
-service/istio-ingressgateway    LoadBalancer   10.233.47.77    <External IP>   15021:30856/TCP,80:31903/TCP,443:30912/TCP   3m42s
-service/istiod                  ClusterIP      10.233.41.63    <none>          15010/TCP,15012/TCP,443/TCP,15014/TCP        3m42s
-service/knative-local-gateway   ClusterIP      10.233.42.185   <none>          80/TCP,443/TCP                               3m42s
+```bash
+NAME                         READY   STATUS    RESTARTS   AGE
+pod/istiod-774dfd9b6-wjlm2   1/1     Running   0          3m33s
+
+NAME             TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                                 AGE
+service/istiod   ClusterIP   [Cluster IP]   <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   3m33s
 ```
 
 - llm-d
 
 ```bash
-$ kubectl get pods,gateway -n llm-d
+kubectl get pods,gateway -n llm-d
+```
+
+```bash
 NAME                                                      READY   STATUS    RESTARTS   AGE
 pod/llm-d-infra-inference-gateway-istio-79b75bb5d-blwgs   1/1     Running   0          87s
 
@@ -166,7 +169,10 @@ gateway.gateway.networking.k8s.io/llm-d-infra-inference-gateway   istio   llm-d-
 - llm-d-monitoring
 
 ```bash
-$ kubectl get pods,gateway -n llm-d-monitoring
+kubectl get pods,gateway -n llm-d-monitoring
+```
+
+```bash
 NAME                                                         READY   STATUS    RESTARTS   AGE
 pod/alertmanager-prometheus-kube-prometheus-alertmanager-0   2/2     Running   0          2m51s
 pod/prometheus-grafana-7fbfb5f947-h92zc                      3/3     Running   0          2m51s
@@ -183,7 +189,10 @@ pod/prometheus-prometheus-node-exporter-tks77                1/1     Running   0
 - kgateway-system
 
 ```bash
-$ kubectl get pods -n kgateway-system
+kubectl get pods -n kgateway-system
+```
+
+```bash
 NAME                       READY   STATUS    RESTARTS   AGE
 kgateway-ddbb7668c-cc9df   1/1     Running   0          25m
 ```
@@ -192,17 +201,23 @@ kgateway-ddbb7668c-cc9df   1/1     Running   0          25m
 
 ```bash
 kubectl get pods,gateway -n llm-d
+```
+
+```bash
 NAME                                                 READY   STATUS    RESTARTS   AGE
 pod/llm-d-infra-inference-gateway-69fd4dcfb9-nzs29   1/1     Running   0          22m
 
 NAME                                                              CLASS      ADDRESS        PROGRAMMED   AGE
-gateway.gateway.networking.k8s.io/llm-d-infra-inference-gateway   kgateway   <External IP>  True         22m
+gateway.gateway.networking.k8s.io/llm-d-infra-inference-gateway   kgateway   [External IP]  True         22m
 ```
 
 - llm-d-monitoring
 
 ```bash
-$ kubectl get pods,gateway -n llm-d-monitoring
+kubectl get pods,gateway -n llm-d-monitoring
+```
+
+```bash
 NAME                                                         READY   STATUS    RESTARTS   AGE
 pod/alertmanager-prometheus-kube-prometheus-alertmanager-0   2/2     Running   0          24m
 pod/prometheus-grafana-7fbfb5f947-jdb7l                      3/3     Running   0          24m
