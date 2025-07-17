@@ -12,10 +12,11 @@ routing:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: infra-pd-mini-inference-gateway
-  
+
   proxy:
-    image: quay.io/grpereir/llm-d-routing-sidecar:0.5.0-rc.2
-    connector: nixl
+    image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0-RC1
+    connector: nixlv2
+    secure: false
 
   inferenceModel:
     create: false
