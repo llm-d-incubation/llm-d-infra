@@ -132,6 +132,88 @@ export HF_TOKEN="your-token"
 ./llmd-infra-installer.sh
 ```
 
+### Validation
+
+After executing install script, you can find the resources will be created according to installation option.
+
+#### Installation with istio
+
+- istio-system
+
+```bash
+$ kubectl get pods,svc -n istio-system
+NAME                                        READY   STATUS    RESTARTS   AGE
+pod/istio-ingressgateway-6d996747bc-6jlb7   1/1     Running   0          3m42s
+pod/istiod-774dfd9b6-b5xps                  1/1     Running   0          3m42s
+
+NAME                            TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                                      AGE
+service/istio-ingressgateway    LoadBalancer   10.233.47.77    <External IP>   15021:30856/TCP,80:31903/TCP,443:30912/TCP   3m42s
+service/istiod                  ClusterIP      10.233.41.63    <none>          15010/TCP,15012/TCP,443/TCP,15014/TCP        3m42s
+service/knative-local-gateway   ClusterIP      10.233.42.185   <none>          80/TCP,443/TCP                               3m42s
+```
+
+- llm-d
+
+```bash
+$ kubectl get pods,gateway -n llm-d
+NAME                                                      READY   STATUS    RESTARTS   AGE
+pod/llm-d-infra-inference-gateway-istio-79b75bb5d-blwgs   1/1     Running   0          87s
+
+NAME                                                              CLASS   ADDRESS                                                       PROGRAMMED   AGE
+gateway.gateway.networking.k8s.io/llm-d-infra-inference-gateway   istio   llm-d-infra-inference-gateway-istio.llm-d.svc.cluster.local   True         87s
+```
+
+- llm-d-monitoring
+
+```bash
+$ kubectl get pods,gateway -n llm-d-monitoring
+NAME                                                         READY   STATUS    RESTARTS   AGE
+pod/alertmanager-prometheus-kube-prometheus-alertmanager-0   2/2     Running   0          2m51s
+pod/prometheus-grafana-7fbfb5f947-h92zc                      3/3     Running   0          2m51s
+pod/prometheus-kube-prometheus-operator-56c5c488db-clslv     1/1     Running   0          2m51s
+pod/prometheus-kube-state-metrics-7f5f75c85d-twvj5           1/1     Running   0          2m51s
+pod/prometheus-prometheus-kube-prometheus-prometheus-0       2/2     Running   0          2m51s
+pod/prometheus-prometheus-node-exporter-94jkw                1/1     Running   0          2m51s
+pod/prometheus-prometheus-node-exporter-c8fzc                1/1     Running   0          2m51s
+pod/prometheus-prometheus-node-exporter-tks77                1/1     Running   0          2m51s
+```
+
+#### Installation with kgateway
+
+- kgateway-system
+
+```bash
+$ kubectl get pods -n kgateway-system
+NAME                       READY   STATUS    RESTARTS   AGE
+kgateway-ddbb7668c-cc9df   1/1     Running   0          25m
+```
+
+- llm-d
+
+```bash
+kubectl get pods,gateway -n llm-d
+NAME                                                 READY   STATUS    RESTARTS   AGE
+pod/llm-d-infra-inference-gateway-69fd4dcfb9-nzs29   1/1     Running   0          22m
+
+NAME                                                              CLASS      ADDRESS        PROGRAMMED   AGE
+gateway.gateway.networking.k8s.io/llm-d-infra-inference-gateway   kgateway   <External IP>  True         22m
+```
+
+- llm-d-monitoring
+
+```bash
+$ kubectl get pods,gateway -n llm-d-monitoring
+NAME                                                         READY   STATUS    RESTARTS   AGE
+pod/alertmanager-prometheus-kube-prometheus-alertmanager-0   2/2     Running   0          24m
+pod/prometheus-grafana-7fbfb5f947-jdb7l                      3/3     Running   0          24m
+pod/prometheus-kube-prometheus-operator-56c5c488db-fr9vt     1/1     Running   0          24m
+pod/prometheus-kube-state-metrics-7f5f75c85d-2nfwv           1/1     Running   0          24m
+pod/prometheus-prometheus-kube-prometheus-prometheus-0       2/2     Running   0          24m
+pod/prometheus-prometheus-node-exporter-65cbt                1/1     Running   0          24m
+pod/prometheus-prometheus-node-exporter-n9n6t                1/1     Running   0          24m
+pod/prometheus-prometheus-node-exporter-szjwv                1/1     Running   0          24m
+```
+
 ### Metrics Collection
 
 llm-d-infra includes built-in support for metrics collection using Prometheus and Grafana. This feature is enabled by default but can be disabled using the
