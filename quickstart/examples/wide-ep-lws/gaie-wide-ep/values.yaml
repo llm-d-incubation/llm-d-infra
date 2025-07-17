@@ -1,0 +1,48 @@
+inferenceExtension:
+  replicas: 1
+  image:
+    # upstream GIE epp image does NOT support PD, have to use `llm-d-inference-scheduler`
+    name: llm-d-inference-scheduler
+    hub: ghcr.io/llm-d
+    tag: 0.0.5
+    pullPolicy: Always
+  extProcPort: 9002
+  pluginConfigFile: "dp-config.yaml"
+  pluginCustomConfig:
+    dp-config.yaml: |
+      apiVersion: inference.networking.x-k8s.io/v1alpha1
+      kind: EndpointPickerConfig
+      plugins:
+      - type: prefill-header-handler
+      - type: prefix-cache-scorer
+        parameters:
+          hashBlockSize: 5
+          maxPrefixBlocksToMatch: 256
+          lruCapacityPerServer: 31250
+      - type: prefill-filter
+      - type: decode-filter
+      - type: max-score-picker
+      - type: pd-profile-handler
+        parameters:
+          threshold: 10
+          hashBlockSize: 5
+      schedulingProfiles:
+      - name: prefill
+        plugins:
+        - pluginRef: prefill-filter
+        - pluginRef: max-score-picker
+        - pluginRef: prefix-cache-scorer
+          weight: 50
+      - name: decode
+        plugins:
+        - pluginRef: decode-filter
+        - pluginRef: max-score-picker
+        - pluginRef: prefix-cache-scorer
+          weight: 50
+
+inferencePool:
+  targetPortNumber: 8000
+  modelServerType: vllm
+  modelServers:
+    matchLabels:
+      llm-d.ai/inferenceServing: "true"

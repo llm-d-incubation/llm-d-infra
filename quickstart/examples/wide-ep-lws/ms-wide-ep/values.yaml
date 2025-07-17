@@ -27,6 +27,7 @@ routing:
     create: false
 
 decode:
+  subGroupPolicy: 8
   create: true
   replicas: 1
   acceleratorTypes:
@@ -147,6 +148,7 @@ decode:
       mountModelVolume: false
 
 prefill:
+  subGroupPolicy: 8
   create: true
   replicas: 1
   acceleratorTypes:
