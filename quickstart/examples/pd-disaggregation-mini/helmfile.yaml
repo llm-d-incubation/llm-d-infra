@@ -13,8 +13,9 @@ releases:
 
   - name: gaie-pd-mini
     namespace: llm-d
-    chart: oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/inferencepool
-    version: v0.5.0-rc.2
+    # chart: oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/inferencepool
+    # version: v0.5.0-rc.2
+    chart: ../../../../gateway-api-inference-extension/config/charts/inferencepool
     installed: true
     needs:
       - llm-d/infra-pd-mini
