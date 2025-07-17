@@ -36,7 +36,7 @@ routing:
 decode:
   subGroupPolicy:
     subGroupSize: 8
-  create: false
+  create: true
   replicas: 1
   acceleratorTypes:
     labelKey: gpu.nvidia.com/model
@@ -112,11 +112,19 @@ decode:
             --data-parallel-address $(LWS_LEADER_ADDRESS) \
             --data-parallel-rpc-port 5555 \
             --data-parallel-rank $(LWS_WORKER_INDEX) \
-            --trust-remote-code  \
+            --trust-remote-code \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
       env:
+        - name: UCX_TLS
+          value: "all"
+        - name: UCX_NET_DEVICES
+          value: "^posix,^cma"
         - name: TRITON_LIBCUDA_PATH
           value: "/usr/lib64"
+        - name: HF_HUB_DISABLE_XET
+          value: "1"
+        - name: VLLM_SKIP_P2P_CHECK
+          value: "1"
         - name: VLLM_RANDOMIZE_DP_DUMMY_INPUTS
           value: "1"
         # - name: TP_SIZE
@@ -127,14 +135,14 @@ decode:
           value: "deepep_low_latency" # TEMP workaround to avoid issues with nvshmem
         - name: NVIDIA_GDRCOPY
           value: "enabled"
-        # - name: NVSHMEM_DEBUG
-        #   value: "INFO"
-        # - name: NVSHMEM_REMOTE_TRANSPORT
-        #   value: "ibgda"
-        # - name: NVSHMEM_IB_ENABLE_IBGDA
-        #   value: "true"
-        # - name: NVSHMEM_BOOTSTRAP_UID_SOCK_IFNAME
-        #   value: "eth0"
+        - name: NVSHMEM_DEBUG
+          value: "INFO"
+        - name: NVSHMEM_REMOTE_TRANSPORT
+          value: "ibgda"
+        - name: NVSHMEM_IB_ENABLE_IBGDA
+          value: "true"
+        - name: NVSHMEM_BOOTSTRAP_UID_SOCK_IFNAME
+          value: "eth0"
         - name: GLOO_SOCKET_IFNAME
           value: "eth0"
         - name: NCCL_SOCKET_IFNAME
@@ -195,55 +203,77 @@ prefill:
       modelCommand: "custom"
       args:
         - |
-          sleep 3600
-          # ###################################################
-          # # Figure out which GPU to use when 'privileged: true'
-          # # vLLM requires that CPU_VISIBLE_DEVICES is set to device ordinals,
-          # # so we need to remap the GPU UUIDs to indices.
+          ###################################################
+          # Figure out which GPU to use when 'privileged: true'.
+          # NVIDIA_VISIBLE_DEVICES tells us which GPU UUIDs to use, but
+          # vLLM requires that CPU_VISIBLE_DEVICES is set to device ordinals.
+          # This remaps the GPU UUIDs to indices.
 
-          # echo "NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES"
-          # ALLOCATED_GPU_UUID=$(ls "$NVIDIA_VISIBLE_DEVICES" | head -n 1)
-          # echo "Allocated GPU UUID:  $ALLOCATED_GPU_UUID"
-          # GPU_MAP_DATA=$(nvidia-smi --query-gpu=uuid,index --format=csv,noheader)
-          # echo "nvidia-smi output for UUIDs and indices:"
-          # echo "$GPU_MAP_DATA"
+          # --- 1. Collect the UUIDs that the container has access to -------------------
+          mapfile -t ALLOCATED_GPU_UUIDS < <(ls -1 "$NVIDIA_VISIBLE_DEVICES" | sort)
 
-          # export ALLOCATED_GPU_INDEX=$(
-          #   echo "$GPU_MAP_DATA" |
-          #   awk -F',' -v target_uuid="$ALLOCATED_GPU_UUID" '
-          #     {
-          #       gsub(/^[ \t]+|[ \t]+$/, "", $1)
-          #       if ($1 == target_uuid) {
-          #         gsub(/^[ \t]+|[ \t]+$/, "", $2)
-          #         print $2
-          #         exit
-          #       }
-          #     }'
-          # )
+          echo "Allocated GPU UUIDs (${#ALLOCATED_GPU_UUIDS[@]} found):"
+          printf '  • %s\n' "${ALLOCATED_GPU_UUIDS[@]}"
 
-          # echo "Using GPU Device ID: $ALLOCATED_GPU_INDEX"
-          # #################
-          # # RUN vLLM
-          # #################
-          # export CUDA_VISIBLE_DEVICES=${ALLOCATED_GPU_INDEX}
+          # --- 2. Build a map of UUID → index from nvidia‑smi --------------------------
+          GPU_MAP_DATA="$(nvidia-smi --query-gpu=uuid,index --format=csv,noheader)"
+          echo "nvidia-smi uuid,index pairs:"
+          echo "$GPU_MAP_DATA"
 
-          # # vllm serve \
-          # source /opt/vllm/bin/activate
-          # exec vllm serve \
-          #   Qwen/Qwen3-30B-A3B-FP8 \
-          #   --port 8080 \
-          #   --disable-log-requests \
-          #   --enable-expert-parallel \
-          #   --tensor-parallel-size $TP_SIZE \
-          #   --data-parallel-size $(LWS_GROUP_SIZE) \
-          #   --data-parallel-address $(LWS_LEADER_ADDRESS) \
-          #   --data-parallel-rpc-port 5555 \
-          #   --data-parallel-rank $(LWS_WORKER_INDEX) \
-          #   --trust-remote-code \
-          #   --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
+          declare -a ALLOCATED_GPU_INDICES=()
+
+          for uuid in "${ALLOCATED_GPU_UUIDS[@]}"; do
+            idx="$(
+              printf '%s\n' "$GPU_MAP_DATA" |
+              awk -F',' -v target_uuid="$uuid" '
+                {
+                  gsub(/^[ \t]+|[ \t]+$/, "", $1)   # trim spaces in $1 (uuid)
+                  if ($1 == target_uuid) {
+                    gsub(/^[ \t]+|[ \t]+$/, "", $2) # trim spaces in $2 (index)
+                    print $2
+                    exit
+                  }
+                }'
+            )"
+            if [ -n "$idx" ]; then
+              ALLOCATED_GPU_INDICES+=("$idx")
+            else
+              echo "⚠️  Warning: UUID $uuid not found in nvidia‑smi output" >&2
+            fi
+          done
+
+
+          echo "Using GPU Device ID: $ALLOCATED_GPU_INDICES"
+          #################
+          # RUN vLLM
+          #################
+          export CUDA_VISIBLE_DEVICES=${ALLOCATED_GPU_INDICES}
+
+          # vllm serve \
+          source /opt/vllm/bin/activate
+          exec vllm serve \
+            Qwen/Qwen3-30B-A3B-FP8 \
+            --port 8200 \
+            --disable-log-requests \
+            --enable-expert-parallel \
+            --tensor-parallel-size $TP_SIZE \
+            --data-parallel-size ${LWS_GROUP_SIZE} \
+            --data-parallel-address ${LWS_LEADER_ADDRESS} \
+            --data-parallel-rpc-port 5555 \
+            --data-parallel-rank ${LWS_WORKER_INDEX} \
+            --trust-remote-code \
+            --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
       env:
+        - name: UCX_TLS
+          value: "all"
+        - name: UCX_NET_DEVICES
+          value: "^posix,^cma"
         - name: TRITON_LIBCUDA_PATH
           value: "/usr/lib64"
+        - name: HF_HUB_DISABLE_XET
+          value: "1"
+        - name: VLLM_SKIP_P2P_CHECK
+          value: "1"
         - name: VLLM_RANDOMIZE_DP_DUMMY_INPUTS
           value: "1"
         # - name: TP_SIZE
@@ -256,12 +286,12 @@ prefill:
           value: "enabled"
         # - name: NVSHMEM_DEBUG
         #   value: "INFO"
-        # - name: NVSHMEM_REMOTE_TRANSPORT
-        #   value: "ibgda"
-        # - name: NVSHMEM_IB_ENABLE_IBGDA
-        #   value: "true"
-        # - name: NVSHMEM_BOOTSTRAP_UID_SOCK_IFNAME
-        #   value: "eth0"
+        - name: NVSHMEM_REMOTE_TRANSPORT
+          value: "ibgda"
+        - name: NVSHMEM_IB_ENABLE_IBGDA
+          value: "true"
+        - name: NVSHMEM_BOOTSTRAP_UID_SOCK_IFNAME
+          value: "eth0"
         - name: GLOO_SOCKET_IFNAME
           value: "eth0"
         - name: NCCL_SOCKET_IFNAME
