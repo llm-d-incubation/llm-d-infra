@@ -107,10 +107,16 @@
                     "required": [],
                     "title": "gatewayClassName"
                 },
-                "kGatewayParameters": {
+                "gatewayParameters": {
                     "additionalProperties": false,
                     "description": "Special parameters applied to kGateway via GatewayParameters resource",
                     "properties": {
+                        "enabled": {
+                            "default": true,
+                            "required": [],
+                            "title": "enabled",
+                            "type": "boolean"
+                        },
                         "proxyUID": {
                             "default": false,
                             "description": " type: [number, boolean] @schema",
@@ -123,7 +129,7 @@
                         }
                     },
                     "required": [],
-                    "title": "kGatewayParameters",
+                    "title": "gatewayParameters",
                     "type": "object"
                 },
                 "listeners": {

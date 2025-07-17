@@ -1,0 +1,73 @@
+inferenceExtension:
+  replicas: 1
+  image:
+    # Either image will work, you just need to bring the correct plugins per image. In this example we will bring the upstream default plugin
+    # name: llm-d-inference-scheduler
+    # hub: ghcr.io/llm-d
+    # tag: 0.0.4
+    name: epp
+    hub: registry.k8s.io/gateway-api-inference-extension
+    tag: v0.5.0-rc.2
+    pullPolicy: Always
+  extProcPort: 9002
+  pluginsConfigFile: "default-plugins.yaml"
+
+  # using upstream GIE default-plugins, see: https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/main/config/charts/inferencepool/templates/epp-config.yaml#L7C3-L56C33
+  pluginsCustomConfig:
+    default-plugins.yaml: |
+      apiVersion: inference.networking.x-k8s.io/v1alpha1
+      kind: EndpointPickerConfig
+      plugins:
+      - type: low-queue-filter
+        parameters:
+          threshold: 128
+      - type: lora-affinity-filter
+        parameters:
+          threshold: 0.999
+      - type: least-queue-filter
+      - type: least-kv-cache-filter
+      - type: decision-tree-filter
+        name: low-latency-filter
+        parameters:
+          current:
+            pluginRef: low-queue-filter
+          nextOnSuccess:
+            decisionTree:
+              current:
+                pluginRef: lora-affinity-filter
+              nextOnSuccessOrFailure:
+                decisionTree:
+                  current:
+                    pluginRef: least-queue-filter
+                  nextOnSuccessOrFailure:
+                    decisionTree:
+                      current:
+                        pluginRef: least-kv-cache-filter
+          nextOnFailure:
+            decisionTree:
+              current:
+                pluginRef: least-queue-filter
+              nextOnSuccessOrFailure:
+                decisionTree:
+                  current:
+                    pluginRef: lora-affinity-filter
+                  nextOnSuccessOrFailure:
+                    decisionTree:
+                      current:
+                        pluginRef: least-kv-cache-filter
+      - type: random-picker
+        parameters:
+          maxNumOfEndpoints: 1
+      - type: single-profile-handler
+      schedulingProfiles:
+      - name: default
+        plugins:
+        - pluginRef: low-latency-filter
+        - pluginRef: random-picker
+inferencePool:
+  targetPortNumber: 8000
+  modelServerType: vllm
+  modelServers:
+    matchLabels:
+      llm-d.ai/inferenceServing: "true"
+      # llm-d.ai/model: ms-simple-llm-d-modelservice

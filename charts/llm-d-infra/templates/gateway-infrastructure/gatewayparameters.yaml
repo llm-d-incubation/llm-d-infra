@@ -1,4 +1,4 @@
-{{ if and .Values.gateway.enabled (eq .Values.gateway.gatewayClassName "kgateway") .Values.gateway.kGatewayParameters.proxyUID }}
+{{ if and .Values.gateway.enabled (eq .Values.gateway.gatewayClassName "kgateway") .Values.gateway.gatewayParameters.enabled }}
 apiVersion: gateway.kgateway.dev/v1alpha1
 kind: GatewayParameters
 metadata:
@@ -23,8 +23,8 @@ spec:
         allowPrivilegeEscalation: false
         readOnlyRootFilesystem: true
         runAsNonRoot: true
-        {{- if .Values.gateway.kGatewayParameters.proxyUID }}
-        runAsUser: {{ .Values.gateway.kGatewayParameters.proxyUID }}
+        {{- if .Values.gateway.gatewayParameters.proxyUID }}
+        runAsUser: {{ .Values.gateway.gatewayParameters.proxyUID }}
         {{- end}}
         seccompProfile:
           type: RuntimeDefault
@@ -45,8 +45,8 @@ spec:
       securityContext:
         allowPrivilegeEscalation: false
         readOnlyRootFilesystem: true
-        {{- if .Values.gateway.kGatewayParameters.proxyUID }}
-        runAsUser: {{ .Values.gateway.kGatewayParameters.proxyUID }}
+        {{- if .Values.gateway.gatewayParameters.proxyUID }}
+        runAsUser: {{ .Values.gateway.gatewayParameters.proxyUID }}
         {{- end}}
         seccompProfile:
           type: RuntimeDefault

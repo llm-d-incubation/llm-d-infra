@@ -32,11 +32,18 @@ spec:
       port: {{ .port }}
       protocol: {{ .protocol }}
   {{- end }}
-  {{- if eq .Values.gateway.gatewayClassName "kgateway" }}
+  {{- if and (eq .Values.gateway.gatewayClassName "kgateway") .Values.gateway.gatewayParameters.enabled }}
   infrastructure:
     parametersRef:
       name: {{ include "gateway.fullname" . }}
       group: gateway.kgateway.dev
       kind: GatewayParameters
+  {{- end}}
+  {{- if and (eq .Values.gateway.gatewayClassName "istio") .Values.gateway.gatewayParameters.enabled }}
+  infrastructure:
+    parametersRef:
+      name: {{ include "gateway.fullname" . }}
+      group: ""
+      kind: ConfigMap
   {{- end}}
 {{- end }}

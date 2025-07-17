@@ -3,7 +3,7 @@ repositories:
     url: https://llm-d-incubation.github.io/llm-d-modelservice/
 
 releases:
-  - name: infra-facebook
+  - name: infra-simple
     namespace: llm-d
     chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
     version: 1.0.1
@@ -11,26 +11,27 @@ releases:
     labels:
       managedBy: llm-d-infra-installer
 
-  - name: ms-facebook
+  - name: ms-simple
     namespace: llm-d
     chart: llm-d-modelservice/llm-d-modelservice
     version: 0.0.10
     installed: true
     needs:
-      - llm-d/infra-facebook
+      - llm-d/infra-simple
     values:
-      - ms-facebook/values.yaml
+      - ms-simple/values.yaml
     labels:
       managedBy: helmfile
 
-  - name: gaie-facebook
+  - name: gaie-simple
     namespace: llm-d
     chart: oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/inferencepool
+    # version: v0.5.0-rc2
     version: v0
     installed: true
     needs:
-      - llm-d/infra-facebook
+      - llm-d/infra-simple
     values:
-      - gaie-facebook/values.yaml
+      - gaie-simple/values.yaml
     labels:
       managedBy: helmfile

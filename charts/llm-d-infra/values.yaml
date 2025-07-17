@@ -61,7 +61,7 @@ gateway:
 
   # -- Gateway class that determines the backend used
   # Currently supported values: "kgateway" or "istio"
-  gatewayClassName: istio
+  gatewayClassName: kgateway
 
   # @schema
   # additionalProperties: true
@@ -70,12 +70,13 @@ gateway:
   annotations: {}
 
   # Special parameters applied to kGateway via GatewayParameters resource
-  kGatewayParameters:
+  gatewayParameters:
     # @schema
     # type: [number, boolean]
     # @schema
     proxyUID: false
 
+    enabled: true
   # @schema
   # items:
   #  type: object

@@ -14,6 +14,8 @@ PROXY_UID=""
 VALUES_FILE="values.yaml"
 DEBUG=""
 KUBERNETES_CONTEXT=""
+SKIP_GATEWAY_PROVIDER=false
+ONLY_GATEWAY_PROVIDER=false
 DISABLE_METRICS=false
 MONITORING_NAMESPACE="llm-d-monitoring"
 GATEWAY_TYPE="istio"
@@ -31,16 +33,18 @@ print_help() {
 Usage: $(basename "$0") [OPTIONS]
 
 Options:
-  -n, --namespace NAME             K8s namespace (default: llm-d)
-  -f, --values-file PATH           Path to Helm values.yaml file (default: values.yaml)
-  -u, --uninstall                  Uninstall the llm-d components from the current cluster
-  -d, --debug                      Add debug mode to the helm install
-  -m, --disable-metrics-collection Disable metrics collection (Prometheus will not be installed)
-  -k, --minikube                   Deploy on an existing minikube instance with hostPath storage
-  -g, --context                    Supply a specific Kubernetes context
-  -j, --gateway                    Select gateway type (istio or kgateway)
-  -r, --release                    (Helm) Chart release name
-  -h, --help                       Show this help and exit
+  -n, --namespace NAME              K8s namespace (default: llm-d)
+  -f, --values-file PATH            Path to Helm values.yaml file (default: values.yaml)
+  -u, --uninstall                   Uninstall the llm-d components from the current cluster
+  -d, --debug                       Add debug mode to the helm install
+  -i, --skip-gateway-provider       Skip installing CRDs and the chose gateway control plane, only gateway instance and config
+  -e, --only-gateway-provider       Only install CRDs and gateway control plane, skip gateway instance and config
+  -m, --disable-metrics-collection  Disable metrics collection (Prometheus will not be installed)
+  -k, --minikube                    Deploy on an existing minikube instance with hostPath storage
+  -g, --context                     Supply a specific Kubernetes context
+  -j, --gateway                     Select gateway type (istio or kgateway)
+  -r, --release                     (Helm) Chart release name
+  -h, --help                        Show this help and exit
 EOF
 }
 
@@ -79,7 +83,7 @@ check_dependencies() {
     die "Detected yq is not mikefarah’s yq. Please install the required yq from https://github.com/mikefarah/yq?tab=readme-ov-file#install"
   fi
 
-  local required_cmds=(git yq jq helm helmfile kubectl kustomize make)
+  local required_cmds=(git yq jq helm helmfile kubectl kustomize)
   for cmd in "${required_cmds[@]}"; do
     check_cmd "$cmd"
   done
@@ -116,6 +120,8 @@ parse_args() {
       -f|--values-file)                VALUES_FILE="$2"; shift 2 ;;
       -u|--uninstall)                  ACTION="uninstall"; shift ;;
       -d|--debug)                      DEBUG="--debug"; shift;;
+      -i|--skip-gateway-provider)      SKIP_GATEWAY_PROVIDER=true; shift;;
+      -e|--only-gateway-provider)      ONLY_GATEWAY_PROVIDER=true; shift;;
       -m|--disable-metrics-collection) DISABLE_METRICS=true; shift;;
       -k|--minikube)                   USE_MINIKUBE=true; shift ;;
       -g|--context)                    KUBERNETES_CONTEXT="$2"; shift 2 ;;
@@ -217,9 +223,16 @@ validate_gateway_type() {
 }
 
 install() {
-  log_info "🏗️ Installing GAIE Kubernetes infrastructure…"
-  bash ../chart-dependencies/ci-deps.sh apply ${GATEWAY_TYPE}
-  log_success "GAIE infra applied"
+  if [[ "${SKIP_GATEWAY_PROVIDER}" == "false" ]]; then
+    log_info "🏗️ Installing GAIE Kubernetes infrastructure…"
+    bash ../chart-dependencies/ci-deps.sh apply ${GATEWAY_TYPE}
+    log_success "GAIE infra applied"
+  fi
+
+  if [[ "${ONLY_GATEWAY_PROVIDER}" == "true" ]]; then
+    log_info "Option \"-e/--only-gateway-provider\" specified, will end execution"
+    return 0
+  fi
 
   if $KCMD get namespace "${MONITORING_NAMESPACE}" &>/dev/null; then
     log_info "🧹 Cleaning up existing monitoring namespace..."
@@ -292,7 +305,7 @@ install() {
     "${VALUES_ARGS[@]}" \
     "${OCP_DISABLE_INGRESS_ARGS[@]+"${OCP_DISABLE_INGRESS_ARGS[@]}"}" \
     --set gateway.gatewayClassName="${GATEWAY_TYPE}" \
-    --set gateway.kGatewayParameters.proxyUID="${PROXY_UID}" \
+    --set gateway.gatewayParameters.proxyUID="${PROXY_UID}" \
     --set ingress.clusterRouterBase="${BASE_OCP_DOMAIN}" \
     "${MODEL_OVERRIDE_ARGS[@]+"${MODEL_OVERRIDE_ARGS[@]}"}"
   log_success "$HELM_RELEASE_NAME deployed"
@@ -301,8 +314,10 @@ install() {
 }
 
 uninstall() {
-  log_info "🗑️ Tearing down GAIE Kubernetes infrastructure…"
-  bash ../chart-dependencies/ci-deps.sh delete ${GATEWAY_TYPE}
+  if [[ "${SKIP_GATEWAY_PROVIDER}" == "false" ]]; then
+    log_info "🗑️ Tearing down GAIE Kubernetes infrastructure…"
+    bash ../chart-dependencies/ci-deps.sh delete ${GATEWAY_TYPE}
+  fi
 
   log_info "🗑️ Uninstalling llm-d chart..."
   $HCMD uninstall ${HELM_RELEASE_NAME} --ignore-not-found --namespace "${NAMESPACE}" || true

@@ -1,25 +1,25 @@
-# This values.yaml file creates the resources for facebook/opt-125m
+# This values.yaml file creates the resources for Qwen/Qwen3-0.6B
 multinode: false
 
 modelArtifacts:
-  uri: "hf://facebook/opt-125m"
+  uri: "hf://Qwen/Qwen3-0.6B"
   size: 20Gi
   authSecretName: "llm-d-hf-token"
 
 routing:
-  modelName: facebook/opt-125m
+  modelName: Qwen/Qwen3-0.6B
   servicePort: 8000
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: infra-facebook-inference-gateway
+      name: infra-simple-inference-gateway
 
   inferenceModel:
     create: true
 
   inferencePool:
     create: false
-    name: gaie-facebook
+    name: gaie-simple
 
   httpRoute:
     create: true
@@ -29,7 +29,7 @@ routing:
 
 decode:
   create: true
-  replicas: 1
+  replicas: 2
   containers:
   - name: "vllm"
     image: "ghcr.io/llm-d/llm-d:0.0.8"
@@ -67,10 +67,11 @@ decode:
   - name: metrics-volume
     emptyDir: {}
 
-# Prefill pod configuration
+# The prefill replica is disabled via 'create: false' since pd is not
+# enabled for this configuration, uncomment to deploy a p replica
 prefill:
-  create: true
-  replicas: 1
+  create: false
+  replicas: 0
   containers:
   - name: "vllm"
     image: "ghcr.io/llm-d/llm-d:0.0.8"

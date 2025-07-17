@@ -40,7 +40,7 @@ install_pkg() {
 }
 
 # Install base utilities
-for pkg in git jq make curl tar wget; do
+for pkg in git jq curl tar wget; do
   if ! command -v "$pkg" &> /dev/null; then
     install_pkg "$pkg"
   fi
