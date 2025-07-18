@@ -3,8 +3,8 @@ inferenceExtension:
   image:
     # upstream GIE epp image does NOT support PD, have to use `llm-d-inference-scheduler`
     name: llm-d-inference-scheduler
-    hub: ghcr.io/llm-d
-    tag: 0.0.5
+    hub: quay.io/vmaroon
+    tag: race-fix
     pullPolicy: Always
   extProcPort: 9002
   pluginsConfigFile: "dp-config.yaml"
