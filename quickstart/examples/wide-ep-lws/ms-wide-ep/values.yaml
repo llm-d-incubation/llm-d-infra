@@ -113,6 +113,8 @@ decode:
             --trust-remote-code \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
       env:
+        - name: NCCL_DEBUG
+          value: INFO
         - name: UCX_TLS
           value: "all"
         - name: UCX_NET_DEVICES
@@ -262,6 +264,8 @@ prefill:
             --trust-remote-code \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
       env:
+        - name: NCCL_DEBUG
+          value: INFO
         - name: UCX_TLS
           value: "all"
         - name: UCX_NET_DEVICES
