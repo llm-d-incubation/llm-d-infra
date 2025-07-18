@@ -10,9 +10,15 @@ spec:
       stdin: true
       tty: true
       resources:
+        # requests:
+        #   cpu: "16"
+        #   memory: "16Gi"
+        # limits:
+        #   cpu: "16"
+        #   memory: "16Gi"
         requests:
-          cpu: "16"
-          memory: "16Gi"
+          cpu: "2"
+          memory: "4Gi"
         limits:
-          cpu: "16"
-          memory: "16Gi"
+          cpu: "2"
+          memory: "4Gi"
