@@ -1,17 +1,17 @@
 multinode: false
 
 modelArtifacts:
-  uri: "hf://RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic"
-  size: 100Gi
+  uri: "hf://Qwen/Qwen3-0.6B"
+  size: 20Gi
   authSecretName: "llm-d-hf-token"
 
 routing:
-  modelName: RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic
+  modelName: Qwen/Qwen3-0.6B
   servicePort: 8000
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: infra-pd-inference-gateway
+      name: infra-pd-mini-inference-gateway
 
   proxy:
     image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0-RC1
@@ -23,7 +23,7 @@ routing:
 
   inferencePool:
     create: false
-    name: gaie-pd
+    name: gaie-pd-mini
 
   httpRoute:
     create: true
@@ -39,16 +39,12 @@ decode:
     image: "robertgouldshaw2/vllm-nixl:nixl-oh-debug-fixed-0.3" # TODO(rob): update to llm-d image
     modelCommand: vllmServe
     args:
-      - "--tensor-parallel-size"
-      - "4"
       - "--block-size"
       - "128"
       - "--kv-transfer-config"
       - '{"kv_connector":"NixlConnector", "kv_role":"kv_both"}'
       - "--disable-log-requests"
       - "--disable-uvicorn-access-log"
-      - "--max-model-len"
-      - "32000"
     env:
       - name: VLLM_NIXL_SIDE_CHANNEL_HOST
         valueFrom:
@@ -56,22 +52,16 @@ decode:
             fieldPath: status.podIP
     resources:
       limits:
-        memory: 128Gi
-        cpu: "16"
-        nvidia.com/gpu: "4"
-        rdma/ib: 1
+        nvidia.com/gpu: "1"
       requests:
-        memory: 128Gi
-        cpu: "16"
-        nvidia.com/gpu: "4"
-        rdma/ib: 1
+        nvidia.com/gpu: "1"
     mountModelVolume: true
     volumeMounts:
     - name: metrics-volume
       mountPath: /.config
     - name: shm
       mountPath: /dev/shm
-    - name: torch-compile-cache
+    - name: cache-volume
       mountPath: /.cache
   volumes:
   - name: metrics-volume
@@ -80,12 +70,12 @@ decode:
     emptyDir:
       medium: Memory
       sizeLimit: "16Gi"
-  - name: torch-compile-cache
+  - name: cache-volume
     emptyDir: {}
 
 prefill:
   create: true
-  replicas: 4
+  replicas: 2
   containers:
   - name: "vllm"
     image: "robertgouldshaw2/vllm-nixl:nixl-oh-debug-fixed-0.3" # TODO(rob): update to llm-d image
@@ -97,8 +87,6 @@ prefill:
       - '{"kv_connector":"NixlConnector", "kv_role":"kv_both"}'
       - "--disable-log-requests"
       - "--disable-uvicorn-access-log"
-      - "--max-model-len"
-      - "32000"
     env:
       - name: VLLM_IS_PREFILL # TODO(rob): remove once we bump vllm version
         value: "1"
@@ -108,22 +96,16 @@ prefill:
             fieldPath: status.podIP
     resources:
       limits:
-        memory: 32Gi
-        cpu: "8"
         nvidia.com/gpu: "1"
-        rdma/ib: 1
       requests:
-        memory: 32Gi
-        cpu: "8"
         nvidia.com/gpu: "1"
-        rdma/ib: 1
     mountModelVolume: true
     volumeMounts:
     - name: metrics-volume
       mountPath: /.config
     - name: shm
       mountPath: /dev/shm
-    - name: torch-compile-cache
+    - name: cache-volume
       mountPath: /.cache
   volumes:
   - name: metrics-volume
@@ -132,5 +114,5 @@ prefill:
     emptyDir:
       medium: Memory
       sizeLimit: "16Gi"
-  - name: torch-compile-cache
+  - name: cache-volume
     emptyDir: {}
