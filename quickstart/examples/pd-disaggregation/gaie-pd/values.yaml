@@ -7,7 +7,7 @@ inferenceExtension:
     # tag: v0.2.0-RC1
     name: llm-d-inference-scheduler
     hub: quay.io/grpereir
-    tag: v0.5.0-rc.3
+    tag: v0.5.0-rc.3-always-pd
     pullPolicy: Always
   extProcPort: 9002
   pluginsConfigFile: "dp-config.yaml"
@@ -18,31 +18,19 @@ inferenceExtension:
       kind: EndpointPickerConfig
       plugins:
       - type: prefill-header-handler
-      - type: prefix-cache-scorer
-        parameters:
-          hashBlockSize: 5
-          maxPrefixBlocksToMatch: 256
-          lruCapacityPerServer: 31250
       - type: prefill-filter
       - type: decode-filter
       - type: max-score-picker
       - type: pd-profile-handler
-        parameters:
-          threshold: 0
-          hashBlockSize: 5
       schedulingProfiles:
       - name: prefill
         plugins:
         - pluginRef: prefill-filter
         - pluginRef: max-score-picker
-        - pluginRef: prefix-cache-scorer
-          weight: 50
       - name: decode
         plugins:
         - pluginRef: decode-filter
         - pluginRef: max-score-picker
-        - pluginRef: prefix-cache-scorer
-          weight: 50
 inferencePool:
   targetPortNumber: 8000
   modelServerType: vllm
