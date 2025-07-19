@@ -1,5 +1,9 @@
 # llm-d-infra Quick Start
 
+Getting Started with llm-d-infra on Kubernetes.
+
+If you want to deploy llm-d-infra and related tools step by step, see the [README-step-by-step.md](README-step-by-step.md) instructions.
+
 For more information on llm-d, see the llm-d git repository [here](https://github.com/llm-d/llm-d) and website [here](https://llm-d.ai).
 
 ## Overview
@@ -30,7 +34,7 @@ Following prerequisite are required for the installer to work.
 - [jq – download & install guide](https://stedolan.github.io/jq/download/)
 - [git – installation guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - [Helm – quick-start install](https://helm.sh/docs/intro/install/)
-- [helmfile - installation](https://github.com/helmfile/helmfile?tab=readme-ov-file#installation)
+- [Helmfile - installation](https://github.com/helmfile/helmfile?tab=readme-ov-file#installation)
 - [Kustomize – official install docs](https://kubectl.docs.kubernetes.io/installation/kustomize/)
 - [kubectl – install & setup](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
@@ -48,25 +52,10 @@ You can use the installer script that installs all the required dependencies.
 
 Since the llm-d-infra is based on helm charts, llm-d can be deployed on a variety of Kubernetes platforms. As more platforms are supported, the installer will be updated to support them.
 
-#### Minikube
+In this instruction, the target is vanilla kubernetes and if you look for other plarform's instructions, you could find them from following links.
 
-This can be run on a minimum ec2 node type [g6e.12xlarge](https://aws.amazon.com/ec2/instance-types/g6e/) (4xL40S 48GB but only 2 are used by default) to infer the model meta-llama/Llama-3.2-3B-Instruct that will get spun up.
-
-Verify you have properly installed the container toolkit with the runtime of your choice.
-
-```bash
-# Podman
-podman run --rm --security-opt=label=disable --device=nvidia.com/gpu=all ubuntu nvidia-smi
-# Docker
-sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
-```
-
-#### OpenShift
-
-- OpenShift - This quickstart was tested on OpenShift 4.17. Older versions may work but have not been tested.
-- NVIDIA GPU Operator and NFD Operator - The installation instructions can be found [here](https://docs.nvidia.com/datacenter/cloud-native/openshift/latest/steps-overview.html).
-- NO Service Mesh or Istio installation as Istio CRDs will conflict with the gateway
-- Cluster administrator privileges are required to install the llm-d cluster scoped resources
+- [Minikube](minikube/README-minikube.md)
+- [OpenShift](openshift/README-openshift.md)
 
 ## llm-d-infra Installation
 
@@ -265,26 +254,6 @@ Import the [llm-d dashboard](./grafana/dashboards/llm-d-dashboard.json) from the
 Similarly, import the [inference-gateway dashboard](https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/main/tools/dashboards/inference_gateway.json)
 from the gateway-api-inference-extension repository. Or, if the Grafana Operator is installed in your environment, you might follow the [Grafana setup guide](./grafana-setup.md)
 to install the dashboards as `GrafanaDashboard` custom resources.
-
-#### OpenShift and Grafana
-
-If running on OpenShift with user workload monitoring enabled, you can access the metrics through the OpenShift console:
-
-1. Navigate to the OpenShift console
-2. In the left navigation bar, click on "Observe"
-3. You can access:
-   - Metrics: Click on "Metrics" to view and query metrics using the built-in Prometheus UI
-   - Targets: Click on "Targets" to see all monitored endpoints and their status
-
-The metrics are automatically integrated into the OpenShift monitoring stack. The llm-d-infra does not install Grafana on OpenShift,
-but it's recommended that users install Grafana to view metrics and import dashboards.
-
-Follow the [Grafana setup guide](./grafana-setup.md).
-The guide includes manifests to install the following:
-
-- Grafana instance
-- Grafana Prometheus datasource from user workload monitoring stack
-- Grafana llm-d dashboard
 
 #### Security Note
 
