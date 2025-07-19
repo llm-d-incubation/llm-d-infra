@@ -2,7 +2,7 @@
 
 eval MODEL URL CONCURRENT LIMIT:
     lm_eval --model local-completions --tasks gsm8k \
-    --model_args model={{MODEL}},base_url={{URL}}/v1/completions,num_concurrent={{CONCURRENT}} \
+    --model_args model={{MODEL}},base_url={{URL}}/v1/completions,num_concurrent={{CONCURRENT}},tokenized_requests=false \
     --limit {{LIMIT}}
 
 sweep MODEL OUTFILE URL:

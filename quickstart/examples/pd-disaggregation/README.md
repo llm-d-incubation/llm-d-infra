@@ -48,7 +48,7 @@ helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-instal
 We can see that the charts were deployed:
 
 ```bash
-robertgshaw@Roberts-MacBook-Pro benchmark-pod % helm list
+helm list
 
 >> NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION
 >> gaie-pd         llm-d           1               2025-07-14 22:45:05.965698 -0400 EDT    deployed        inferencepool-v0.4.0            v0.4.0
