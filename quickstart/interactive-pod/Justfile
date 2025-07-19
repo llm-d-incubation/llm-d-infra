@@ -1,16 +1,17 @@
 # Run these on the local machine
 
+POD_NAME := "interactive-pod"
+
 start-bench NAMESPACE:
-    kubectl create secret generic hf-token-secret --from-literal=HF_TOKEN="$HF_TOKEN" -n {{NAMESPACE}}
     kubectl apply -n {{NAMESPACE}} -f manifest.yaml
 
 delete-bench NAMESPACE:
-    kubectl delete pod -n {{NAMESPACE}} benchmark-interactive
+    kubectl delete pod -n {{NAMESPACE}} {{POD_NAME}}
 
 exec-bench NAMESPACE:
-    kubectl cp Justfile.remote {{NAMESPACE}}/benchmark-interactive:/app/Justfile && \
-    kubectl cp sweep.sh {{NAMESPACE}}/benchmark-interactive:/app/sweep.sh && \
-    kubectl exec -it -n {{NAMESPACE}} benchmark-interactive -- /bin/bash
+    kubectl cp Justfile.remote {{NAMESPACE}}/{{POD_NAME}}:/app/Justfile && \
+    kubectl cp sweep.sh {{NAMESPACE}}/{{POD_NAME}}:/app/sweep.sh && \
+    kubectl exec -it -n {{NAMESPACE}} {{POD_NAME}} -- /bin/bash
 
 copy-results NAMESPACE FILENAME:
-    kubectl cp {{NAMESPACE}}/benchmark-interactive:/app/{{FILENAME}} ./{{FILENAME}}
+    kubectl cp {{NAMESPACE}}/{{POD_NAME}}:/app/{{FILENAME}} ./{{FILENAME}}

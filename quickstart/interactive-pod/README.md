@@ -14,17 +14,11 @@ just start-bench $NAMESPACE
 
 ### 2. Get the address of the gateway
 
-- The gateway is at (`http://gaie-pd-ip-bb618139.${NAMESPACE}.svc.cluster.local:8000`)
-
 ```bash
-kubectl get services
-NAME                  TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)             AGE
-gaie-pd-epp           ClusterIP   10.16.0.205   <none>        9002/TCP,9090/TCP   63m
-gaie-pd-ip-bb618139   ClusterIP   None          <none>        54321/TCP           63m
+kubectl get gatways
 
->> NAME                  TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)             AGE
->> gaie-pd-epp           ClusterIP   10.16.0.205   <none>        9002/TCP,9090/TCP   40m
->> gaie-pd-ip-bb618139   ClusterIP   None          <none>        54321/TCP           40m
+>> NAME                         CLASS      ADDRESS       PROGRAMMED   AGE
+>> infra-pd-inference-gateway   kgateway   10.16.0.216   True         7m49s
 ```
 
 ### 3. Exec into the pod and run a benchmark
@@ -42,11 +36,12 @@ just exec-bench $NAMESPACE
 ```bash
 MODEL=RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic
 NAMESPACE=llm-d
-GATEWAY_URL=http://gaie-pd-ip-bb618139.${NAMESPACE}.svc.cluster.local:8000
+GATEWAY_URL=http://10.16.0.216
+CONCURRENT=100
+LIMIT=1000
 
-just eval $MODEL $GATEWAY_URL
+just eval $MODEL $GATEWAY_URL $CONCURRENT $LIMIT
 
->> local-completions (model=RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,base_url=http://gaie-pd-ip-bb618139.llm-d.svc.cluster.local:8000/v1/completions,num_concurrent=100), gen_kwargs: (None), limit: 1000.0, num_fewshot: None, batch_size: 1
 >> |Tasks|Version|     Filter     |n-shot|  Metric   |   |Value|   |Stderr|
 >> |-----|------:|----------------|-----:|-----------|---|----:|---|-----:|
 >> |gsm8k|      3|flexible-extract|     5|exact_match|↑  |0.938|±  |0.0076|
@@ -60,7 +55,7 @@ just eval $MODEL $GATEWAY_URL
 ```bash
 MODEL=RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic
 NAMESPACE=llm-d
-GATEWAY_URL=http://gaie-pd-ip-bb618139.${NAMESPACE}.svc.cluster.local:8000
+GATEWAY_URL=http://10.16.0.216
 OUTFILE=results.json
 
 just sweep $MODEL $OUTFILE $GATEWAY_URL

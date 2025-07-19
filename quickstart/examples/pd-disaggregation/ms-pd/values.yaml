@@ -36,7 +36,7 @@ decode:
   replicas: 1
   containers:
   - name: "vllm"
-    image: "robertgouldshaw2/vllm-nixl:nixl-oh-debug-fixed-0.3" # TODO(rob): update to llm-d image
+    image: "quay.io/wseaton/vllm:llmd-multistage-6"
     modelCommand: vllmServe
     args:
       - "--tensor-parallel-size"
@@ -56,12 +56,12 @@ decode:
             fieldPath: status.podIP
     resources:
       limits:
-        memory: 128Gi
+        memory: 64Gi
         cpu: "16"
         nvidia.com/gpu: "4"
         rdma/ib: 1
       requests:
-        memory: 128Gi
+        memory: 64Gi
         cpu: "16"
         nvidia.com/gpu: "4"
         rdma/ib: 1
@@ -88,7 +88,7 @@ prefill:
   replicas: 4
   containers:
   - name: "vllm"
-    image: "robertgouldshaw2/vllm-nixl:nixl-oh-debug-fixed-0.3" # TODO(rob): update to llm-d image
+    image: "quay.io/wseaton/vllm:llmd-multistage-6"
     modelCommand: vllmServe
     args:
       - "--block-size"
@@ -100,8 +100,6 @@ prefill:
       - "--max-model-len"
       - "32000"
     env:
-      - name: VLLM_IS_PREFILL # TODO(rob): remove once we bump vllm version
-        value: "1"
       - name: VLLM_NIXL_SIDE_CHANNEL_HOST
         valueFrom:
           fieldRef:

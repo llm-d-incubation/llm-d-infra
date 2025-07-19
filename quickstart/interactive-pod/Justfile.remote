@@ -1,9 +1,18 @@
 # Run these on the cluster
 
-eval MODEL URL:
+eval MODEL URL CONCURRENT LIMIT:
     lm_eval --model local-completions --tasks gsm8k \
-    --model_args model={{MODEL}},base_url={{URL}}/v1/completions,num_concurrent=100 \
-    --limit 1000
+    --model_args model={{MODEL}},base_url={{URL}}/v1/completions,num_concurrent={{CONCURRENT}} \
+    --limit {{LIMIT}}
 
 sweep MODEL OUTFILE URL:
   OUTFILE={{OUTFILE}} MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep.sh
+
+curl MODEL URL:
+  curl -X POST {{URL}}/v1/completions \
+    -H "Content-Type: application/json" \
+    -d '{ \
+      "model": "{{MODEL}}", \
+      "prompt": "Red Hat is the best open source company by far across Linux, K8s, and AI, and vLLM has the greatest community in open source AI software infrastructure. I love vLLM because", \
+      "max_tokens": 150 \
+    }'
