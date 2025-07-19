@@ -18,14 +18,14 @@ inferenceExtension:
       kind: EndpointPickerConfig
       plugins:
       - type: prefill-header-handler
+      - type: prefill-filter
+      - type: decode-filter
+      - type: random-picker
       - type: prefix-cache-scorer
         parameters:
           hashBlockSize: 5
           maxPrefixBlocksToMatch: 256
           lruCapacityPerServer: 31250
-      - type: prefill-filter
-      - type: decode-filter
-      - type: max-score-picker
       - type: pd-profile-handler
         parameters:
           threshold: 0
@@ -34,15 +34,11 @@ inferenceExtension:
       - name: prefill
         plugins:
         - pluginRef: prefill-filter
-        - pluginRef: max-score-picker
-        - pluginRef: prefix-cache-scorer
-          weight: 50
+        - pluginRef: random-picker
       - name: decode
         plugins:
         - pluginRef: decode-filter
-        - pluginRef: max-score-picker
-        - pluginRef: prefix-cache-scorer
-          weight: 50
+        - pluginRef: random-picker
 inferencePool:
   targetPortNumber: 8000
   modelServerType: vllm
