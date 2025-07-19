@@ -1,6 +1,6 @@
 # llm-d-infra Quick Start
 
-Getting Started with llm-d-infra on Kubernetes.
+Getting started with llm-d-infra on Kubernetes.
 
 If you want to deploy llm-d-infra and related tools step by step, see the [README-step-by-step.md](README-step-by-step.md) instructions.
 

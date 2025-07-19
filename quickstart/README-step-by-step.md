@@ -1,6 +1,6 @@
 # llm-d-infra Quick Start - Step by step
 
-Getting Started with llm-d-infra through step by step procedures.
+Getting started with llm-d-infra through step by step procedures.
 
 This guide will walk you through the steps to install and deploy llm-d-infra on a Kubernetes cluster, with the place of customization.
 
