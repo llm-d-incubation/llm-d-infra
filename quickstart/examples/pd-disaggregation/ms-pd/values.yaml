@@ -1,12 +1,12 @@
 multinode: false
 
 modelArtifacts:
-  uri: "hf://RedHatAI/Meta-Llama-3.1-8B-FP8"
+  uri: "hf://RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic"
   size: 100Gi
   authSecretName: "llm-d-hf-token"
 
 routing:
-  modelName: RedHatAI/Meta-Llama-3.1-8B-FP8
+  modelName: RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic
   servicePort: 8000
   parentRefs:
     - group: gateway.networking.k8s.io
@@ -49,7 +49,6 @@ decode:
       - "--disable-uvicorn-access-log"
       - "--max-model-len"
       - "32000"
-      - "--enforce-eager"
     env:
       - name: VLLM_NIXL_SIDE_CHANNEL_HOST
         valueFrom:
@@ -100,7 +99,6 @@ prefill:
       - "--disable-uvicorn-access-log"
       - "--max-model-len"
       - "32000"
-      - "--enforce-eager"
     env:
       - name: VLLM_NIXL_SIDE_CHANNEL_HOST
         valueFrom:
@@ -108,12 +106,12 @@ prefill:
             fieldPath: status.podIP
     resources:
       limits:
-        memory: 32Gi
+        memory: 64Gi
         cpu: "8"
         nvidia.com/gpu: "1"
         rdma/ib: 1
       requests:
-        memory: 32Gi
+        memory: 64Gi
         cpu: "8"
         nvidia.com/gpu: "1"
         rdma/ib: 1
