@@ -24,3 +24,14 @@ releases:
       - ms-simple/values.yaml
     labels:
       managedBy: helmfile
+    hooks:
+      - events: [ "postsync" ]
+        command: bash
+        args:
+          - -c
+          - |
+            echo "Patching HTTPRoute to trigger reconciliation..."
+            kubectl patch httproute ms-simple-llm-d-modelservice \
+              -n llm-d \
+              -p '{"metadata":{"labels":{"inferencepool":"ms-simple-llm-d-modelservice"}}}' \
+              --type=merge
