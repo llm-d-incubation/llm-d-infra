@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
     - name: benchmark-runner
-      image: "docker.io/rgshaw2/interactive-pod:0.1"
+      image: "docker.io/rgshaw2/interactive-pod:0.2"
       imagePullPolicy: Always
       stdin: true
       tty: true
