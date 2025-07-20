@@ -4,7 +4,7 @@ This is a simple example that demonstrates how to deploy using the llm-d-infra s
 
 ## Installation
 
-> To adjust the model or any other modelservice values, simply change the values.yaml file in [ms-simple/values.yaml](ms-simple/values.yaml)
+> To adjust the model or any other modelservice values, simply change the values.yaml file in [ms-kv-events/values.yaml](ms-kv-events/values.yaml)
 
 1. Install the dependencies; see [install-deps.sh](../../../../../../llm-d-incubation/llm-d-infra/quickstart/install-deps.sh)
 2. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart:
@@ -12,9 +12,9 @@ This is a simple example that demonstrates how to deploy using the llm-d-infra s
 ```bash
 # From the repo root
 cd quickstart
-HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d -r infra-simple --gateway kgateway
+HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d -r infra-kv-events --gateway kgateway
 ```
-    - It should be noted release name `infra-simple` is important here, because it matches up with pre-built values files used in this example.
+    - It should be noted release name `infra-kv-events` is important here, because it matches up with pre-built values files used in this example.
 
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
@@ -25,16 +25,15 @@ helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-instal
 
 ## Verify the Installation
 
-1. Firstly, you should be able to list all helm releases to view all 5 charts that should be installed:
+1. Firstly, you should be able to list all helm releases to view all 4 charts that should be installed:
 
 ```bash
 helm list --all-namespaces --all --debug
 NAME          	NAMESPACE      	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
-gaie-simple 	llm-d          	1       	2025-07-14 10:57:25.515174 -0700 PDT	deployed	inferencepool-v0         	v0
-infra-simple	llm-d          	1       	2025-07-14 10:46:56.074433 -0700 PDT	deployed	llm-d-infra-1.0.1        	0.1
+infra-kv-events	llm-d          	1       	2025-07-14 10:46:56.074433 -0700 PDT	deployed	llm-d-infra-1.0.1        	0.1
 kgateway      	kgateway-system	1       	2025-07-14 10:46:43.577928 -0700 PDT	deployed	kgateway-v2.0.3          	1.16.0
 kgateway-crds 	kgateway-system	1       	2025-07-14 10:46:39.26078 -0700  PDT 	deployed	kgateway-crds-v2.0.3     	1.16.0
-ms-simple   	llm-d          	1       	2025-07-14 10:57:25.726526 -0700 PDT	deployed	llm-d-modelservice-0.0.10	0.0.1
+ms-kv-events   	llm-d          	1       	2025-07-14 10:57:25.726526 -0700 PDT	deployed	llm-d-modelservice-0.0.10	0.0.1
 ```
 
 Note: if you chose to use `istio` as your Gateway provider you would see those (`istiod` and `istio-base` in the `istio-system` namespace) instead of the kgateway based ones.
@@ -43,15 +42,15 @@ Note: if you chose to use `istio` as your Gateway provider you would see those (
 ```bash
 kubectl get services -n llm-d
 NAME                               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
-infra-simple-inference-gateway     NodePort    172.30.172.142   <none>        80:30519/TCP        4m7s
-ms-simple-llm-d-modelservice-epp   ClusterIP   172.30.72.170    <none>        9002/TCP,5557/TCP   71s
+infra-kv-events-inference-gateway     NodePort    172.30.172.142   <none>        80:30519/TCP        4m7s
+ms-kv-events-llm-d-modelservice-epp   ClusterIP   172.30.72.170    <none>        9002/TCP,5557/TCP   71s
 ```
-In this case we have found that our gateway service is called `infra-simple-inference-gateway`.
+In this case we have found that our gateway service is called `infra-kv-events-inference-gateway`.
 
 3. `port-forward` the service to we can curl it:
 
 ```bash
-kubectl -n llm-d port-forward service/infra-simple-inference-gateway 8000:80
+kubectl -n llm-d port-forward service/infra-kv-events-inference-gateway 8000:80
 ```
 
 4. Try curling the `/v1/models` endpoint:
@@ -139,32 +138,32 @@ curl http://localhost:8000/v1/completions \
 ```
 
 6. Check the inference-scheduler's prefix-cache-scorer's scores with the following command:
-```
-kubectl logs -l llm-d.ai/epp=ms-simple-llm-d-modelservice-epp -n llm-d --tail 100 | grep "Got pod scores"
+```bash
+kubectl logs -l llm-d.ai/epp=ms-kv-events-llm-d-modelservice-epp -n llm-d --tail 100 | grep "Got pod scores"
 ```
 
 You should see output similar to:
-```
+```bash
 2025-07-18T22:00:24Z    LEVEL(-4)       prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:133     Got pod scores  {"x-request-id": "0e08703d-30c0-4624-a7b3-31e94dc99bc8", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
 ```
 
 7. Repeat steps 5 and 6 to see the prefix-cache-scorer in action
 
 You should see output similar to:
-```
+```log
 2025-07-18T22:00:24Z    LEVEL(-4)       prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:133     Got pod scores  {"x-request-id": "0e08703d-30c0-4624-a7b3-31e94dc99bc8", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
 2025-07-18T22:00:46Z    LEVEL(-4)       prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:133     Got pod scores  {"x-request-id": "8d0b587d-058f-4d2e-a062-a859a565d37a", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": {"${POD_IP}":2}}
 ```
 
-Notice that the second time we called the `/v1/completions` endpoint, the prefix-cache-scorer was able to return a score for the pod, 
+Notice that the second time we called the `/v1/completions` endpoint, the prefix-cache-scorer was able to return a score for the pod,
 indicating that it had cached the KV-blocks from the first call.
 
-8. See the `kvblock.Index` metrics in the `gaie-simple-epp` pod:
+8. See the `kvblock.Index` metrics in the `gaie-kv-events-epp` pod:
 ```bash
-kubectl logs -l inferencepool=gaie-simple-epp -n llm-d --tail 100 | grep "metrics beat" 
+kubectl logs -l llm-d.ai/epp=ms-kv-events-llm-d-modelservice-epp -n llm-d --tail 100 | grep "metrics beat"
 ```
 You should see output similar to:
-```
+```log
 I0718 23:57:10.781371       1 collector.go:107] "metrics beat" logger="metrics" admissions=3 evictions=0 lookups=3 hits=3 latency_count=3 latency_sum=0.000006859 latency_avg=0.0000022863333333333334
 ```
 
@@ -180,11 +179,11 @@ To remove the deployment:
 helmfile --selector managedBy=helmfile destroy
 
 # Remove the infrastructure
-helm uninstall infra-simple -n llm-d 
+helm uninstall infra-kv-events -n llm-d
 ```
 
 ## Customization
 
-- **Change model**: Edit `ms-simple/values.yaml` and update the `modelArtifacts.uri` and `routing.modelName`
+- **Change model**: Edit `ms-kv-events/values.yaml` and update the `modelArtifacts.uri` and `routing.modelName`
 - **Adjust resources**: Modify the GPU/CPU/memory requests in the container specifications
 - **Scale workers**: Change the `replicas` count for decode/prefill deployments

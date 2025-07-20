@@ -18,8 +18,8 @@ routing:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: infra-simple-inference-gateway
-      
+      name: infra-kv-events-inference-gateway
+
   inferencePool:
     create: true
 
@@ -77,7 +77,7 @@ decode:
         --prefix-caching-hash-algo sha256_cbor_64bit \
         --enforce-eager \
         --kv-transfer-config '{"kv_connector":"NixlConnector", "kv_role":"kv_both"}' \
-        --kv-events-config "{\"enable_kv_cache_events\":true,\"publisher\":\"zmq\",\"endpoint\":\"tcp://ms-simple-llm-d-modelservice-epp:5557\",\"topic\":\"kv@${POD_IP}@Qwen/Qwen3-0.6B\"}" \
+        --kv-events-config "{\"enable_kv_cache_events\":true,\"publisher\":\"zmq\",\"endpoint\":\"tcp://ms-kv-events-llm-d-modelservice-epp:5557\",\"topic\":\"kv@${POD_IP}@Qwen/Qwen3-0.6B\"}" \
     env:
       - name: PYTHONHASHSEED
         value: "42"

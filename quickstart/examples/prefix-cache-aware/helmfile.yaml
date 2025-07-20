@@ -3,7 +3,7 @@ repositories:
     url: https://llm-d-incubation.github.io/llm-d-modelservice/
 
 releases:
-  - name: infra-simple
+  - name: infra-kv-events
     namespace: llm-d
     chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
     version: 1.0.5
@@ -11,17 +11,17 @@ releases:
     labels:
       managedBy: llm-d-infra-installer
 
-  - name: ms-simple
+  - name: ms-kv-events
     namespace: llm-d
     # chart: llm-d-modelservice/llm-d-modelservice
     # version: 0.0.16
     # waiting on: https://github.com/llm-d-incubation/llm-d-modelservice/pull/46
-    chart: ../../../../../llm-d-modelservice/charts/llm-d-modelservice/
+    # chart: ../../../../../llm-d-modelservice/charts/llm-d-modelservice/
     installed: true
     needs:
-      - llm-d/infra-simple
+      - llm-d/infra-kv-events
     values:
-      - ms-simple/values.yaml
+      - ms-kv-events/values.yaml
     labels:
       managedBy: helmfile
     hooks:
@@ -31,7 +31,7 @@ releases:
           - -c
           - |
             echo "Patching HTTPRoute to trigger reconciliation..."
-            kubectl patch httproute ms-simple-llm-d-modelservice \
+            kubectl patch httproute ms-kv-events-llm-d-modelservice \
               -n llm-d \
-              -p '{"metadata":{"labels":{"inferencepool":"ms-simple-llm-d-modelservice"}}}' \
+              -p '{"metadata":{"labels":{"inferencepool":"ms-kv-events-llm-d-modelservice"}}}' \
               --type=merge
