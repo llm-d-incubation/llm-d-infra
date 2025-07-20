@@ -54,8 +54,9 @@ Since the llm-d-infra is based on helm charts, llm-d can be deployed on a variet
 
 In this instruction, the target is vanilla kubernetes and if you look for other plarform's instructions, you could find them from following links.
 
-- [Minikube](minikube/README-minikube.md)
-- [OpenShift](openshift/README-openshift.md)
+- [Minikube](docs/infra-providers/minikube/README-minikube.md)
+- [OpenShift](docs/infra-providers/openshift/README-openshift.md)
+- [OpenShift on AWS (ROSA)](docs/infra-providers/openshift-aws/openshift-aws.md)
 
 ## llm-d-infra Installation
 
