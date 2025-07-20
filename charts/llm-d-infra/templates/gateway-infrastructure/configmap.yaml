@@ -34,5 +34,7 @@ data:
               - misc:error
               - --log_output_level
               - default:debug
-  service:
+  service: |
+    spec:
+      type: LoadBalancer
 {{- end}}
