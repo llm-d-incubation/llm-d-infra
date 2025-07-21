@@ -14,7 +14,7 @@ releases:
   - name: ms-kv-events
     namespace: llm-d
     chart: llm-d-modelservice/llm-d-modelservice
-    version: 0.0.18
+    version: 0.0.19
     installed: true
     needs:
       - llm-d/infra-kv-events
