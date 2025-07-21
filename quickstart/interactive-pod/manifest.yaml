@@ -1,7 +1,13 @@
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: rs
+---
+apiVersion: v1
 kind: Pod
 metadata:
   name: interactive-pod
+  namespace: rs
 spec:
   containers:
     - name: benchmark-runner
@@ -11,8 +17,216 @@ spec:
       tty: true
       resources:
         requests:
-          cpu: "8"
-          memory: "4Gi"
+          cpu: "16"
+          memory: "16Gi"
         limits:
-          cpu: "8"
-          memory: "4Gi"
+          cpu: "16"
+          memory: "16Gi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-model-tp-1
+  namespace: rs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm-model-tp-1
+  template:
+    metadata:
+      labels:
+        app: vllm-model-tp-1
+    spec:
+      containers:
+        - name: vllm
+          image: "quay.io/wseaton/vllm:llmd-multistage-6"
+          imagePullPolicy: Always
+          args:
+          - "--model"
+          - "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic"
+          - "--tensor-parallel-size"
+          - "1"
+          - "--max-model-len"
+          - "32000"
+          - "--disable-log-requests"
+          env:
+            - name: HF_HUB_DISABLE_XET
+              value: "1"
+          ports:
+            - containerPort: 8000
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "8"
+              memory: 64Gi
+              nvidia.com/gpu: 1
+            requests:
+              cpu: "8"
+              memory: 64Gi
+              nvidia.com/gpu: 1
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: shm
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: "16Gi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-model-tp2
+  namespace: rs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: vllm-model-tp2
+  template:
+    metadata:
+      labels:
+        name: vllm-model-tp2
+    spec:
+      containers:
+        - name: vllm
+          image: "quay.io/wseaton/vllm:llmd-multistage-6"
+          imagePullPolicy: Always
+          args:
+          - "--model"
+          - "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic"
+          - "--tensor-parallel-size"
+          - "2"
+          - "--max-model-len"
+          - "32000"
+          - "--disable-log-requests"
+          env:
+            - name: HF_HUB_DISABLE_XET
+              value: "1"
+          ports:
+            - containerPort: 8000
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "16"
+              memory: 128Gi
+              nvidia.com/gpu: 2
+            requests:
+              cpu: "16"
+              memory: 128Gi
+              nvidia.com/gpu: 2
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: shm
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: "16Gi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-model-tp4
+  namespace: rs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: vllm-model-tp4
+  template:
+    metadata:
+      labels:
+        name: vllm-model-tp4
+    spec:
+      containers:
+        - name: vllm
+          image: "quay.io/wseaton/vllm:llmd-multistage-6"
+          imagePullPolicy: Always
+          args:
+          - "--model"
+          - "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic"
+          - "--tensor-parallel-size"
+          - "4"
+          - "--max-model-len"
+          - "32000"
+          - "--disable-log-requests"
+          env:
+            - name: HF_HUB_DISABLE_XET
+              value: "1"
+          ports:
+            - containerPort: 8000
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "16"
+              memory: 128Gi
+              nvidia.com/gpu: 4
+            requests:
+              cpu: "16"
+              memory: 128Gi
+              nvidia.com/gpu: 4
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: shm
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: "16Gi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-model-tp-8
+  namespace: rs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm-model-tp-8
+  template:
+    metadata:
+      labels:
+        app: vllm-model-tp-8
+    spec:
+      containers:
+        - name: vllm
+          image: "quay.io/wseaton/vllm:llmd-multistage-6"
+          imagePullPolicy: Always
+          args:
+          - "--model"
+          - "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic"
+          - "--tensor-parallel-size"
+          - "8"
+          - "--max-model-len"
+          - "32000"
+          - "--disable-log-requests"
+          env:
+            - name: HF_HUB_DISABLE_XET
+              value: "1"
+          ports:
+            - containerPort: 8000
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "16"
+              memory: 128Gi
+              nvidia.com/gpu: 8
+            requests:
+              cpu: "16"
+              memory: 128Gi
+              nvidia.com/gpu: 8
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: shm
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: "16Gi"

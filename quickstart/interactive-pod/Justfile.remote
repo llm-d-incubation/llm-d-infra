@@ -8,6 +8,18 @@ eval MODEL URL CONCURRENT LIMIT:
 sweep MODEL OUTFILE URL:
   OUTFILE={{OUTFILE}} MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep.sh
 
+sweep-tp1 MODEL URL:
+  OUTFILE=tp1.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp1.sh
+
+sweep-tp2 MODEL URL:
+  OUTFILE=tp2.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp2.sh
+
+sweep-tp4 MODEL URL:
+  OUTFILE=tp4.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp4.sh
+
+sweep-tp8 MODEL URL:
+  OUTFILE=tp8.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp8.sh
+
 curl MODEL URL:
   curl -X POST {{URL}}/v1/completions \
     -H "Content-Type: application/json" \

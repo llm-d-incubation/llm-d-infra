@@ -2,15 +2,12 @@
 
 POD_NAME := "interactive-pod"
 
-start-bench NAMESPACE:
-    kubectl apply -n {{NAMESPACE}} -f manifest.yaml
-
-delete-bench NAMESPACE:
-    kubectl delete pod -n {{NAMESPACE}} {{POD_NAME}}
-
 exec-bench NAMESPACE:
     kubectl cp Justfile.remote {{NAMESPACE}}/{{POD_NAME}}:/app/Justfile && \
-    kubectl cp sweep.sh {{NAMESPACE}}/{{POD_NAME}}:/app/sweep.sh && \
+    kubectl cp sweep-tp1.sh {{NAMESPACE}}/{{POD_NAME}}:/app/sweep-tp1.sh && \
+    kubectl cp sweep-tp2.sh {{NAMESPACE}}/{{POD_NAME}}:/app/sweep-tp2.sh && \
+    kubectl cp sweep-tp4.sh {{NAMESPACE}}/{{POD_NAME}}:/app/sweep-tp4.sh && \
+    kubectl cp sweep-tp8.sh {{NAMESPACE}}/{{POD_NAME}}:/app/sweep-tp8.sh && \
     kubectl exec -it -n {{NAMESPACE}} {{POD_NAME}} -- /bin/bash
 
 copy-results NAMESPACE FILENAME:
