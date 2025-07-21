@@ -11,7 +11,7 @@ routing:
   servicePort: 8000
 
   proxy:
-    image: "ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0-RC1"
+    image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
     secure: false
     connector: nixlv2
 
@@ -29,7 +29,7 @@ routing:
   epp:
     create: true
     replicas: 1
-    image: quay.io/vmaroon/llm-d-inference-scheduler:cache-tracking
+    image: ghcr.io/llm-d/llm-d-inference-scheduler:v0.2.0
     debugLevel: 4
     pluginsConfigFile: prefix-cache-tracking-config.yaml
     disableReadinessProbe: false

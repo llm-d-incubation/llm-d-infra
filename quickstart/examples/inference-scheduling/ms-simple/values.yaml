@@ -9,6 +9,12 @@ modelArtifacts:
 routing:
   modelName: Qwen/Qwen3-0.6B
   servicePort: 8000
+
+  proxy:
+    image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
+    secure: false
+    connector: nixlv2
+
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
