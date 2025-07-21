@@ -66,7 +66,9 @@ decode:
     labelValues:
       - H200
   parallelism:
-    data: 2 # TODO: hack
+    # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
+    # This must equal the number of nodes rather than the dp_size.
+    data: 2
     tensor: 1 # these will be derived based performance testing
   containers:
     - name: vllm-worker-decode
@@ -189,7 +191,9 @@ prefill:
     labelValues:
       - H200
   parallelism:
-    data: 1 # TODO: hack
+    # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
+    # It must equal the number of nodes rather than the dp_size.
+    data: 1
     tensor: 1 # these will be derived based performance testing
   containers:
     - name: vllm-worker-prefill
