@@ -40,7 +40,7 @@ decode:
     modelCommand: vllmServe
     args:
       - "--tensor-parallel-size"
-      - "2"
+      - "8"
       - "--block-size"
       - "128"
       - "--kv-transfer-config"
@@ -56,14 +56,14 @@ decode:
             fieldPath: status.podIP
     resources:
       limits:
-        memory: 64Gi
-        cpu: "16"
-        nvidia.com/gpu: "2"
+        memory: 256Gi
+        cpu: "32"
+        nvidia.com/gpu: "8"
         rdma/ib: 1
       requests:
-        memory: 64Gi
-        cpu: "16"
-        nvidia.com/gpu: "2"
+        memory: 256Gi
+        cpu: "32"
+        nvidia.com/gpu: "8"
         rdma/ib: 1
     mountModelVolume: true
     volumeMounts:
@@ -85,7 +85,7 @@ decode:
 
 prefill:
   create: true
-  replicas: 3
+  replicas: 4
   containers:
   - name: "vllm"
     image: "quay.io/wseaton/vllm:llmd-multistage-6"
