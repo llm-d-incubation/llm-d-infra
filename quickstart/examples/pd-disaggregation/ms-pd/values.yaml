@@ -85,7 +85,7 @@ decode:
 
 prefill:
   create: true
-  replicas: 2
+  replicas: 6
   containers:
   - name: "vllm"
     image: "quay.io/wseaton/vllm:llmd-multistage-6"

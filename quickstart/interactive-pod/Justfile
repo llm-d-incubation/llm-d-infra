@@ -10,6 +10,8 @@ exec-bench NAMESPACE:
     kubectl cp sweep-tp8.sh {{NAMESPACE}}/{{POD_NAME}}:/app/sweep-tp8.sh && \
     kubectl cp sweep-4ptp2-1dtp8.sh {{NAMESPACE}}/{{POD_NAME}}:/app/sweep-4ptp2-1dtp8.sh && \
     kubectl cp sweep-2ptp2-1dtp4.sh {{NAMESPACE}}/{{POD_NAME}}:/app/sweep-2ptp2-1dtp4.sh && \
+    kubectl cp sweep-2ptp2-1dtp4-lb.sh {{NAMESPACE}}/{{POD_NAME}}:/app/sweep-2ptp2-1dtp4-lb.sh && \
+    kubectl cp sweep-6ptp2-1dtp4-lb.sh {{NAMESPACE}}/{{POD_NAME}}:/app/sweep-6ptp2-1dtp4-lb.sh && \
     kubectl exec -it -n {{NAMESPACE}} {{POD_NAME}} -- /bin/bash
 
 copy-results NAMESPACE FILENAME:

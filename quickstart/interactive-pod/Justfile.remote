@@ -26,6 +26,12 @@ sweep-4ptp2-1dtp8 MODEL URL:
 sweep-2ptp2-1dtp4 MODEL URL:
   OUTFILE=2ptp2-1dtp4.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-2ptp2-1dtp4.sh
 
+sweep-2ptp2-1dtp4-lb MODEL URL:
+  OUTFILE=2ptp2-1dtp4-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-2ptp2-1dtp4-lb.sh
+
+sweep-6ptp2-1dtp4-lb MODEL URL:
+  OUTFILE=6ptp2-1dtp4-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-6ptp2-1dtp4-lb.sh
+
 curl MODEL URL:
   curl -X POST {{URL}}/v1/completions \
     -H "Content-Type: application/json" \
