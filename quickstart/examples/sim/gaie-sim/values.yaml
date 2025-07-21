@@ -2,15 +2,16 @@ inferenceExtension:
   replicas: 1
   image:
     # Either image will work, you just need to bring the correct plugins per image. In this example we will bring the upstream default plugin
+    ###################
     # name: llm-d-inference-scheduler
     # hub: ghcr.io/llm-d
-    # tag: 0.0.4
+    # tag: v0.2.0-rc.2
     ###################
     name: epp
     hub: us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension
-    tag: v0.5.0-rc.3
-    pullPolicy: Always
+    tag: v0.5.0
     ###################
+    pullPolicy: Always
   extProcPort: 9002
   pluginsConfigFile: "default-plugins.yaml"
 
