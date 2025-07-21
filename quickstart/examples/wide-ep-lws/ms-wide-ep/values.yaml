@@ -14,7 +14,7 @@ routing:
       name: infra-wide-ep-inference-gateway
 
   proxy:
-    image: "ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0-RC1"
+    image: "ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0-RC2"
     secure: false
     connector: nixlv2
 
@@ -31,7 +31,7 @@ routing:
 
   epp:
     create: true
-    image: quay.io/grpereir/llm-d-inference-scheduler:v0.5.0-rc.4
+    image: ghcr.io/llm-d/llm-d-inference-scheduler:v0.2.0
     debugLevel: 4
     pluginsConfigFile: "dp-config.yaml"
     pluginsCustomConfig:
@@ -306,4 +306,3 @@ prefill:
       hostPath:
         path: /mnt/local/hf-cache
         type: DirectoryOrCreate
-
