@@ -1,0 +1,24 @@
+{{ if and .Values.gateway.enabled (eq .Values.gateway.gatewayClassName "istio") .Values.gateway.destinationRule.enabled }}
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: {{ include "gateway.fullname" . }}
+spec:
+  host: {{ required "destinationRule.host is required when enabled" .Values.gateway.destinationRule.host  }}
+  {{- if .Values.gateway.destinationRule.trafficPolicy }}
+  trafficPolicy:
+    {{- toYaml .Values.gateway.destinationRule.trafficPolicy | nindent 4 }}
+  {{- end }}
+  {{- with .Values.gateway.destinationRule.subsets }}
+  subsets:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.gateway.destinationRule.exportTo }}
+  exportTo:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.gateway.destinationRule.workloadSelector }}
+  workloadSelector:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
