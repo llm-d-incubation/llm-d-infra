@@ -40,7 +40,7 @@ decode:
     modelCommand: vllmServe
     args:
       - "--tensor-parallel-size"
-      - "8"
+      - "4"
       - "--block-size"
       - "128"
       - "--kv-transfer-config"
@@ -85,7 +85,7 @@ decode:
 
 prefill:
   create: true
-  replicas: 4
+  replicas: 2
   containers:
   - name: "vllm"
     image: "quay.io/wseaton/vllm:llmd-multistage-6"

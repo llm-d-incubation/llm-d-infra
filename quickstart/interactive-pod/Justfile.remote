@@ -23,6 +23,9 @@ sweep-tp8 MODEL URL:
 sweep-4ptp2-1dtp8 MODEL URL:
   OUTFILE=4ptp2-1dtp8.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-4ptp2-1dtp8.sh
 
+sweep-2ptp2-1dtp4 MODEL URL:
+  OUTFILE=2ptp2-1dtp4.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-2ptp2-1dtp4.sh
+
 curl MODEL URL:
   curl -X POST {{URL}}/v1/completions \
     -H "Content-Type: application/json" \
