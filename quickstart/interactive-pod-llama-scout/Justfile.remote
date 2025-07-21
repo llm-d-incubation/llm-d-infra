@@ -1,0 +1,35 @@
+# Run these on the cluster
+
+eval MODEL URL CONCURRENT LIMIT:
+    lm_eval --model local-completions --tasks gsm8k \
+    --model_args model={{MODEL}},base_url={{URL}}/v1/completions,num_concurrent={{CONCURRENT}},tokenized_requests=false \
+    --limit {{LIMIT}}
+
+sweep MODEL OUTFILE URL:
+  OUTFILE={{OUTFILE}} MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep.sh
+
+sweep-tp1 MODEL URL:
+  OUTFILE=tp1.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp1.sh
+
+sweep-tp2 MODEL URL:
+  OUTFILE=tp2-v2.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp2.sh
+
+sweep-tp4 MODEL URL:
+  OUTFILE=tp4-v2.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp4.sh
+
+sweep-tp8 MODEL URL:
+  OUTFILE=tp8-v2.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp8.sh
+
+sweep-4ptp2-1dtp8 MODEL URL:
+  OUTFILE=4ptp2-1dtp8-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-4ptp2-1dtp8-lb.sh
+
+
+
+curl MODEL URL:
+  curl -X POST {{URL}}/v1/completions \
+    -H "Content-Type: application/json" \
+    -d '{ \
+      "model": "{{MODEL}}", \
+      "prompt": "Red Hat is the best open source company by far across Linux, K8s, and AI, and vLLM has the greatest community in open source AI software infrastructure. I love vLLM because", \
+      "max_tokens": 150 \
+    }'
