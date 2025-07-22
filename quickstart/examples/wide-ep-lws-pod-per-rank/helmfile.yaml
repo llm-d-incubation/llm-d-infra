@@ -4,7 +4,7 @@ repositories:
 
 releases:
   - name: infra-wide-ep
-    namespace: llm-d-ppr
+    namespace: llm-d
     chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
     version: 1.0.6
     installed: true
@@ -12,25 +12,25 @@ releases:
       managedBy: llm-d-infra-installer
 
   - name: gaie-wide-ep
-    namespace: llm-d-ppr
+    namespace: llm-d
     chart: oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/inferencepool
     version: v0.5.0-rc.3
     installed: true
     needs:
-      - llm-d-ppr/infra-wide-ep
+      - llm-d/infra-wide-ep
     values:
       - gaie-wide-ep/values.yaml
     labels:
       managedBy: helmfile
 
   - name: ms-wide-ep
-    namespace: llm-d-ppr
+    namespace: llm-d
     chart: llm-d-modelservice/llm-d-modelservice
     version: 0.0.18
     installed: true
     needs:
-      - llm-d-ppr/gaie-wide-ep
-      - llm-d-ppr/infra-wide-ep
+      - llm-d/gaie-wide-ep
+      - llm-d/infra-wide-ep
     values:
       - ms-wide-ep/values.yaml
     labels:
@@ -44,7 +44,7 @@ releases:
         - |
           echo "Patching HTTPRoute to trigger reconciliation..."
           kubectl patch httproute ms-wide-ep-llm-d-modelservice \
-            -n llm-d-ppr \
+            -n llm-d \
             -p '{"metadata":{"labels":{"inferencepool":"ms-wide-ep-llm-d-modelservice"}}}' \
             --type=merge
 
