@@ -3,7 +3,7 @@ kind: DestinationRule
 metadata:
   name: wide-ep-destination-rule
 spec:
-  host: ms-wide-ep-llm-d-modelservice-epp.llm-d.svc.cluster.local
+  host: ms-wide-ep-llm-d-modelservice-epp.llm-d-ppn.svc.cluster.local
   trafficPolicy:
     connectionPool:
       http:
@@ -19,3 +19,5 @@ spec:
     tls:
       mode: SIMPLE
       insecureSkipVerify: true
+    # loadBalancer:
+    #   simple: ROUND_ROBIN
