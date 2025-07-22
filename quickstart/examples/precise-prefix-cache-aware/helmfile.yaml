@@ -11,6 +11,17 @@ releases:
     labels:
       managedBy: llm-d-infra-installer
 
+  - name: gaie-kv-events
+    namespace: llm-d
+    chart: ../../../../../vMaroon/gateway-api-inference-extension/config/charts/inferencepool
+    installed: true
+    needs:
+      - llm-d/infra-kv-events
+    values:
+      - gaie-kv-events/values.yaml
+    labels:
+      managedBy: helmfile
+
   - name: ms-kv-events
     namespace: llm-d
     chart: llm-d-modelservice/llm-d-modelservice
@@ -18,18 +29,8 @@ releases:
     installed: true
     needs:
       - llm-d/infra-kv-events
+      - llm-d/gaie-kv-events
     values:
       - ms-kv-events/values.yaml
     labels:
       managedBy: helmfile
-    hooks:
-      - events: [ "postsync" ]
-        command: bash
-        args:
-          - -c
-          - |
-            echo "Patching HTTPRoute to trigger reconciliation..."
-            kubectl patch httproute ms-kv-events-llm-d-modelservice \
-              -n llm-d \
-              -p '{"metadata":{"labels":{"inferencepool":"ms-kv-events-llm-d-modelservice"}}}' \
-              --type=merge

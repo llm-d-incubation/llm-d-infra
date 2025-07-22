@@ -44,8 +44,8 @@ Note: if you chose to use `istio` as your Gateway provider you would see those (
 ```bash
 kubectl get services -n llm-d
 NAME                               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
-infra-kv-events-inference-gateway     NodePort    172.30.172.142   <none>        80:30519/TCP        4m7s
-ms-kv-events-llm-d-modelservice-epp   ClusterIP   172.30.72.170    <none>        9002/TCP,5557/TCP   71s
+infra-kv-events-inference-gateway  NodePort    172.30.172.142   <none>        80:30519/TCP        4m7s
+gaie-kv-events-epp                 ClusterIP   172.30.72.170    <none>        9002/TCP,5557/TCP   71s
 ```
 In this case we have found that our gateway service is called `infra-kv-events-inference-gateway`.
 
@@ -141,7 +141,7 @@ curl http://localhost:8000/v1/completions \
 
 6. Check the inference-scheduler's prefix-cache-scorer's scores with the following command:
 ```bash
-kubectl logs -l llm-d.ai/epp=ms-kv-events-llm-d-modelservice-epp -n llm-d --tail 100 | grep "Got pod scores"
+kubectl logs -l inferencepool=gaie-kv-events-epp -n llm-d --tail 100 | grep "Got pod scores"
 ```
 
 You should see output similar to:
@@ -162,7 +162,7 @@ indicating that it had cached the KV-blocks from the first call.
 
 8. See the `kvblock.Index` metrics in the `gaie-kv-events-epp` pod:
 ```bash
-kubectl logs -l llm-d.ai/epp=ms-kv-events-llm-d-modelservice-epp -n llm-d --tail 100 | grep "metrics beat"
+kubectl logs -l inferencepool=gaie-kv-events-epp -n llm-d --tail 100 | grep "metrics beat"
 ```
 You should see output similar to:
 ```log
