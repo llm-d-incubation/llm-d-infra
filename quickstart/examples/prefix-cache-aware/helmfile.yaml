@@ -11,6 +11,18 @@ releases:
     labels:
       managedBy: llm-d-infra-installer
 
+  - name: gaie-kv-events
+    namespace: llm-d
+    chart: oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/inferencepool
+    version: v0
+    installed: true
+    needs:
+      - llm-d/infra-kv-events
+    values:
+      - gaie-sim/values.yaml
+    labels:
+      managedBy: helmfile
+
   - name: ms-kv-events
     namespace: llm-d
     chart: llm-d-modelservice/llm-d-modelservice
@@ -18,6 +30,7 @@ releases:
     installed: true
     needs:
       - llm-d/infra-kv-events
+      - llm-d/gaie-kv-events
     values:
       - ms-kv-events/values.yaml
     labels:
