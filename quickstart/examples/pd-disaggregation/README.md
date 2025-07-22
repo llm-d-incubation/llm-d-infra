@@ -1,4 +1,4 @@
-# P/D Disaggregation "Well Lit" Path
+# Well-lit Path: P/D Disaggregation
 
 ## Overview
 

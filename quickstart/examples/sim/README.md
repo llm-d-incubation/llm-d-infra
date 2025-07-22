@@ -1,4 +1,6 @@
-# Quickstart - LLM-D Simulation Deployment
+# Feature: llm-d Simulation
+
+## Overview
 
 This is a simulation example that demonstrates how to deploy using the llm-d-infra system with the `ghcr.io/llm-d/llm-d-inference-sim` image. This example simulates inference responses and can run on minimal resources without requiring actual GPU hardware.
 
