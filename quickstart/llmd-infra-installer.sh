@@ -4,7 +4,7 @@
 set -euo pipefail
 
 ### GLOBALS ###
-NAMESPACE="llm-d"
+NAMESPACE="llm-d-rs"
 ACTION="install"
 SCRIPT_DIR=""
 REPO_ROOT=""

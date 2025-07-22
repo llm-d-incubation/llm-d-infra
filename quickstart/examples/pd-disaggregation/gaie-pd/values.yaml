@@ -20,8 +20,9 @@ inferenceExtension:
       - type: prefill-header-handler
       - type: prefill-filter
       - type: decode-filter
-      - type: queue-scorer
       - type: max-score-picker
+      - type: random-picker
+      - type: queue-scorer
       - type: prefix-cache-scorer
         parameters:
           hashBlockSize: 5
@@ -35,15 +36,11 @@ inferenceExtension:
       - name: prefill
         plugins:
         - pluginRef: prefill-filter
-        - pluginRef: queue-scorer
-          weight: 1.0
-        - pluginRef: max-score-picker
+        - pluginRef: random-picker
       - name: decode
         plugins:
         - pluginRef: decode-filter
-        - pluginRef: queue-scorer
-          weight: 1.0
-        - pluginRef: max-score-picker
+        - pluginRef: random-picker
 inferencePool:
   targetPortNumber: 8000
   modelServerType: vllm

@@ -23,7 +23,14 @@ sweep-tp8 MODEL URL:
 sweep-4ptp2-1dtp8 MODEL URL:
   OUTFILE=4ptp2-1dtp8-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-4ptp2-1dtp8-lb.sh
 
+sweep-4ptp2-1dep8 MODEL URL:
+  OUTFILE=4ptp2-1dep8-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-4ptp2-1dep8-lb.sh
 
+sweep-2ptp2-3dtp4 MODEL URL:
+  OUTFILE=2ptp2-3dtp4-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-2ptp2-3dtp4-lb.sh
+
+sweep-4ptp2-2dtp4 MODEL URL:
+  OUTFILE=4ptp2-2dtp4-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-4ptp2-2dtp4-lb.sh
 
 curl MODEL URL:
   curl -X POST {{URL}}/v1/completions \
