@@ -37,7 +37,7 @@ As a result, as you tune you P/D deployments, we suggest focusing on the followi
 2. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart (from `/llm-d-infra/quickstart`):
 ```bash
 export HF_TOKEN=$(YOUR_TOKEN)
-./llmd-infra-installer.sh --namespace llm-d -r infra-pd -j kgateway --disable-metrics-collection
+./llmd-infra-installer.sh --namespace llm-d-pd -r infra-pd -j istio --disable-metrics-collection
 ```
 
 3. Use the helmfile to apply the modelservice and GIE charts on top of it
