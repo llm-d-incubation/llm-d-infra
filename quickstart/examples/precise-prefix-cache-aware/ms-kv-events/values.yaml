@@ -15,7 +15,7 @@ routing:
       name: infra-kv-events-inference-gateway
 
   proxy:
-    image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0-RC1
+    image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
     connector: nixlv2
     secure: false
 
