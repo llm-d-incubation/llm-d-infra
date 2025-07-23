@@ -85,10 +85,13 @@ gateway:
     # -- Modify resource limits/requests available to the envoy gateway container pod
     # -- Resource requests/limits
     # <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container
-    # resources:
-    #   limits:
-    #     cpu:     "4"
-    #     memory:  "1Gi"
+    resources:
+      limits:
+        cpu: "2"
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 128Mi
 
   # Configuration for Istio DestinationRule to control traffic policy for this service.
   # -- see: https://istio.io/latest/docs/reference/config/networking/destination-rule/

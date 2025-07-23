@@ -113,6 +113,7 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.enabled | bool | `true` | Deploy resources related to Gateway |
 | gateway.fullnameOverride | string | `""` | String to fully override gateway.fullname |
 | gateway.gatewayClassName | string | `"kgateway"` | Gateway class that determines the backend used Currently supported values: "kgateway" or "istio" |
+| gateway.gatewayParameters.resources | object | `{"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"100m","memory":"128Mi"}}` | Resource requests/limits <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container |
 | gateway.nameOverride | string | `""` | String to partially override gateway.fullname |
 | gateway.serviceType | string | `"NodePort"` | Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: ["LoadBalancer", "NodePort"] |
 | ingress | object | See below | Ingress configuration |
@@ -180,6 +181,7 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.enabled | bool | `true` | Deploy resources related to Gateway |
 | gateway.fullnameOverride | string | `""` | String to fully override gateway.fullname |
 | gateway.gatewayClassName | string | `"kgateway"` | Gateway class that determines the backend used Currently supported values: "kgateway" or "istio" |
+| gateway.gatewayParameters.resources | object | `{"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"100m","memory":"128Mi"}}` | Resource requests/limits <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container |
 | gateway.nameOverride | string | `""` | String to partially override gateway.fullname |
 | gateway.serviceType | string | `"NodePort"` | Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: ["LoadBalancer", "NodePort"] |
 | ingress | object | See below | Ingress configuration |
