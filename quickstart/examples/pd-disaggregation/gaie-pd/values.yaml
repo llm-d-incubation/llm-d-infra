@@ -20,9 +20,7 @@ inferenceExtension:
       - type: prefill-header-handler
       - type: prefill-filter
       - type: decode-filter
-      - type: max-score-picker
       - type: random-picker
-      - type: queue-scorer
       - type: prefix-cache-scorer
         parameters:
           hashBlockSize: 5
