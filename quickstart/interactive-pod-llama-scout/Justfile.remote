@@ -12,25 +12,25 @@ sweep-tp1 MODEL URL:
   OUTFILE=tp1.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp1.sh
 
 sweep-tp2 MODEL URL:
-  OUTFILE=tp2.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp2.sh
+  OUTFILE=tp2-v2.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp2.sh
 
 sweep-tp4 MODEL URL:
-  OUTFILE=tp4.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp4.sh
+  OUTFILE=tp4-v2.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp4.sh
 
 sweep-tp8 MODEL URL:
-  OUTFILE=tp8.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp8.sh
+  OUTFILE=tp8-v2.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-tp8.sh
 
 sweep-4ptp2-1dtp8 MODEL URL:
-  OUTFILE=4ptp2-1dtp8.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-4ptp2-1dtp8.sh
+  OUTFILE=4ptp2-1dtp8-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-4ptp2-1dtp8-lb.sh
 
-sweep-2ptp2-1dtp4 MODEL URL:
-  OUTFILE=2ptp2-1dtp4.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-2ptp2-1dtp4.sh
+sweep-4ptp2-1dep8 MODEL URL:
+  OUTFILE=4ptp2-1dep8-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-4ptp2-1dep8-lb.sh
 
-sweep-2ptp2-1dtp4-lb MODEL URL:
-  OUTFILE=2ptp2-1dtp4-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-2ptp2-1dtp4-lb.sh
+sweep-2ptp2-3dtp4 MODEL URL:
+  OUTFILE=2ptp2-3dtp4-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-2ptp2-3dtp4-lb.sh
 
-sweep-6ptp2-1dtp4-lb MODEL URL:
-  OUTFILE=6ptp2-1dtp4-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-6ptp2-1dtp4-lb.sh
+sweep-4ptp2-2dtp4 MODEL URL:
+  OUTFILE=4ptp2-2dtp4-lb.json MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep-4ptp2-2dtp4-lb.sh
 
 curl MODEL URL:
   curl -X POST {{URL}}/v1/completions \
