@@ -18,14 +18,14 @@ routing:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: infra-simple-inference-gateway
+      name: infra-inference-scheduling-inference-gateway
 
   inferenceModel:
     create: false
 
   inferencePool:
     create: false
-    name: gaie-simple
+    name: gaie-inference-scheduling
 
   httpRoute:
     create: true

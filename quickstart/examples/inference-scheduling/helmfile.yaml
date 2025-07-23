@@ -3,7 +3,7 @@ repositories:
     url: https://llm-d-incubation.github.io/llm-d-modelservice/
 
 releases:
-  - name: infra-simple
+  - name: infra-inference-scheduling
     namespace: llm-d
     chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
     version: 1.0.7
@@ -11,27 +11,27 @@ releases:
     labels:
       managedBy: llm-d-infra-installer
 
-  - name: gaie-simple
+  - name: gaie-inference-scheduling
     namespace: llm-d
     chart: oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/inferencepool
-    version: v0.5.0
+    version: v0.5.1-rc.1
     installed: true
     needs:
-      - llm-d/infra-simple
+      - llm-d/infra-inference-scheduling
     values:
-      - gaie-simple/values.yaml
+      - gaie-inference-scheduling/values.yaml
     labels:
       managedBy: helmfile
 
-  - name: ms-simple
+  - name: ms-inference-scheduling
     namespace: llm-d
     chart: llm-d-modelservice/llm-d-modelservice
     version: 0.0.19
     installed: true
     needs:
-      - llm-d/infra-simple
-      - llm-d/gaie-simple
+      - llm-d/infra-inference-scheduling
+      - llm-d/gaie-inference-scheduling
     values:
-      - ms-simple/values.yaml
+      - ms-inference-scheduling/values.yaml
     labels:
       managedBy: helmfile

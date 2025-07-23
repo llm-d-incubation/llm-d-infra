@@ -8,7 +8,7 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 
 ## Installation
 
-> To adjust the model or any other modelservice values, simply change the values.yaml file in [ms-simple/values.yaml](ms-simple/values.yaml)
+> To adjust the model or any other modelservice values, simply change the values.yaml file in [ms-inference-scheduling/values.yaml](ms-inference-scheduling/values.yaml)
 
 1. Install the dependencies; see [install-deps.sh](../../install-deps.sh)
 2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart:
@@ -16,9 +16,9 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 ```bash
 # From the repo root
 cd quickstart
-HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d -r infra-simple --gateway kgateway
+HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d -r infra-inference-scheduling --gateway kgateway
 ```
-    - It should be noted release name `infra-simple` is important here, because it matches up with pre-built values files used in this example.
+    - It should be noted release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
 
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
@@ -38,11 +38,11 @@ helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-instal
 ```bash
 helm list --all-namespaces --all --debug
 NAME          	NAMESPACE      	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
-gaie-simple 	llm-d          	1       	2025-07-14 10:57:25.515174 -0700 PDT	deployed	inferencepool-v0         	v0
-infra-simple	llm-d          	1       	2025-07-14 10:46:56.074433 -0700 PDT	deployed	llm-d-infra-1.0.1        	0.1
+gaie-inference-scheduling 	llm-d          	1       	2025-07-14 10:57:25.515174 -0700 PDT	deployed	inferencepool-v0         	v0
+infra-inference-scheduling	llm-d          	1       	2025-07-14 10:46:56.074433 -0700 PDT	deployed	llm-d-infra-1.0.1        	0.1
 kgateway      	kgateway-system	1       	2025-07-14 10:46:43.577928 -0700 PDT	deployed	kgateway-v2.0.3          	1.16.0
 kgateway-crds 	kgateway-system	1       	2025-07-14 10:46:39.26078 -0700  PDT 	deployed	kgateway-crds-v2.0.3     	1.16.0
-ms-simple   	llm-d          	1       	2025-07-14 10:57:25.726526 -0700 PDT	deployed	llm-d-modelservice-0.0.10	0.0.1
+ms-inference-scheduling   	llm-d          	1       	2025-07-14 10:57:25.726526 -0700 PDT	deployed	llm-d-modelservice-0.0.10	0.0.1
 ```
 
 Note: if you chose to use `istio` as your Gateway provider you would see those (`istiod` and `istio-base` in the `istio-system` namespace) instead of the kgateway based ones.
@@ -51,15 +51,15 @@ Note: if you chose to use `istio` as your Gateway provider you would see those (
 ```bash
 kubectl get services
 NAME                               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
-gaie-simple-epp                  ClusterIP   172.30.248.208   <none>        9002/TCP,9090/TCP   7m11s
-infra-simple-inference-gateway   NodePort    172.30.112.221   <none>        80:31790/TCP        17m
+gaie-inference-scheduling-epp                  ClusterIP   172.30.248.208   <none>        9002/TCP,9090/TCP   7m11s
+infra-inference-scheduling-inference-gateway   NodePort    172.30.112.221   <none>        80:31790/TCP        17m
 ```
-In this case we have found that our gateway service is called `infra-simple-inference-gateway`.
+In this case we have found that our gateway service is called `infra-inference-scheduling-inference-gateway`.
 
 3. `port-forward` the service to we can curl it:
 
 ```bash
-kubectl port-forward service/infra-simple-inference-gateway 8000:80
+kubectl port-forward service/infra-inference-scheduling-inference-gateway 8000:80
 ```
 
 4. Try curling the `/v1/models` endpoint:
@@ -148,11 +148,11 @@ cd examples/simple
 helmfile --selector managedBy=helmfile destroy
 
 # Remove the infrastructure
-helm uninstall infra-simple -n llm-d
+helm uninstall infra-inference-scheduling -n llm-d
 ```
 
 ## Customization
 
-- **Change model**: Edit `ms-simple/values.yaml` and update the `modelArtifacts.uri` and `routing.modelName`
+- **Change model**: Edit `ms-inference-scheduling/values.yaml` and update the `modelArtifacts.uri` and `routing.modelName`
 - **Adjust resources**: Modify the GPU/CPU/memory requests in the container specifications
 - **Scale workers**: Change the `replicas` count for decode/prefill deployments
