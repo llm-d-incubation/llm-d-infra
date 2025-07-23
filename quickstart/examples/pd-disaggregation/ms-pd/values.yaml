@@ -19,7 +19,8 @@ routing:
     secure: false
 
   inferenceModel:
-    create: false
+    criticality: Critical
+    create: true
 
   inferencePool:
     create: false
