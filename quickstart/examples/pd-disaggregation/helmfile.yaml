@@ -4,7 +4,7 @@ repositories:
 
 releases:
   - name: infra-pd
-    namespace: llm-d-rs
+    namespace: llm-d-pd
     chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
     version: 1.0.5
     installed: true
@@ -12,25 +12,25 @@ releases:
       managedBy: llm-d-infra-installer
 
   - name: gaie-pd
-    namespace: llm-d-rs
+    namespace: llm-d-pd
     chart: oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/inferencepool
     version: v0.5.0-rc.3
     installed: true
     needs:
-      - llm-d-rs/infra-pd
+      - llm-d-pd/infra-pd
     values:
       - gaie-pd/values.yaml
     labels:
       managedBy: helmfile
 
   - name: ms-pd
-    namespace: llm-d-rs
+    namespace: llm-d-pd
     chart: llm-d-modelservice/llm-d-modelservice
     version: 0.0.17
     installed: true
     needs:
-      - llm-d-rs/infra-pd
-      - llm-d-rs/gaie-pd
+      - llm-d-pd/infra-pd
+      - llm-d-pd/gaie-pd
     values:
       - ms-pd/values.yaml
     labels:
