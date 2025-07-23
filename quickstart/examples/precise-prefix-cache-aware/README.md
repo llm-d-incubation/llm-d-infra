@@ -1,6 +1,8 @@
-# Quickstart - Prefix Cache Aware KV Events Example
+# Feature: Precise Prefix Cache Aware Routing
 
-This is a simple example that demonstrates how to deploy using the llm-d-infra system with KV-Cache Aware routing using vLLM KV-Events.
+## Overview
+
+This is a simple quickstart demonstrating how to configure the inference scheduler to use the new precise prefix cache aware routing based on [vLLM KV-Events](https://github.com/vllm-project/vllm/issues/16669) data. Precise prefix cache aware routing pulls up-to-date prefix cache status from serving instances, eliminating the need for additional indexing services and increasing cache hit rate at high throughput.
 
 ## Installation
 
@@ -19,7 +21,7 @@ HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d -r infra-kv-even
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
 ```bash
-cd examples/prefix-cache-aware/kv-events
+cd examples/prefix-cache-aware/
 helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-install
 ```
 

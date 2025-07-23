@@ -1,0 +1,43 @@
+repositories:
+  - name: llm-d-modelservice
+    url: https://llm-d-incubation.github.io/llm-d-modelservice/
+
+releases:
+  - name: infra-wide-ep
+    namespace: llm-d
+    chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
+    version: 1.0.6
+    installed: true
+    labels:
+      managedBy: llm-d-infra-installer
+
+  - name: ms-wide-ep
+    namespace: llm-d
+    chart: llm-d-modelservice/llm-d-modelservice
+    version: 0.0.19
+    installed: true
+    needs:
+      - llm-d/infra-wide-ep
+    values:
+      - ms-wide-ep/values.yaml
+    labels:
+      managedBy: helmfile
+
+    hooks:
+    - events: [ "postsync" ]
+      command: bash
+      args:
+        - -c
+        - |
+          echo "Patching HTTPRoute to trigger reconciliation..."
+          kubectl patch httproute ms-wide-ep-llm-d-modelservice \
+            -n llm-d \
+            -p '{"metadata":{"labels":{"inferencepool":"ms-wide-ep-llm-d-modelservice"}}}' \
+            --type=merge
+    - events: [ "postsync" ]
+      command: bash
+      args:
+        - -c
+        - |
+          echo "Creating the destinationRule"
+          kubectl create -f destinationRule.yaml -n llm-d --dry-run=client -o yaml | kubectl apply -f -

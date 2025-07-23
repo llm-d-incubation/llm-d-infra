@@ -284,24 +284,22 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
             set -e
             cd llm-d-infra/quickstart
-            # cd llm-d-infra/quickstart
             echo "Starting minikube with gpu support enabled..."
             minikube start --driver docker --container-runtime docker --gpus all --memory no-limit
             sleep 10
             echo "Deploying llm-d infrastructure..."
             export HF_TOKEN=$HF_TOKEN
-            ./llmd-infra-installer.sh --namespace llm-d -r infra-simple --minikube --disable-metrics-collection --gateway kgateway | tee ~/llmd-installer.log
+            ./llmd-infra-installer.sh --namespace llm-d -r inference-scheduler-infra --minikube --disable-metrics-collection --gateway kgateway | tee ~/llmd-installer.log
           EOF
 
-      - name: Deploy simple example
-        id: deploy-simple
+      - name: Deploy inference-scheduler example
+        id: deploy-inference-scheduler
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
             set -e
-            cd llm-d-infra/quickstart/examples/simple
-            # cd llm-d-infra/quickstart/examples/simple
-            echo "Deploying simple example with Qwen model..."
-            helmfile --selector managedBy=helmfile apply helmfile.yaml | tee ~/simple-deployment.log
+            cd llm-d-infra/quickstart/examples/inference-scheduler
+            echo "Deploying inference-scheduler example with Qwen model..."
+            helmfile --selector managedBy=helmfile apply helmfile.yaml | tee ~/inference-scheduler-deployment.log
           EOF
 
       - name: Wait for pods to be Ready
@@ -313,7 +311,7 @@ jobs:
               kubectl get pods -n llm-d --no-headers > pods.txt
             cat pods.txt
             not_ready=$(awk '{split($2,a,"/"); if(a[1]!=a[2]) c++} END{print c+0}' pods.txt)
-            [[ "$not_ready" -eq 0 ]] && { echo "✅ Pods Ready"; exit 0; }
+            [[ "$not_ready" -eq 0 ]] && { echo "✅ Pods Ready"; echo "Waiting an additional 120 seconds..."; sleep 120; exit 0; }
             sleep 60
           done
           echo "❌ Pods not Ready after timeout"; exit 1
@@ -324,9 +322,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@"$INSTANCE_IP" <<'EOF'
             set -e
-            # cd llm-d-infra/.github/scripts/e2e
             cd llm-d-infra/.github/scripts/e2e
-            export MODEL_ID="Qwen3-0.6B"
             ./e2e-validate.sh
           EOF
 
@@ -347,7 +343,7 @@ jobs:
 
             mv ~/llmd-installer.log pod-logs/ || true
             mv ~/install-deps.log pod-logs/ || true
-            mv ~/simple-deployment.log pod-logs/ || true
+            mv ~/inference-scheduler-deployment.log pod-logs/ || true
             tar -czf pod-logs.tar.gz pod-logs
           EOF
 

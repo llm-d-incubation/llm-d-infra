@@ -77,6 +77,26 @@ gateway:
     proxyUID: false
 
     enabled: true
+
+
+  # Configuration for Istio DestinationRule to control traffic policy for this service.
+  # -- see: https://istio.io/latest/docs/reference/config/networking/destination-rule/
+  destinationRule:
+    enabled: false
+    host: "localhost"
+
+    # Optional: Apply a mesh-wide traffic policy
+    trafficPolicy: {}
+
+    # Optional: Define subsets for versioned routing (e.g., by labels)
+    subsets: []
+
+    # Optional: Control which namespaces can access this DestinationRule
+    exportTo: []
+
+    # Optional: Apply only to specific workloads (via selector labels)
+    workloadSelector: {}
+
   # @schema
   # items:
   #  type: object

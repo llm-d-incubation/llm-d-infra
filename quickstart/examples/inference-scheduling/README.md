@@ -1,13 +1,17 @@
-# Quickstart - Simple Deployment
+# Well-lit Path: Intelligent Inference Scheduling
 
-This is a simple example that demonstrates how to deploy using the llm-d-infra system. This can be run on a single GPU that can load [Qwen/Qwen3-0.6B](https://huggingface.co/Qwen/Qwen3-0.6B).
+## Overview
+
+This example deploys the recommended out of the box [scheduling configuration](https://github.com/llm-d/llm-d-inference-scheduler/blob/main/docs/architecture.md) for most vLLM deployments, reducing tail latency and increasing throughput through load-aware and prefix-cache aware balancing. This can be run on a single GPU that can load [Qwen/Qwen3-0.6B](https://huggingface.co/Qwen/Qwen3-0.6B).
+
+This profile defaults to the approximate prefix cache aware scorer, which only observes request traffic to predict prefix cache locality. The [precise prefix cache aware routing feature](../precise-prefix-cache-aware) improves hit rate by introspecting the vLLM instances for cache entries and will become the default in a future release.
 
 ## Installation
 
 > To adjust the model or any other modelservice values, simply change the values.yaml file in [ms-simple/values.yaml](ms-simple/values.yaml)
 
 1. Install the dependencies; see [install-deps.sh](../../install-deps.sh)
-2. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart:
+2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart:
 
 ```bash
 # From the repo root

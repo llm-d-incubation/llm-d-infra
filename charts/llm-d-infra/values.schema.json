@@ -89,6 +89,58 @@
                     "required": [],
                     "title": "annotations"
                 },
+                "destinationRule": {
+                    "additionalProperties": false,
+                    "description": "see: https://istio.io/latest/docs/reference/config/networking/destination-rule/",
+                    "properties": {
+                        "enabled": {
+                            "default": false,
+                            "required": [],
+                            "title": "enabled",
+                            "type": "boolean"
+                        },
+                        "exportTo": {
+                            "description": "Optional: Control which namespaces can access this DestinationRule",
+                            "items": {
+                                "required": []
+                            },
+                            "required": [],
+                            "title": "exportTo",
+                            "type": "array"
+                        },
+                        "host": {
+                            "default": "localhost",
+                            "required": [],
+                            "title": "host",
+                            "type": "string"
+                        },
+                        "subsets": {
+                            "description": "Optional: Define subsets for versioned routing (e.g., by labels)",
+                            "items": {
+                                "required": []
+                            },
+                            "required": [],
+                            "title": "subsets",
+                            "type": "array"
+                        },
+                        "trafficPolicy": {
+                            "additionalProperties": false,
+                            "description": "Optional: Apply a mesh-wide traffic policy",
+                            "required": [],
+                            "title": "trafficPolicy",
+                            "type": "object"
+                        },
+                        "workloadSelector": {
+                            "additionalProperties": false,
+                            "description": "Optional: Apply only to specific workloads (via selector labels)",
+                            "required": [],
+                            "title": "workloadSelector",
+                            "type": "object"
+                        }
+                    },
+                    "required": [],
+                    "title": "destinationRule"
+                },
                 "enabled": {
                     "default": "true",
                     "description": "Deploy resources related to Gateway",
