@@ -13,7 +13,8 @@ releases:
 
   - name: gaie-kv-events
     namespace: llm-d
-    chart: ../../../../../vMaroon/gateway-api-inference-extension/config/charts/inferencepool
+    chart: oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/inferencepool
+    version: v0
     installed: true
     needs:
       - llm-d/infra-kv-events
