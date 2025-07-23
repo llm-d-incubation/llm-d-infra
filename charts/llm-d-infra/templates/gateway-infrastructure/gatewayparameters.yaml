@@ -34,6 +34,9 @@ spec:
           http: debug
           connection: debug
         logLevel: info
+      {{- if .Values.gateway.gatewayParameters.resources }}
+      resources: {{ .Values.gateway.gatewayParameters.resources | toYaml | nindent 8 }}
+      {{- end}}
     service:
       type: {{ .Values.gateway.serviceType | default "NodePort" | quote }}
       extraLabels:

@@ -34,6 +34,9 @@ data:
               - misc:error
               - --log_output_level
               - default:debug
+            {{- if .Values.gateway.gatewayParameters.resources }}
+            resources: {{ .Values.gateway.gatewayParameters.resources | toYaml | nindent 14 }}
+            {{- end}}
   service: |
     spec:
       type: {{ .Values.gateway.serviceType | default "NodePort" | quote }}
