@@ -22,7 +22,7 @@ HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d -r sim --gateway
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
 ```bash
-cd examples/llm-d-sim
+cd examples/sim
 helmfile --selector managedBy=helmfile apply helmfile.yaml
 ```
 
@@ -117,7 +117,7 @@ To remove the deployment:
 
 ```bash
 # Remove the model services
-cd examples/sim
+# From examples/sim
 helmfile --selector managedBy=helmfile destroy
 
 # Remove the infrastructure

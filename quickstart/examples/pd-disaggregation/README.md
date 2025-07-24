@@ -48,6 +48,7 @@ kubectl apply -f destinationRule.yaml
 
 3. Use the helmfile to apply the modelservice and GIE charts on top of it
 ```bash
+cd examples/pd-disaggregation
 helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-install
 ```
 

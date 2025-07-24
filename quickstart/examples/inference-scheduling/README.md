@@ -23,7 +23,7 @@ HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d -r infra-inferen
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
 ```bash
-cd examples/simple
+cd examples/inference-scheduling
 helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-install
 ```
 
@@ -67,6 +67,8 @@ kubectl port-forward service/infra-inference-scheduling-inference-gateway 8000:8
 ```bash
 curl http://localhost:8000/v1/models \
   -H "Content-Type: application/json" | jq
+```
+```
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   484    0   484    0     0   1903      0 --:--:-- --:--:-- --:--:--  1905
@@ -111,6 +113,8 @@ curl http://localhost:8000/v1/completions \
     "prompt": "How are you today?",
     "max_tokens": 50
   }' | jq
+```
+```
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   662    0   566  100    96   1088    184 --:--:-- --:--:-- --:--:--  1273
@@ -144,7 +148,7 @@ curl http://localhost:8000/v1/completions \
 To remove the deployment:
 ```bash
 # Remove the model services
-cd examples/simple
+# From examples/inference-scheduling
 helmfile --selector managedBy=helmfile destroy
 
 # Remove the infrastructure

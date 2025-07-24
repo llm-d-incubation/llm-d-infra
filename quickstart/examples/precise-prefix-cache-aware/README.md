@@ -7,6 +7,8 @@ This is a simple quickstart demonstrating how to configure the inference schedul
 ## Installation
 
 > To adjust the model or any other modelservice values, simply change the values.yaml file in [ms-kv-events/values.yaml](ms-kv-events/values.yaml)
+>
+> Note that the decode vLLM container `--prefix-caching-hash-algo` argument must not change
 
 1. Install the dependencies; see [install-deps.sh](../../../../../../llm-d-incubation/llm-d-infra/quickstart/install-deps.sh)
 2. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart:
@@ -21,7 +23,7 @@ HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d -r infra-kv-even
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
 ```bash
-cd examples/prefix-cache-aware/
+cd examples/precise-prefix-cache-aware
 helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-install
 ```
 
@@ -166,18 +168,20 @@ kubectl logs -l inferencepool=gaie-kv-events-epp -n llm-d --tail 100 | grep "met
 ```
 You should see output similar to:
 ```log
-I0718 23:57:10.781371       1 collector.go:107] "metrics beat" logger="metrics" admissions=3 evictions=0 lookups=3 hits=3 latency_count=3 latency_sum=0.000006859 latency_avg=0.0000022863333333333334
+I0718 23:57:10.781371       1 collector.go:107] "metrics beat" logger="metrics" admissions=3 evictions=0 lookups=1 hits=2 latency_count=1 latency_sum=0.000006859 latency_avg=0.0000022863333333333334
 ```
 
 The `admissions` count indicates how many KV-blocks were added to the index through vLLM's KV-Events,
 while the `hits` count indicates how many times the index was able to find a KV-block for a pod.
+
+If the beat is missing lookups, wait for the next one (1 minute beats).
 
 ## Cleanup
 
 To remove the deployment:
 ```bash
 # Remove the model services
-# from examples/prefix-cache-aware/kv-events
+# From examples/precise-prefix-cache-aware
 helmfile --selector managedBy=helmfile destroy
 
 # Remove the infrastructure
