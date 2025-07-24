@@ -18,7 +18,6 @@ inferenceExtension:
       - type: prefill-filter
       - type: decode-filter
       - type: max-score-picker
-      - type: prefix-cache-scorer
       - type: queue-scorer
         parameters:
           hashBlockSize: 5
