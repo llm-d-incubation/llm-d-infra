@@ -31,7 +31,7 @@ routing:
 
   epp:
     create: true
-    image: ghcr.io/llm-d/llm-d-inference-scheduler:v0.2.0
+    image: ghcr.io/llm-d/llm-d-inference-scheduler:v0.2.1
     debugLevel: 4
     pluginsConfigFile: "pd-config.yaml"
     pluginsCustomConfig:
