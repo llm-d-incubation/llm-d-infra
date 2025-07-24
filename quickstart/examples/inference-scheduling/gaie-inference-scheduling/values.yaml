@@ -9,7 +9,7 @@ inferenceExtension:
     ###################
     name: epp
     hub: us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension
-    tag: v0.5.1-rc.1
+    tag: v0.5.1
     ###################
     pullPolicy: Always
   extProcPort: 9002
