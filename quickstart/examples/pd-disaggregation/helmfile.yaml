@@ -6,7 +6,7 @@ releases:
   - name: infra-pd
     namespace: llm-d-pd
     chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
-    version: 1.0.7
+    version: 1.0.8
     installed: true
     values:
       - infra-pd/values.yaml
@@ -48,10 +48,3 @@ releases:
               -n llm-d-pd \
               -p '{"metadata":{"labels":{"inferencepool":"gaie-pd"}}}' \
               --type=merge
-      # - events: [ "postsync" ]
-      #   command: bash
-      #   args:
-      #     - -c
-      #     - |
-      #       echo "Creating the destinationRule"
-      #       kubectl create -f destinationRule.yaml -n llm-d-pd --dry-run=client -o yaml | kubectl apply -f -
