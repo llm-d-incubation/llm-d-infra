@@ -1,6 +1,6 @@
 # llm-d-infra Quick Start for OpenShift
 
-# Prerequisits
+# Prerequisites
 
 ## Platform Setup
 

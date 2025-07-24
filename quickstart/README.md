@@ -52,7 +52,7 @@ You can use the installer script that installs all the required dependencies.
 
 Since the llm-d-infra is based on helm charts, llm-d can be deployed on a variety of Kubernetes platforms. As more platforms are supported, the installer will be updated to support them.
 
-In this instruction, the target is vanilla kubernetes and if you look for other plarform's instructions, you could find them from following links.
+In this instruction, the target is vanilla kubernetes and if you look for other platform's instructions, you could find them from following links.
 
 - [Minikube](docs/infra-providers/minikube/README-minikube.md)
 - [OpenShift](docs/infra-providers/openshift/README-openshift.md)
