@@ -37,7 +37,7 @@ As a result, as you tune you P/D deployments, we suggest focusing on the followi
 2. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart (from `/llm-d-infra/quickstart`). This example only works out of the box with `Istio` as a provider, but with changes its possible to run this with `kgateway`.
 ```bash
 export HF_TOKEN=$(YOUR_TOKEN)
-./llmd-infra-installer.sh --namespace llm-d-pd -r infra-pd -j istio --disable-metrics-collection
+./llmd-infra-installer.sh --namespace llm-d-pd -r infra-pd -f examples/pd-disaggregation/infra-pd/values.yaml --disable-metrics-collection
 ```
 
 3. Use the helmfile to apply the modelservice and GIE charts on top of it
@@ -54,7 +54,7 @@ We can see that the charts were deployed:
 $ helm list
 NAME    	NAMESPACE	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
 gaie-pd 	llm-d-pd 	1       	2025-07-24 10:15:04.63662 -0700 PDT 	deployed	inferencepool-v0.5.1     	v0.5.1
-infra-pd	llm-d-pd 	1       	2025-07-24 10:13:50.654169 -0700 PDT	deployed	llm-d-infra-1.0.7        	0.1
+infra-pd	llm-d-pd 	1       	2025-07-24 10:13:50.654169 -0700 PDT	deployed	llm-d-infra-1.0.8        	0.1
 ms-pd   	llm-d-pd 	1       	2025-07-24 10:15:09.973653 -0700 PDT	deployed	llm-d-modelservice-0.0.19	0.0.1
 ```
 

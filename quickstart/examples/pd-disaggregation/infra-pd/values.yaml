@@ -1,0 +1,28 @@
+gateway:
+  gatewayClassName: istio
+  gatewayParameters:
+    resources:
+      limits:
+        cpu: "4"
+        memory: 4Gi
+      requests:
+        cpu: "1"
+        memory: 1Gi
+  destinationRule:
+    enabled: true
+    host: gaie-pd-epp.llm-d-pd.svc.cluster.local
+    trafficPolicy:
+      connectionPool:
+        http:
+          http1MaxPendingRequests: 256000
+          maxRequestsPerConnection: 256000
+          http2MaxRequests: 256000
+          idleTimeout: "900s"
+          maxRequestsPerConnection: 256000
+        tcp:
+          maxConnections: 256000
+          maxConnectionDuration: "1800s"
+          connectTimeout: "900s"
+      tls:
+        mode: SIMPLE
+        insecureSkipVerify: true
