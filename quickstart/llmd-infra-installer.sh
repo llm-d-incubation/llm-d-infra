@@ -126,6 +126,7 @@ parse_args() {
       -k|--minikube)                   USE_MINIKUBE=true; shift ;;
       -g|--context)                    KUBERNETES_CONTEXT="$2"; shift 2 ;;
       -j|--gateway)                    GATEWAY_TYPE="$2"; shift 2 ;;
+      -s|--service-type)               SERVICE_TYPE="$2"; shift 2 ;;
       -r|--release)                    HELM_RELEASE_NAME="$2"; shift 2 ;;
       -h|--help)                       print_help; exit 0 ;;
       *)                               die "Unknown option: $1" ;;
@@ -307,7 +308,7 @@ install() {
     --set gateway.gatewayClassName="${GATEWAY_TYPE}" \
     --set gateway.gatewayParameters.proxyUID="${PROXY_UID}" \
     --set ingress.clusterRouterBase="${BASE_OCP_DOMAIN}" \
-    "${MODEL_OVERRIDE_ARGS[@]+"${MODEL_OVERRIDE_ARGS[@]}"}"
+    --set gateway.serviceType="${SERVICE_TYPE:-NodePort}"
   log_success "$HELM_RELEASE_NAME deployed"
 
   log_success "🎉 Installation complete."
