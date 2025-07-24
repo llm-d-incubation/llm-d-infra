@@ -93,12 +93,18 @@ gateway:
         cpu: 100m
         memory: 128Mi
 
+  # @schema
+  # additionalProperties: true
+  # @schema
   # Configuration for Istio DestinationRule to control traffic policy for this service.
   # -- see: https://istio.io/latest/docs/reference/config/networking/destination-rule/
   destinationRule:
     enabled: false
     host: "localhost"
 
+    # @schema
+    # additionalProperties: true
+    # @schema
     # Optional: Apply a mesh-wide traffic policy
     trafficPolicy: {}
 
@@ -108,6 +114,9 @@ gateway:
     # Optional: Control which namespaces can access this DestinationRule
     exportTo: []
 
+    # @schema
+    # additionalProperties: true
+    # @schema
     # Optional: Apply only to specific workloads (via selector labels)
     workloadSelector: {}
 

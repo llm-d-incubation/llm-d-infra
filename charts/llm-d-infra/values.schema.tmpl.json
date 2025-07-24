@@ -100,7 +100,6 @@
               "type": "boolean"
             },
             "exportTo": {
-              "additionalProperties": true,
               "description": "Optional: Control which namespaces can access this DestinationRule",
               "items": {
                 "required": []
@@ -116,7 +115,6 @@
               "type": "string"
             },
             "subsets": {
-              "additionalProperties": true,
               "description": "Optional: Define subsets for versioned routing (e.g., by labels)",
               "items": {
                 "required": []
@@ -127,17 +125,15 @@
             },
             "trafficPolicy": {
               "additionalProperties": true,
-              "description": "Optional: Apply a mesh-wide traffic policy",
+              "description": " additionalProperties: true @schema Optional: Apply a mesh-wide traffic policy",
               "required": [],
-              "title": "trafficPolicy",
-              "type": "object"
+              "title": "trafficPolicy"
             },
             "workloadSelector": {
               "additionalProperties": true,
-              "description": "Optional: Apply only to specific workloads (via selector labels)",
+              "description": " additionalProperties: true @schema Optional: Apply only to specific workloads (via selector labels)",
               "required": [],
-              "title": "workloadSelector",
-              "type": "object"
+              "title": "workloadSelector"
             }
           },
           "required": [],
