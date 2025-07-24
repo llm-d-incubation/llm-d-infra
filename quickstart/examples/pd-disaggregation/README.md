@@ -56,10 +56,10 @@ We can see that the charts were deployed:
 ```bash
 helm list
 
->> NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION
->> gaie-pd         llm-d           1               2025-07-14 22:45:05.965698 -0400 EDT    deployed        inferencepool-v0.4.0            v0.4.0
->> infra-pd        llm-d           1               2025-07-14 22:44:37.411622 -0400 EDT    deployed        llm-d-infra-1.0.2               0.1
->> ms-pd           llm-d           3               2025-07-14 23:10:19.542269 -0400 EDT    deployed        llm-d-modelservice-0.0.10       0.0.1
+>> NAME    	NAMESPACE	REVISION	UPDATED                                	STATUS  	CHART                    	APP VERSION
+>> gaie-pd 	llm-d-pd 	1       	2025-07-24 03:34:09.947433488 +0000 UTC	deployed	inferencepool-v0.5.1     	v0.5.1
+>> infra-pd	llm-d-pd 	2       	2025-07-24 03:37:29.976376182 +0000 UTC	deployed	llm-d-infra-1.0.7        	0.1
+>> ms-pd   	llm-d-pd 	1       	2025-07-24 03:34:10.43345471 +0000 UTC 	deployed	llm-d-modelservice-0.0.19	0.0.1
 ```
 
 We can see that 4 prefill replicas were created and 1 decode replica was created:
