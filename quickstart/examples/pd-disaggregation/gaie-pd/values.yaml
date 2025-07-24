@@ -7,9 +7,9 @@ inferenceExtension:
     tag: v0.2.1
     pullPolicy: Always
   extProcPort: 9002
-  pluginsConfigFile: "dp-config.yaml"
+  pluginsConfigFile: "pd-config.yaml"
   pluginsCustomConfig:
-    dp-config.yaml: |
+    pd-config.yaml: |
       # ALWAYS DO PD IN THIS EXAMPLE (THRESHOLD 0)
       apiVersion: inference.networking.x-k8s.io/v1alpha1
       kind: EndpointPickerConfig
@@ -17,7 +17,6 @@ inferenceExtension:
       - type: prefill-header-handler
       - type: prefill-filter
       - type: decode-filter
-      - type: random-picker
       - type: max-score-picker
       - type: prefix-cache-scorer
       - type: queue-scorer
