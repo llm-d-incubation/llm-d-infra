@@ -35,3 +35,21 @@ releases:
       - ms-pd/values.yaml
     labels:
       managedBy: helmfile
+    hooks:
+      - events: [ "postsync" ]
+        command: bash
+        args:
+          - -c
+          - |
+            echo "Creating the destinationRule"
+            kubectl create -f destinationRule.yaml -n llm-d-pd --dry-run=client -o yaml | kubectl apply -f -
+      - events: [ "postsync" ]
+        command: bash
+        args:
+          - -c
+          - |
+            echo "Patching HTTPRoute to trigger reconciliation..."
+            kubectl patch httproute ms-pd-llm-d-modelservice \
+              -n llm-d-pd \
+              -p '{"metadata":{"labels":{"inferencepool":"ms-pd-llm-d-modelservice"}}}' \
+              --type=merge

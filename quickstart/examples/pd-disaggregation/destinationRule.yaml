@@ -3,7 +3,7 @@ kind: DestinationRule
 metadata:
   name: pd-destination-rule
 spec:
-  host: gaie-pd-epp
+  host: gaie-pd-epp.llm-d-pd.svc.cluster.local
   trafficPolicy:
     connectionPool:
       http:
@@ -19,4 +19,3 @@ spec:
     tls:
       mode: SIMPLE
       insecureSkipVerify: true
-  
