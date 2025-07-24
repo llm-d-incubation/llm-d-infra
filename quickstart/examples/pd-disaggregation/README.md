@@ -37,7 +37,13 @@ As a result, as you tune you P/D deployments, we suggest focusing on the followi
 2. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart (from `/llm-d-infra/quickstart`):
 ```bash
 export HF_TOKEN=$(YOUR_TOKEN)
-./llmd-infra-installer.sh --namespace llm-d -r infra-pd -j kgateway --disable-metrics-collection
+./llmd-infra-installer.sh --namespace llm-d-pd -r infra-pd -j istio --disable-metrics-collection
+```
+
+> Note: if you are deploying Istio as the gateway, e.g. `--gateway istio`, then you will need to apply a `DestinationRule`:
+
+```bash
+kubectl apply -f destinationRule.yaml
 ```
 
 3. Use the helmfile to apply the modelservice and GIE charts on top of it
@@ -69,7 +75,3 @@ kubectl get pods
 >> ms-pd-llm-d-modelservice-prefill-5cbb8c6dcc-82b4g   1/1     Running   0          3m21s
 >> ms-pd-llm-d-modelservice-prefill-5cbb8c6dcc-mvnmh   1/1     Running   0          3m41s
 ```
-
----
-
-> Note: if you are deploying Istio as the gateway, e.g. `--gateway istio`, then you will need to apply a `DestinationRule` described in [Temporary Istio Workaround](../../istio-workaround.md).
