@@ -19,6 +19,4 @@ spec:
     tls:
       mode: SIMPLE
       insecureSkipVerify: true
-    # loadBalancer:
-    #   simple: ROUND_ROBIN
   
