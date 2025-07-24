@@ -11,12 +11,12 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 > To adjust the model or any other modelservice values, simply change the values.yaml file in [ms-inference-scheduling/values.yaml](ms-inference-scheduling/values.yaml)
 
 1. Install the dependencies; see [install-deps.sh](../../install-deps.sh)
-2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart:
+2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart. This example uses `kgateway` but should work with `istio` given some modifications as described below step 3.
 
 ```bash
 # From the repo root
 cd quickstart
-HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d -r infra-inference-scheduling --gateway kgateway
+HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d-inference-scheduling -r infra-inference-scheduling --gateway kgateway
 ```
     - It should be noted release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
 
@@ -33,26 +33,22 @@ helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-instal
 
 ## Verify the Installation
 
-1. Firstly, you should be able to list all helm releases to view all 5 charts that should be installed:
+1. Firstly, you should be able to list all helm releases to view the 3 charts got installed into the `llm-d-inference-scheduling` namespace:
 
 ```bash
-helm list --all-namespaces --all --debug
-NAME          	NAMESPACE      	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
-gaie-inference-scheduling 	llm-d          	1       	2025-07-14 10:57:25.515174 -0700 PDT	deployed	inferencepool-v0         	v0
-infra-inference-scheduling	llm-d          	1       	2025-07-14 10:46:56.074433 -0700 PDT	deployed	llm-d-infra-1.0.1        	0.1
-kgateway      	kgateway-system	1       	2025-07-14 10:46:43.577928 -0700 PDT	deployed	kgateway-v2.0.3          	1.16.0
-kgateway-crds 	kgateway-system	1       	2025-07-14 10:46:39.26078 -0700  PDT 	deployed	kgateway-crds-v2.0.3     	1.16.0
-ms-inference-scheduling   	llm-d          	1       	2025-07-14 10:57:25.726526 -0700 PDT	deployed	llm-d-modelservice-0.0.10	0.0.1
+$ helm list -n llm-d-inference-scheduling
+NAME                      	NAMESPACE                 	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
+gaie-inference-scheduling 	llm-d-inference-scheduling	1       	2025-07-24 10:44:30.543527 -0700 PDT	deployed	inferencepool-v0.5.1     	v0.5.1
+infra-inference-scheduling	llm-d-inference-scheduling	1       	2025-07-24 10:41:49.452841 -0700 PDT	deployed	llm-d-infra-1.0.7        	0.1
+ms-inference-scheduling   	llm-d-inference-scheduling	1       	2025-07-24 10:44:35.91079 -0700 PDT 	deployed	llm-d-modelservice-0.0.19	0.0.1
 ```
-
-Note: if you chose to use `istio` as your Gateway provider you would see those (`istiod` and `istio-base` in the `istio-system` namespace) instead of the kgateway based ones.
 
 2. Find the gateway service:
 ```bash
-kubectl get services
-NAME                               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
-gaie-inference-scheduling-epp                  ClusterIP   172.30.248.208   <none>        9002/TCP,9090/TCP   7m11s
-infra-inference-scheduling-inference-gateway   NodePort    172.30.112.221   <none>        80:31790/TCP        17m
+$ kubectl get services
+NAME                                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)             AGE
+gaie-inference-scheduling-epp                  ClusterIP   10.16.0.249   <none>        9002/TCP,9090/TCP   96s
+infra-inference-scheduling-inference-gateway   NodePort    10.16.3.58    <none>        80:33377/TCP        4m19s
 ```
 In this case we have found that our gateway service is called `infra-inference-scheduling-inference-gateway`.
 
