@@ -4,7 +4,7 @@ repositories:
 
 releases:
   - name: infra-wide-ep
-    namespace: llm-d
+    namespace: tms-d
     chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
     version: 1.0.6
     installed: true
@@ -12,12 +12,12 @@ releases:
       managedBy: llm-d-infra-installer
 
   - name: ms-wide-ep
-    namespace: llm-d
+    namespace: tms-d
     chart: llm-d-modelservice/llm-d-modelservice
     version: 0.0.19
     installed: true
     needs:
-      - llm-d/infra-wide-ep
+      - tms-d/infra-wide-ep
     values:
       - ms-wide-ep/values.yaml
     labels:
@@ -31,7 +31,7 @@ releases:
         - |
           echo "Patching HTTPRoute to trigger reconciliation..."
           kubectl patch httproute ms-wide-ep-llm-d-modelservice \
-            -n llm-d \
+            -n tms-d \
             -p '{"metadata":{"labels":{"inferencepool":"ms-wide-ep-llm-d-modelservice"}}}' \
             --type=merge
     - events: [ "postsync" ]
@@ -40,4 +40,4 @@ releases:
         - -c
         - |
           echo "Creating the destinationRule"
-          kubectl create -f destinationRule.yaml -n llm-d --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create -f destinationRule.yaml -n tms-d --dry-run=client -o yaml | kubectl apply -f -

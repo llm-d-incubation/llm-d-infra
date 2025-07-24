@@ -72,7 +72,7 @@ decode:
     tensor: 1 # these will be derived based performance testing
   containers:
     - name: vllm-worker-decode
-      image: "quay.io/tms/llm-d-dev:0.2.0-oppn1"
+      image: "quay.io/tms/llm-d-dev:0.2.0-d"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash","-c"]
@@ -91,17 +91,19 @@ decode:
             --disable-log-requests \
             --disable-uvicorn-access-log \
             --enable-expert-parallel \
+            --data-parallel-hybrid-lb \
             --tensor-parallel-size $TP_SIZE \
             --data-parallel-size $((LWS_GROUP_SIZE * DP_SIZE_LOCAL)) \
             --data-parallel-size-local $DP_SIZE_LOCAL \
             --data-parallel-address ${LWS_LEADER_ADDRESS} \
             --data-parallel-rpc-port 5555 \
-            --data-parallel-rank $START_RANK \
+            --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
-            --enforce-eager \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
 
       env:
+        - name: VLLM_TORCH_PROFILER_DIR
+          value: "/code/traces"
         - name: VLLM_FUSED_MOE_CHUNK_SIZE
           value: "1024"
 
@@ -197,7 +199,7 @@ prefill:
     tensor: 1 # these will be derived based performance testing
   containers:
     - name: vllm-worker-prefill
-      image: "quay.io/tms/llm-d-dev:0.2.0-oppn1"
+      image: "quay.io/tms/llm-d-dev:0.2.0-d"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash","-c"]
@@ -221,12 +223,13 @@ prefill:
             --data-parallel-size-local $DP_SIZE_LOCAL \
             --data-parallel-address ${LWS_LEADER_ADDRESS} \
             --data-parallel-rpc-port 5555 \
-            --data-parallel-rank $START_RANK \
+            --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
-            --enforce-eager \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
 
       env:
+        - name: VLLM_TORCH_PROFILER_DIR
+          value: "/code/traces"
         - name: DP_SIZE_LOCAL
           value: "8"
 

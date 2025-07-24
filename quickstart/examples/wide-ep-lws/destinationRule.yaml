@@ -3,7 +3,7 @@ kind: DestinationRule
 metadata:
   name: wide-ep-destination-rule
 spec:
-  host: ms-wide-ep-llm-d-modelservice-epp.llm-d.svc.cluster.local
+  host: ms-wide-ep-llm-d-modelservice-epp.tms-d.svc.cluster.local
   trafficPolicy:
     connectionPool:
       http:
