@@ -226,6 +226,7 @@ prefill:
             --disable-log-requests \
             --disable-uvicorn-access-log \
             --enable-expert-parallel \
+            --data-parallel-hybrid-lb \
             --tensor-parallel-size $TP_SIZE \
             --data-parallel-size $((LWS_GROUP_SIZE * DP_SIZE_LOCAL)) \
             --data-parallel-size-local $DP_SIZE_LOCAL \
