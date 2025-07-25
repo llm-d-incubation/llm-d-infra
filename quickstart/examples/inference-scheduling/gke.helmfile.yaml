@@ -41,7 +41,7 @@ releases:
         command: bash
         args:
           - -c
-          - |   
+          - |
             if [ "${GATEWAY}" = "gke-l7-regional-external-managed" ]; then
               echo "Removing timeout in HTTPRoute as GKE Gateway doesn't support it..."
               kubectl patch httproute ms-inference-scheduling-llm-d-modelservice \

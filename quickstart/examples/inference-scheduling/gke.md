@@ -40,11 +40,11 @@ ms-inference-scheduling   	llm-d-inference-scheduling	1       	2025-07-24 10:44:
 ```
 
 1. Get the gateway endpoint:
-      
+
     ```bash
     GATEWAY_NAME=infra-inference-scheduling-inference-gateway
     IP=$(kubectl get gateway/${GATEWAY_NAME} -n ${NAMESPACE} -o jsonpath='{.status.addresses[0].value}')
-    
+
     PORT=80
     ```
 
@@ -130,4 +130,3 @@ helmfile --selector managedBy=helmfile destroy --namespace ${NAMESPACE}
 # Remove the infrastructure
 helm uninstall infra-inference-scheduling -n ${NAMESPACE}
 ```
-
