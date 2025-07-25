@@ -4,6 +4,61 @@
 set -euo pipefail
 
 ########################################
+#  Usage function
+########################################
+show_usage() {
+  cat << EOF
+Usage: $0 [OPTIONS]
+
+Install essential tools for llm-d-infra development.
+
+OPTIONS:
+  --dev     Install additional development tools (chart-testing)
+  -h, --help     Show this help message and exit
+
+EXAMPLES:
+  $0             Install basic tools only
+  $0 --dev       Install basic tools + development tools
+  $0 --help      Show this help message
+
+TOOLS INSTALLED:
+  Basic tools:
+    - git, jq, curl, tar (system packages)
+    - yq (YAML processor)
+    - kubectl (Kubernetes CLI)
+    - helm (Helm package manager)
+    - helm diff plugin
+    - helmfile (Helm deployment tool)
+    - kustomize (Kubernetes configuration tool)
+  
+  Development tools (with --dev):
+    - chart-testing (Helm chart testing tool)
+
+EOF
+}
+
+########################################
+#  Parse command line arguments
+########################################
+DEV_MODE=false
+for arg in "$@"; do
+  case $arg in
+    --dev)
+      DEV_MODE=true
+      ;;
+    -h|--help)
+      show_usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $arg"
+      echo "Use --help for usage information."
+      exit 1
+      ;;
+  esac
+done
+
+########################################
 #  Helper: detect current OS / ARCH
 ########################################
 OS=$(uname | tr '[:upper:]' '[:lower:]')
@@ -47,7 +102,7 @@ install_pkg() {
 ########################################
 #  Base utilities
 ########################################
-for pkg in git jq curl tar wget; do
+for pkg in git jq curl tar; do
   if ! command -v "$pkg" &> /dev/null; then
     install_pkg "$pkg"
   fi
@@ -58,16 +113,16 @@ done
 ########################################
 if ! command -v yq &> /dev/null; then
   echo "Installing yq..."
-  if [[ "$OS" == "linux" ]]; then
-    sudo wget -qO /usr/local/bin/yq \
-      https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${ARCH}
-  else  # macOS
-    sudo wget -qO /usr/local/bin/yq \
-      https://github.com/mikefarah/yq/releases/latest/download/yq_darwin_${ARCH}
-  fi
-  sudo chmod +x /usr/local/bin/yq
+  curl -sLo yq \
+    "https://github.com/mikefarah/yq/releases/latest/download/yq_${OS}_${ARCH}"
+  chmod +x yq
+  sudo mv yq /usr/local/bin/yq
 fi
 
+if ! yq --version 2>&1 | grep -q 'mikefarah'; then
+  echo "Detected yq is not mikefarah’s yq. Please uninstall your current yq and re-run this script."
+  exit 1
+fi
 ########################################
 #  kubectl
 ########################################
@@ -90,7 +145,7 @@ if ! command -v helm &> /dev/null; then
   echo "Installing Helm..."
   HELM_VER="v3.17.3"
   TARBALL="helm-${HELM_VER}-${OS}-${ARCH}.tar.gz"
-  wget -q "https://get.helm.sh/${TARBALL}"
+  curl -sLO "https://get.helm.sh/${TARBALL}"
   tar -zxvf "${TARBALL}"
   sudo mv "${OS}-${ARCH}/helm" /usr/local/bin/helm
   rm -rf "${OS}-${ARCH}" "${TARBALL}"
@@ -136,6 +191,23 @@ if ! command -v kustomize &> /dev/null; then
   tar -xzf kustomize.tar.gz
   sudo mv kustomize /usr/local/bin/
   rm kustomize.tar.gz
+fi
+
+########################################
+#  chart-testing (dev mode only)
+########################################
+if [[ "$DEV_MODE" == true ]]; then
+  if ! command -v ct &> /dev/null; then
+    echo "Installing chart-testing (ct)..."
+    CT_VERSION="3.12.0"
+    ARCHIVE="chart-testing_${CT_VERSION}_${OS}_${ARCH}.tar.gz"
+    URL="https://github.com/helm/chart-testing/releases/download/v${CT_VERSION}/${ARCHIVE}"
+    curl -sSL -o "/tmp/ct.tar.gz" "$URL"
+    tar -xzf /tmp/ct.tar.gz -C /tmp
+    sudo mv /tmp/ct /usr/local/bin/ct
+    sudo chmod +x /usr/local/bin/ct
+    rm /tmp/ct.tar.gz
+  fi
 fi
 
 echo "✅ All tools installed successfully."
