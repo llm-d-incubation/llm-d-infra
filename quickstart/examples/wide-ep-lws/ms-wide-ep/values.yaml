@@ -107,6 +107,11 @@ decode:
             --data-parallel-rpc-port 5555 \
             --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
+            --enable-eplb \
+            --num-redundant-experts 32 \
+            --eplb-window-size 1000 \
+            --eplb-step-interval 3000 \
+            --api-server-count=8 \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
 
       env:
@@ -232,6 +237,11 @@ prefill:
             --data-parallel-rpc-port 5555 \
             --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
+            --enable-eplb \
+            --num-redundant-experts 32 \
+            --eplb-window-size 1000 \
+            --eplb-step-interval 3000 \
+            --api-server-count=8 \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
 
       env:
