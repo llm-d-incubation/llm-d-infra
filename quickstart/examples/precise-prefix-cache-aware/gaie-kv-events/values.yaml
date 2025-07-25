@@ -33,7 +33,6 @@ inferenceExtension:
       kind: EndpointPickerConfig
       plugins:
         - type: single-profile-handler
-        - type: decode-filter
         - type: prefix-cache-scorer
           parameters:
             mode: cache_tracking
@@ -50,7 +49,6 @@ inferenceExtension:
       schedulingProfiles:
         - name: default
           plugins:
-            - pluginRef: decode-filter
             - pluginRef: prefix-cache-scorer
               weight: 2.0
             - pluginRef: kv-cache-scorer
