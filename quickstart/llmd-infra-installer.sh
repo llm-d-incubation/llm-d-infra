@@ -216,7 +216,7 @@ validate_hf_token() {
 }
 
 validate_gateway_type() {
-  if [[ "${GATEWAY_TYPE}" != "istio" && "${GATEWAY_TYPE}" != "kgateway" ]]; then
+  if [[ "${GATEWAY_TYPE}" != "istio" && "${GATEWAY_TYPE}" != "kgateway" && "${GATEWAY_TYPE}" != "gke-l7-regional-external-managed" ]]; then
     die "Invalid gateway type: ${GATEWAY_TYPE}. Supported types are: istio, kgateway."
   fi
   log_success "Gateway type validated"

@@ -19,7 +19,7 @@ cd quickstart
 export HF_TOKEN=${HFTOKEN}
 ./llmd-infra-installer.sh --namespace llm-d-inference-scheduling -r infra-inference-scheduling --gateway kgateway --disable-metrics-collection
 ```
-    - It should be noted release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
+> Note: The release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
 
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
@@ -31,6 +31,9 @@ helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-instal
 ---
 
 > Note: if you are deploying Istio as the gateway, e.g. `--gateway istio`, then you will need to apply a `DestinationRule` described in [Temporary Istio Workaround](../../istio-workaround.md).
+
+> Note if using GKE with the `gke-l7-regional-external-managed` gateway type, use the `gke.helmfile.yaml` instead of the default one like so:
+> `helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-install -f gke.helmfile.yaml`.
 
 ## Verify the Installation
 

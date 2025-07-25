@@ -60,7 +60,7 @@ gateway:
   nameOverride: ""
 
   # -- Gateway class that determines the backend used
-  # Currently supported values: "kgateway" or "istio"
+  # Currently supported values: "kgateway", "istio", or "gke-l7-regional-external-managed"
   gatewayClassName: kgateway
 
   # @schema

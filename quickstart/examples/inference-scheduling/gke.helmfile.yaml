@@ -1,0 +1,46 @@
+repositories:
+  - name: llm-d-modelservice
+    url: https://llm-d-incubation.github.io/llm-d-modelservice/
+
+releases:
+  - name: infra-inference-scheduling
+    namespace: llm-d-inference-scheduling
+    chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
+    version: v1.1.0
+    installed: true
+    labels:
+      managedBy: llm-d-infra-installer
+
+  - name: gaie-inference-scheduling
+    namespace: llm-d-inference-scheduling
+    chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
+    version: v0.5.1
+    installed: true
+    needs:
+      - llm-d-inference-scheduling/infra-inference-scheduling
+    values:
+      - gaie-inference-scheduling/values.yaml
+    labels:
+      managedBy: helmfile
+
+  - name: ms-inference-scheduling
+    namespace: llm-d-inference-scheduling
+    chart: llm-d-modelservice/llm-d-modelservice
+    version: v0.2.0
+    installed: true
+    needs:
+      - llm-d-inference-scheduling/infra-inference-scheduling
+      - llm-d-inference-scheduling/gaie-inference-scheduling
+    values:
+      - ms-inference-scheduling/values.yaml
+    labels:
+      managedBy: helmfile
+    hooks:
+      - events: [ "postsync" ]
+        showlogs: true
+        command: "bash"
+        args:
+          - -c
+          - |
+              echo "Patching HTTPRoute to remove timeouts ..."
+              kubectl patch httproute ms-inference-scheduling-llm-d-modelservice -n llm-d-inference-scheduling --type=json -p '[{"op": "remove", "path": "/spec/rules/0/timeouts"}]'
