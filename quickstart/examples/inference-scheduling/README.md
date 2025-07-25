@@ -16,7 +16,8 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 ```bash
 # From the repo root
 cd quickstart
-HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d-inference-scheduling -r infra-inference-scheduling --gateway kgateway
+export HF_TOKEN=${HFTOKEN}
+./llmd-infra-installer.sh --namespace llm-d-inference-scheduling -r infra-inference-scheduling --gateway kgateway --disable-metrics-collection
 ```
     - It should be noted release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
 
@@ -45,7 +46,7 @@ ms-inference-scheduling   	llm-d-inference-scheduling	1       	2025-07-24 10:44:
 
 2. Find the gateway service:
 ```bash
-$ kubectl get services
+$ kubectl get services -n llm-d-inference-scheduling
 NAME                                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)             AGE
 gaie-inference-scheduling-epp                  ClusterIP   10.16.0.249   <none>        9002/TCP,9090/TCP   96s
 infra-inference-scheduling-inference-gateway   NodePort    10.16.3.58    <none>        80:33377/TCP        4m19s
@@ -55,19 +56,14 @@ In this case we have found that our gateway service is called `infra-inference-s
 3. `port-forward` the service to we can curl it:
 
 ```bash
-kubectl port-forward service/infra-inference-scheduling-inference-gateway 8000:80
+kubectl port-forward -n llm-d-inference-scheduling service/infra-inference-scheduling-inference-gateway 8000:80
 ```
 
 4. Try curling the `/v1/models` endpoint:
 
 ```bash
-curl http://localhost:8000/v1/models \
+curl -s http://localhost:8000/v1/models \
   -H "Content-Type: application/json" | jq
-```
-```
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   484    0   484    0     0   1903      0 --:--:-- --:--:-- --:--:--  1905
 {
   "data": [
     {
@@ -102,18 +98,13 @@ curl http://localhost:8000/v1/models \
 
 5. Try curling the `v1/completions` endpoint:
 ```bash
-curl http://localhost:8000/v1/completions \
+curl -s http://localhost:8000/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "Qwen/Qwen3-0.6B",
     "prompt": "How are you today?",
     "max_tokens": 50
   }' | jq
-```
-```
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   662    0   566  100    96   1088    184 --:--:-- --:--:-- --:--:--  1273
 {
   "choices": [
     {

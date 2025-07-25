@@ -36,7 +36,9 @@ As a result, as you tune you P/D deployments, we suggest focusing on the followi
 
 2. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart (from `/llm-d-infra/quickstart`). This example only works out of the box with `Istio` as a provider, but with changes its possible to run this with `kgateway`.
 ```bash
-export HF_TOKEN=$(YOUR_TOKEN)
+# ran from root of repo
+cd quickstart
+export HF_TOKEN=$(HFTOKEN)
 ./llmd-infra-installer.sh --namespace llm-d-pd -r infra-pd -f examples/pd-disaggregation/infra-pd/values.yaml --disable-metrics-collection
 ```
 
@@ -46,22 +48,22 @@ cd examples/pd-disaggregation
 helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-install
 ```
 
-> Note: When using Istio as the gateway, e.g. `--gateway istio`, you will need to apply a `DestinationRule` described in [Temporary Istio Workaround](../../istio-workaround.md).
+## Verifying the installation
 
-We can see that the charts were deployed:
+1. First lets check that all three charts were deployed successfully to our `llm-d-pd` namespace:
 
 ```bash
-$ helm list
-NAME    	NAMESPACE	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
-gaie-pd 	llm-d-pd 	1       	2025-07-24 10:15:04.63662 -0700 PDT 	deployed	inferencepool-v0.5.1     	v0.5.1
-infra-pd	llm-d-pd 	1       	2025-07-24 10:13:50.654169 -0700 PDT	deployed	llm-d-infra-v1.1.0        	v0.2.0
-ms-pd   	llm-d-pd 	1       	2025-07-24 10:15:09.973653 -0700 PDT	deployed	llm-d-modelservice-v0.2.0	v0.2.0
+$ helm list -n llm-d-pd
+NAME    	NAMESPACE	REVISION	UPDATED                             	STATUS  	CHART                   	APP VERSION
+gaie-pd 	llm-d-pd 	1       	2025-07-25 11:27:47.419598 -0700 PDT	deployed	inferencepool-v0.5.1    	v0.5.1
+infra-pd	llm-d-pd 	1       	2025-07-25 11:27:18.453254 -0700 PDT	deployed	llm-d-infra-v1.1.0      	v0.2.0
+ms-pd   	llm-d-pd 	1       	2025-07-25 11:27:53.138175 -0700 PDT	deployed	llm-d-modelservice-0.2.0	v0.2.0
 ```
 
-We can see that 4 prefill replicas were created and 1 decode replica was created:
+2. Next lets check our pod health of our 4 prefill replicas and 1 decode replica:
 
 ```bash
-$ kubectl get pods
+$ kubectl get pods -n llm-d-pd
 NAME                                                READY   STATUS    RESTARTS   AGE
 gaie-pd-epp-69888bdd8d-6pnbk                        1/1     Running   0          54s
 infra-pd-inference-gateway-istio-776797b79f-6clvr   1/1     Running   0          2m9s
@@ -71,3 +73,110 @@ ms-pd-llm-d-modelservice-prefill-549598dd6c-6n4bc   1/1     Running   0         
 ms-pd-llm-d-modelservice-prefill-549598dd6c-ft89l   1/1     Running   0          49s
 ms-pd-llm-d-modelservice-prefill-549598dd6c-pbjzx   1/1     Running   0          49s
 ```
+
+3. Find the gateway service:
+```bash
+$ kubectl get services -n llm-d-pd
+NAME                               TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                        AGE
+gaie-pd-epp                        ClusterIP   10.16.0.161   <none>        9002/TCP,9090/TCP              6m6s
+gaie-pd-ip-bb618139                ClusterIP   None          <none>        54321/TCP                      6m1s
+infra-pd-inference-gateway-istio   NodePort    10.16.0.146   <none>        15021:34743/TCP,80:30212/TCP   6m36s
+```
+In this case we have found that our gateway service is called `infra-pd-inference-gateway-istio`.
+
+4. `port-forward` the service to we can curl it:
+
+```bash
+kubectl port-forward -n llm-d-pd service/infra-pd-inference-gateway-istio 8000:80
+```
+
+5. Try curling the `/v1/models` endpoint:
+
+```bash
+curl -s http://localhost:8000/v1/models \
+  -H "Content-Type: application/json" | jq
+{
+  "data": [
+    {
+      "created": 1753468493,
+      "id": "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic",
+      "max_model_len": 32000,
+      "object": "model",
+      "owned_by": "vllm",
+      "parent": null,
+      "permission": [
+        {
+          "allow_create_engine": false,
+          "allow_fine_tuning": false,
+          "allow_logprobs": true,
+          "allow_sampling": true,
+          "allow_search_indices": false,
+          "allow_view": true,
+          "created": 1753468493,
+          "group": null,
+          "id": "modelperm-df4f0c7555e648fe82a3a952d0634e20",
+          "is_blocking": false,
+          "object": "model_permission",
+          "organization": "*"
+        }
+      ],
+      "root": "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic"
+    }
+  ],
+  "object": "list"
+}
+```
+
+6. Try curling the `v1/completions` endpoint:
+```bash
+curl -s http://localhost:8000/v1/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic",
+    "prompt": "How are you today?",
+    "max_tokens": 50
+  }' | jq
+{
+  "choices": [
+    {
+      "finish_reason": "length",
+      "index": 0,
+      "logprobs": null,
+      "prompt_logprobs": null,
+      "stop_reason": null,
+      "text": " I hope you are having a great day so far. I just wanted to remind you that you are not alone. No matter what you are going through, you have people who care about you and want to help.\nIf you are struggling with difficult emotions"
+    }
+  ],
+  "created": 1753468566,
+  "id": "cmpl-e18c8248-bcd7-4c26-a7fc-a7e214dc3ff1",
+  "kv_transfer_params": null,
+  "model": "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic",
+  "object": "text_completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 50,
+    "prompt_tokens": 6,
+    "prompt_tokens_details": null,
+    "total_tokens": 56
+  }
+}
+```
+
+## Cleanup
+
+To remove the deployment:
+```bash
+# Remove the model services
+# From examples/inference-scheduling
+helmfile --selector managedBy=helmfile destroy
+
+# Remove the infrastructure
+helm uninstall infra-pd -n llm-d-pd
+```
+
+## Customization
+
+- **Change model**: Edit `ms-pd/values.yaml` and update the `modelArtifacts.uri` and `routing.modelName`
+- **Adjust resources**: Modify the GPU/CPU/memory requests in the container specifications
+- **Scale workers**: Change the `replicas` count for decode/prefill deployments

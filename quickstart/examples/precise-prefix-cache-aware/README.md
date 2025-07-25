@@ -16,7 +16,8 @@ This is a simple quickstart demonstrating how to configure the inference schedul
 ```bash
 # From the repo root
 cd quickstart
-HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d-precise -r infra-kv-events --gateway kgateway
+export HF_TOKEN=${HFTOKEN}
+./llmd-infra-installer.sh --namespace llm-d-precise -r infra-kv-events --gateway kgateway --disable-metrics-collection
 ```
     - It should be noted release name `infra-kv-events` is important here, because it matches up with pre-built values files used in this example.
 
@@ -32,21 +33,24 @@ helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-instal
 1. Firstly, you should be able to list all helm releases in the `llm-d-precise` ns to view all 3 charts that should be installed:
 
 ```bash
-helm list -n llm-d-precise --all --debug
-NAME          	NAMESPACE      	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
-infra-kv-events	llm-d-precise   1       	2025-07-14 10:46:56.074433 -0700 PDT	deployed	llm-d-infra-v1.1.0       	v0.2.0
-ms-kv-events   	llm-d-precise   1       	2025-07-14 10:57:25.726526 -0700 PDT	deployed	llm-d-modelservice-v0.2.0	v0.2.0
+$ helm list -n llm-d-precise --all --debug
+NAME           	NAMESPACE    	REVISION	UPDATED                             	STATUS  	CHART                   	APP VERSION
+gaie-kv-events 	llm-d-precise	1       	2025-07-25 11:20:57.162464 -0700 PDT	deployed	inferencepool-v0.5.1    	v0.5.1
+infra-kv-events	llm-d-precise	1       	2025-07-25 11:20:48.115947 -0700 PDT	deployed	llm-d-infra-v1.1.0      	v0.2.0
+ms-kv-events   	llm-d-precise	1       	2025-07-25 11:21:03.244736 -0700 PDT	deployed	llm-d-modelservice-0.2.0	v0.2.0
 ```
 
 Note: if you chose to use `istio` as your Gateway provider you would see those (`istiod` and `istio-base` in the `istio-system` namespace) instead of the kgateway based ones.
 
 2. Find the gateway service:
+
 ```bash
-kubectl get services
-NAME                               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
-infra-kv-events-inference-gateway  NodePort    172.30.172.142   <none>        80:30519/TCP        4m7s
-gaie-kv-events-epp                 ClusterIP   172.30.72.170    <none>        9002/TCP,5557/TCP   71s
+$ kubectl get services -n llm-d-precise
+NAME                                TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                      AGE
+gaie-kv-events-epp                  ClusterIP   10.16.0.249   <none>        9002/TCP,9090/TCP,5557/TCP   53s
+infra-kv-events-inference-gateway   NodePort    10.16.2.175   <none>        80:39286/TCP                 63s
 ```
+
 In this case we have found that our gateway service is called `infra-kv-events-inference-gateway`.
 
 3. `port-forward` the service to we can curl it:
@@ -58,13 +62,8 @@ kubectl -n llm-d-precise port-forward service/infra-kv-events-inference-gateway 
 4. Try curling the `/v1/models` endpoint:
 
 ```bash
-curl http://localhost:8000/v1/models \
+curl -s http://localhost:8000/v1/models \
   -H "Content-Type: application/json" | jq
-```
-```
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   484    0   484    0     0   1903      0 --:--:-- --:--:-- --:--:--  1905
 {
   "data": [
     {
@@ -100,18 +99,13 @@ curl http://localhost:8000/v1/models \
 5. Curl the `v1/completions` endpoint once:
 ```bash
 export LONG_TEXT_200_WORDS="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." && \
-curl http://localhost:8000/v1/completions \
+curl -s http://localhost:8000/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "Qwen/Qwen3-0.6B",
     "prompt": "'"$LONG_TEXT_200_WORDS"'",
     "max_tokens": 50
   }' | jq
-```
-```yaml
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   662    0   566  100    96   1088    184 --:--:-- --:--:-- --:--:--  1273
 {
   "choices": [
     {

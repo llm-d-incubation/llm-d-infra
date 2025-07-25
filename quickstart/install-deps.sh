@@ -30,7 +30,7 @@ TOOLS INSTALLED:
     - helm diff plugin
     - helmfile (Helm deployment tool)
     - kustomize (Kubernetes configuration tool)
-  
+
   Development tools (with --dev):
     - chart-testing (Helm chart testing tool)
 
