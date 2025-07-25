@@ -1,0 +1,9 @@
+# Global owners for the entire repo
+* @Gregory-Pereira @nerdalert @tlrmchlsmth @robertgshaw2-redhat
+
+# Example specific codeowners, including global owners
+/quickstart/examples/inference-scheduling/ @nirrozenbaum @vMaroon @ahg-g @kfirtoledo
+/quickstart/examples/pd-disaggregation/ @njhill @wseaton
+/quickstart/examples/precise-prefix-cache-aware/ @vMaroon @ahg-g
+/quickstart/examples/sim/ @shmuelk
+/quickstart/examples/wide-ep-lws/ @njhill @wseaton
