@@ -11,7 +11,7 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 > To adjust the model or any other modelservice values, simply change the values.yaml file in [ms-inference-scheduling/values.yaml](ms-inference-scheduling/values.yaml)
 
 1. Install the dependencies; see [install-deps.sh](../../install-deps.sh)
-2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart. This example uses `kgateway` but should work with `istio` given some modifications as described below step 3.
+2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart. This example uses `kgateway` but should work with `istio` given some modifications as described below step 3. If you use GKE Gateway, please refer to [gke.md](./gke.md).
 
 ```bash
 # From the repo root
