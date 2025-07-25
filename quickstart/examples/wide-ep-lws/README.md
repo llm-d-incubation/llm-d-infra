@@ -1,9 +1,5 @@
 # Well-lit Path: Wide Expert Parallelism (EP/DP) with LeaderWorkerSet
 
-## Warning ⚠️: Here there be Dragons
-
-In an effort to demonstrate the potential of LLM-D we wanted to build this more advanced and performant example. However to do this, we had to opinionate this example more than the others to the specfics of our development environment. The most notorious of this is that the containers run privileged and as root - this is pretty much table stakes for running any performant infernecing workload at sclae but still it should be mentioned. "Here, there be dragons" - be warned.
-
 ## Overview
 
 - This example demonstrates how to deploy DeepSeek-R1-0528 using vLLM's P/D disaggregation support with NIXL in a wide expert parallel pattern with LeaderWorkerSets
