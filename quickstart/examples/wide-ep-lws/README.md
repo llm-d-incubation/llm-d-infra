@@ -60,7 +60,28 @@ ms-wide-ep-llm-d-modelservice-epp-749696866d-n24tx     1/1     Running   0      
 ms-wide-ep-llm-d-modelservice-prefill-0                1/1     Running   0          22m
 ```
 
-3. You should be able to do inferencing requests. Start by port-forwarding your gateway service in one terminal:
+3. You should be able to do inferencing requests. The first thing we need to check is that all our vllm servers have started which can take some time. We recommend using `stern` to grep the decode logs together wand wait for the messaging saying that the vllm API server is spun up:
+
+```bash
+DECODE_PODS=$(kubectl get pods -l "llm-d.ai/inferenceServing=true,llm-d.ai/role=decode" --no-headers | awk '{print $1}' | tail -n 2)
+stern "$(echo "$DECODE_PODS" | paste -sd'|' -)" -c vllm | grep -v "Avg prompt throughput"
+```
+
+Eventually you should see something logs indicating vllm is ready to start accepting requests:
+
+```log
+ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO 07-25 13:57:57 [api_server.py:1818] Starting vLLM API server 0 on http://0.0.0.0:8200
+ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO 07-25 13:57:57 [launcher.py:29] Available routes are:
+ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO 07-25 13:57:57 [launcher.py:37] Route: /openapi.json, Methods: GET, HEAD
+ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO 07-25 13:57:57 [launcher.py:37] Route: /docs, Methods: GET, HEAD
+ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO 07-25 13:57:57 [launcher.py:37] Route: /docs/oauth2-redirect, Methods: GET, HEAD
+...
+ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO:     Started server process [1]
+ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO:     Waiting for application startup.
+ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO:     Application startup complete.
+```
+
+After this we can port-forwarding your gateway service in one terminal:
 
 ```bash
 $ kubectl port-forward service/infra-wide-ep-inference-gateway-istio 8000:80
