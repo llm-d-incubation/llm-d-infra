@@ -13,7 +13,10 @@ inferenceExtension:
     ###################
     pullPolicy: Always
   extProcPort: 9002
-  pluginsConfigFile: "default-plugins.yaml"
+  # The plugins-v2.yaml contains the approximate prefix aware plugin configuration.
+  # https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/978c23bb96cce25f11cea2421523cb479026e2e9/config/charts/inferencepool/templates/epp-config.yaml#L57
+  # This will become the default in the next gaie release.
+  pluginsConfigFile: "plugins-v2.yaml"
 inferencePool:
   targetPortNumber: 8000
   modelServerType: vllm
