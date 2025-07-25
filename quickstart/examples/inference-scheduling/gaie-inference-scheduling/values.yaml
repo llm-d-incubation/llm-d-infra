@@ -24,3 +24,5 @@ inferencePool:
     matchLabels:
       llm-d.ai/inferenceServing: "true"
       # llm-d.ai/model: ms-simple-llm-d-modelservice
+provider:
+  name: none
