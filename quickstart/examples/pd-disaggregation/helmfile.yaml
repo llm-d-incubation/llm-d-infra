@@ -6,7 +6,7 @@ releases:
   - name: infra-pd
     namespace: llm-d-pd
     chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
-    version: 1.0.9
+    version: v1.1.0
     installed: true
     values:
       - infra-pd/values.yaml
@@ -28,7 +28,7 @@ releases:
   - name: ms-pd
     namespace: llm-d-pd
     chart: llm-d-modelservice/llm-d-modelservice
-    version: 0.0.19
+    version: v0.2.0
     installed: true
     needs:
       - llm-d-pd/infra-pd

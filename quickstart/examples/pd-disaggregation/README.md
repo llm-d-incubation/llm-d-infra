@@ -54,8 +54,8 @@ We can see that the charts were deployed:
 $ helm list
 NAME    	NAMESPACE	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
 gaie-pd 	llm-d-pd 	1       	2025-07-24 10:15:04.63662 -0700 PDT 	deployed	inferencepool-v0.5.1     	v0.5.1
-infra-pd	llm-d-pd 	1       	2025-07-24 10:13:50.654169 -0700 PDT	deployed	llm-d-infra-1.0.9        	0.1
-ms-pd   	llm-d-pd 	1       	2025-07-24 10:15:09.973653 -0700 PDT	deployed	llm-d-modelservice-0.0.19	0.0.1
+infra-pd	llm-d-pd 	1       	2025-07-24 10:13:50.654169 -0700 PDT	deployed	llm-d-infra-v1.1.0        	v0.2.0
+ms-pd   	llm-d-pd 	1       	2025-07-24 10:15:09.973653 -0700 PDT	deployed	llm-d-modelservice-v0.2.0	v0.2.0
 ```
 
 We can see that 4 prefill replicas were created and 1 decode replica was created:

@@ -40,8 +40,8 @@ This should spin everything up that you need.
 ```bash
 helm list
 NAME         	NAMESPACE    	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
-infra-wide-ep	llm-d-wide-ep	1       	2025-07-25 05:43:35.263697 -0700 PDT	deployed	llm-d-infra-1.0.9        	0.1
-ms-wide-ep   	llm-d-wide-ep	1       	2025-07-25 06:16:29.31419 -0700 PDT 	deployed	llm-d-modelservice-0.0.19	0.0.1
+infra-wide-ep	llm-d-wide-ep	1       	2025-07-25 05:43:35.263697 -0700 PDT	deployed	llm-d-infra-v1.1.0       	v0.2.0
+ms-wide-ep   	llm-d-wide-ep	1       	2025-07-25 06:16:29.31419 -0700 PDT 	deployed	llm-d-modelservice-v0.2.0	v0.2.0
 ```
 
 2. You should all the pods you expect to (2 decodes, 1 prefill, 1 gateway pod, 1 EPP pod):

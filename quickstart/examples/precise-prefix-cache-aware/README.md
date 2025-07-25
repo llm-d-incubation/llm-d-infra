@@ -34,8 +34,8 @@ helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-instal
 ```bash
 helm list -n llm-d-precise --all --debug
 NAME          	NAMESPACE      	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
-infra-kv-events	llm-d-precise   1       	2025-07-14 10:46:56.074433 -0700 PDT	deployed	llm-d-infra-1.0.1        	0.1
-ms-kv-events   	llm-d-precise   1       	2025-07-14 10:57:25.726526 -0700 PDT	deployed	llm-d-modelservice-0.0.10	0.0.1
+infra-kv-events	llm-d-precise   1       	2025-07-14 10:46:56.074433 -0700 PDT	deployed	llm-d-infra-v1.1.0       	v0.2.0
+ms-kv-events   	llm-d-precise   1       	2025-07-14 10:57:25.726526 -0700 PDT	deployed	llm-d-modelservice-v0.2.0	v0.2.0
 ```
 
 Note: if you chose to use `istio` as your Gateway provider you would see those (`istiod` and `istio-base` in the `istio-system` namespace) instead of the kgateway based ones.
