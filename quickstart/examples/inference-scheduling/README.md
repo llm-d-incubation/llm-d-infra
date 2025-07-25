@@ -14,18 +14,10 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart. This example uses `kgateway` but should work with `istio` given some modifications as described below step 3.
 
 ```bash
-# Set common environment variables
-export NAMESPACE=llm-d-inference-scheduling
-export GATEWAY=kgateway # choose between [gke-l7-regional-external-managed, istio, kgateway]
-# Set the provider.name in the gaie chart.
-export GAIE_GATEWAY_PROVIDER=$([ "$GATEWAY" = "gke-l7-regional-external-managed" ] && echo "gke" || echo "none")
-```
-
-```bash
 # From the repo root
 cd quickstart
-export HF_TOKEN=$(YOUR_TOKEN)
-./llmd-infra-installer.sh --namespace ${NAMESPACE} -r infra-inference-scheduling --gateway ${GATEWAY} --disable-metrics-collection
+export HF_TOKEN=${HFTOKEN}
+./llmd-infra-installer.sh --namespace llm-d-inference-scheduling -r infra-inference-scheduling --gateway kgateway --disable-metrics-collection
 ```
     - It should be noted release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
 
@@ -33,9 +25,7 @@ export HF_TOKEN=$(YOUR_TOKEN)
 
 ```bash
 cd examples/inference-scheduling
-helmfile --namespace ${NAMESPACE} --selector managedBy=helmfile \
---set provider.name=${GAIE_GATEWAY_PROVIDER} \
-apply helmfile.yaml --skip-diff-on-install
+helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-install
 ```
 
 ---
@@ -44,55 +34,35 @@ apply helmfile.yaml --skip-diff-on-install
 
 ## Verify the Installation
 
-1. Firstly, you should be able to list all helm releases to view the 3 charts got installed into the `${NAMESPACE}` namespace:
+1. Firstly, you should be able to list all helm releases to view the 3 charts got installed into the `llm-d-inference-scheduling` namespace:
 
 ```bash
-$ helm list -n ${NAMESPACE}
+$ helm list -n llm-d-inference-scheduling
 NAME                      	NAMESPACE                 	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
 gaie-inference-scheduling 	llm-d-inference-scheduling	1       	2025-07-24 10:44:30.543527 -0700 PDT	deployed	inferencepool-v0.5.1     	v0.5.1
 infra-inference-scheduling	llm-d-inference-scheduling	1       	2025-07-24 10:41:49.452841 -0700 PDT	deployed	llm-d-infra-v1.1.0        v0.2.0
 ms-inference-scheduling   	llm-d-inference-scheduling	1       	2025-07-24 10:44:35.91079 -0700 PDT 	deployed	llm-d-modelservice-v0.2.0	v0.2.0
 ```
 
-1. Get the gateway endpoint:
-   1. If you are using `kgateway`:
-    
-      First, find the gateway service: 
-      ```bash
-        $ kubectl get services -n ${NAMESPACE}
-        NAME                                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)             AGE
-        gaie-inference-scheduling-epp                  ClusterIP   10.16.0.249   <none>        9002/TCP,9090/TCP   96s
-        infra-inference-scheduling-inference-gateway   NodePort    10.16.3.58    <none>        80:33377/TCP        4m19s
-        ```
-        In this case we have found that our gateway service is called `infra-inference-scheduling-inference-gateway`.
->>>>>>> 538bb33 (Add support for gke-l7-regional-external-managed gatewayclass)
+2. Find the gateway service:
+```bash
+$ kubectl get services -n llm-d-inference-scheduling
+NAME                                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)             AGE
+gaie-inference-scheduling-epp                  ClusterIP   10.16.0.249   <none>        9002/TCP,9090/TCP   96s
+infra-inference-scheduling-inference-gateway   NodePort    10.16.3.58    <none>        80:33377/TCP        4m19s
+```
+In this case we have found that our gateway service is called `infra-inference-scheduling-inference-gateway`.
 
-        Second, `port-forward` the service to we can curl it via `localhost`:
-
-        ```bash
-        kubectl port-forward -n ${NAMESPACE} service/infra-inference-scheduling-inference-gateway 8000:80
-        ```
-
-        Third, set the `IP` and `PORT`:
-        ```bash
-        IP=localhost
-        PORT=8000
-      ```
-   1. If you are using `gke-l7-regional-external-managed`:
-      
-      ```bash
-      GATEWAY_NAME=infra-inference-scheduling-inference-gateway
-      IP=$(kubectl get gateway/${GATEWAY_NAME} -n ${NAMESPACE} -o jsonpath='{.status.addresses[0].value}')
-      
-      PORT=80
-      ```
-
-
-
-1. Try curling the `/v1/models` endpoint:
+3. `port-forward` the service to we can curl it:
 
 ```bash
-curl http://${IP}:${PORT}/v1/models \
+kubectl port-forward -n llm-d-inference-scheduling service/infra-inference-scheduling-inference-gateway 8000:80
+```
+
+4. Try curling the `/v1/models` endpoint:
+
+```bash
+curl -s http://localhost:8000/v1/models \
   -H "Content-Type: application/json" | jq
 {
   "data": [
@@ -128,7 +98,7 @@ curl http://${IP}:${PORT}/v1/models \
 
 5. Try curling the `v1/completions` endpoint:
 ```bash
-curl http://${IP}:${PORT}/v1/completions \
+curl -s http://localhost:8000/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "Qwen/Qwen3-0.6B",
@@ -166,10 +136,10 @@ To remove the deployment:
 ```bash
 # Remove the model services
 # From examples/inference-scheduling
-helmfile --selector managedBy=helmfile destroy --namespace ${NAMESPACE}
+helmfile --selector managedBy=helmfile destroy
 
 # Remove the infrastructure
-helm uninstall infra-inference-scheduling -n ${NAMESPACE}
+helm uninstall infra-inference-scheduling -n llm-d-inference-scheduling
 ```
 
 ## Customization

@@ -35,3 +35,17 @@ releases:
       - ms-inference-scheduling/values.yaml
     labels:
       managedBy: helmfile
+    # NOTE: This is a temporary workaround.
+    hooks:
+      - events: [ "postsync" ]
+        command: bash
+        args:
+          - -c
+          - |   
+            if [ "${GATEWAY}" = "gke-l7-regional-external-managed" ]; then
+              echo "Removing timeout in HTTPRoute as GKE Gateway doesn't support it..."
+              kubectl patch httproute ms-inference-scheduling-llm-d-modelservice \
+                -n ${NAMESPACE} \
+                --type=json \
+                -p='[{"op": "remove", "path": "/spec/rules/0/timeouts"}]' || echo "No timeouts found to remove"
+            fi
