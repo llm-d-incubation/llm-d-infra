@@ -49,12 +49,12 @@ gaie-sim-epp                  ClusterIP   10.101.43.58    <none>        9002/TCP
 infra-sim-inference-gateway   NodePort    10.104.22.184   <none>        80:31233/TCP        95m
 ```
 
-In this case we have found that our gateway service is called `sim-inference-gateway`.
+In this case we have found that our gateway service is called `infra-sim-inference-gateway`.
 
 3. `port-forward` the service to we can curl it:
 
 ```bash
-kubectl port-forward -n llm-d-sim service/sim-inference-gateway 8000:80
+kubectl port-forward -n llm-d-sim service/infra-sim-inference-gateway 8000:80
 ```
 
 4. Try curling the `/v1/models` endpoint:
