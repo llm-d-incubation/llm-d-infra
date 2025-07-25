@@ -80,7 +80,7 @@ decode:
     tensor: 1 # these will be derived based performance testing
   containers:
     - name: vllm-worker-decode
-      image: "ghcr.io/llm-d/llm-d-dev:v0.1.0-rc.1"
+      image: "ghcr.io/llm-d/llm-d-dev:v0.2.0-rc.1"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash","-c"]
@@ -205,7 +205,7 @@ prefill:
     tensor: 1 # these will be derived based performance testing
   containers:
     - name: vllm-worker-prefill
-      image: "ghcr.io/llm-d/llm-d-dev:v0.1.0-rc.1"
+      image: "ghcr.io/llm-d/llm-d-dev:v0.2.0-rc.1"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash","-c"]
