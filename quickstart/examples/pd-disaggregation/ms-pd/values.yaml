@@ -37,7 +37,7 @@ decode:
   replicas: 1
   containers:
   - name: "vllm"
-    image: "quay.io/wseaton/vllm:llmd-multistage-6"
+    image: "ghcr.io/llm-d/llm-d-dev:v0.1.0-rc.1"
     modelCommand: vllmServe
     args:
       - "--tensor-parallel-size"
@@ -89,7 +89,7 @@ prefill:
   replicas: 4
   containers:
   - name: "vllm"
-    image: "quay.io/wseaton/vllm:llmd-multistage-6"
+    image: "ghcr.io/llm-d/llm-d-dev:v0.1.0-rc.1"
     modelCommand: vllmServe
     args:
       - "--block-size"
