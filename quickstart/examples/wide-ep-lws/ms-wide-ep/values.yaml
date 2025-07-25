@@ -72,7 +72,7 @@ decode:
     tensor: 1 # these will be derived based performance testing
   containers:
     - name: vllm-worker-decode
-      image: "quay.io/tms/llm-d-dev:0.2.0-f"
+      image: "quay.io/tms/llm-d-dev:0.2.0-g"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash","-c"]
@@ -199,7 +199,7 @@ prefill:
     tensor: 1 # these will be derived based performance testing
   containers:
     - name: vllm-worker-prefill
-      image: "quay.io/tms/llm-d-dev:0.2.0-f"
+      image: "quay.io/tms/llm-d-dev:0.2.0-g"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash","-c"]
