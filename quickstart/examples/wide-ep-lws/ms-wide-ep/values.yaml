@@ -110,8 +110,6 @@ decode:
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
 
       env:
-        - name: VLLM_TORCH_PROFILER_DIR
-          value: "/code/traces"
         - name: VLLM_FUSED_MOE_CHUNK_SIZE
           value: "1024"
 
@@ -237,8 +235,6 @@ prefill:
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
 
       env:
-        - name: VLLM_TORCH_PROFILER_DIR
-          value: "/code/traces"
         - name: DP_SIZE_LOCAL
           value: "8"
 
