@@ -1,6 +1,6 @@
 # llm-d-infra Helm Chart
 
-![Version: 1.0.8](https://img.shields.io/badge/Version-1.0.8-informational?style=flat-square)
+![Version: 1.0.9](https://img.shields.io/badge/Version-1.0.9-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
@@ -140,7 +140,7 @@ This chart deploys all infrastructure required to run the [llm-d](https://llm-d.
 - An optional ingress to sit in front of the gateway
 # llm-d-infra
 
-![Version: 1.0.8](https://img.shields.io/badge/Version-1.0.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1](https://img.shields.io/badge/AppVersion-0.1-informational?style=flat-square)
+![Version: 1.0.9](https://img.shields.io/badge/Version-1.0.9-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1](https://img.shields.io/badge/AppVersion-0.1-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
 

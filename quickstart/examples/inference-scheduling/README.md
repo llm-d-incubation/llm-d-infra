@@ -39,7 +39,7 @@ helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-instal
 $ helm list -n llm-d-inference-scheduling
 NAME                      	NAMESPACE                 	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
 gaie-inference-scheduling 	llm-d-inference-scheduling	1       	2025-07-24 10:44:30.543527 -0700 PDT	deployed	inferencepool-v0.5.1     	v0.5.1
-infra-inference-scheduling	llm-d-inference-scheduling	1       	2025-07-24 10:41:49.452841 -0700 PDT	deployed	llm-d-infra-1.0.7        	0.1
+infra-inference-scheduling	llm-d-inference-scheduling	1       	2025-07-24 10:41:49.452841 -0700 PDT	deployed	llm-d-infra-1.0.9        	0.1
 ms-inference-scheduling   	llm-d-inference-scheduling	1       	2025-07-24 10:44:35.91079 -0700 PDT 	deployed	llm-d-modelservice-0.0.19	0.0.1
 ```
 
