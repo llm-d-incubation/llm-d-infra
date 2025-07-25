@@ -122,6 +122,7 @@ gateway:
 
   # @schema
   # items:
+  #  additionalProperties: true
   #  type: object
   #  properties:
   #    name:
@@ -145,6 +146,9 @@ gateway:
       path: /
       port: 80
       protocol: HTTP
+      # allowedRoutes:
+      #   namespaces:
+      #     from: All
 
   # -- Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: ["LoadBalancer", "NodePort"]
   serviceType: NodePort
