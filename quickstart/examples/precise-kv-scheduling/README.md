@@ -1,12 +1,12 @@
-# Feature: Precise Prefix Cache Aware Routing
+# Feature: Precise Prefix Cache Aware Scheduling
 
 ## Overview
 
-This is a simple quickstart demonstrating how to configure the inference scheduler to use the new precise prefix cache aware routing based on [vLLM KV-Events](https://github.com/vllm-project/vllm/issues/16669) data. Precise prefix cache aware routing pulls up-to-date prefix cache status from serving instances, eliminating the need for additional indexing services and increasing cache hit rate at high throughput.
+This is a simple quickstart demonstrating how to configure the inference scheduler to use the new precise prefix cache aware scheduling based on [vLLM KV-Events](https://github.com/vllm-project/vllm/issues/16669) data. Precise prefix cache aware scheduling pulls up-to-date prefix cache status from serving instances, eliminating the need for additional indexing services and increasing cache hit rate at high throughput.
 
 ## Installation
 
-> To adjust the model or any other modelservice values, simply change the values.yaml file in [ms-kv-events/values.yaml](ms-kv-events/values.yaml)
+> To adjust the model or any other modelservice values, simply change the values.yaml file in [ms-precise-kv-scheduling/values.yaml](ms-precise-kv-scheduling/values.yaml)
 >
 > Note that the decode vLLM container `--prefix-caching-hash-algo` argument must not change
 
@@ -16,9 +16,10 @@ This is a simple quickstart demonstrating how to configure the inference schedul
 ```bash
 # From the repo root
 cd quickstart
-HF_TOKEN=$(HFTOKEN) ./llmd-infra-installer.sh --namespace llm-d-precise -r infra-kv-events --gateway kgateway
+export HF_TOKEN=${HFTOKEN}
+./llmd-infra-installer.sh --namespace llm-d-precise-kv-scheduling -r infra-precise-kv-scheduling --gateway kgateway --disable-metrics-collection
 ```
-    - It should be noted release name `infra-kv-events` is important here, because it matches up with pre-built values files used in this example.
+    - It should be noted release name `infra-precise-kv-scheduling` is important here, because it matches up with pre-built values files used in this example.
 
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
@@ -29,30 +30,31 @@ helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-instal
 
 ## Verify the Installation
 
-1. Firstly, you should be able to list all helm releases in the `llm-d-precise` ns to view all 3 charts that should be installed:
+1. Firstly, you should be able to list all helm releases in the `llm-d-precise-kv-scheduling` ns to view all 3 charts that should be installed:
 
 ```bash
-helm list -n llm-d-precise --all --debug
-NAME          	NAMESPACE      	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
-infra-kv-events	llm-d-precise   1       	2025-07-14 10:46:56.074433 -0700 PDT	deployed	llm-d-infra-1.0.1        	0.1
-ms-kv-events   	llm-d-precise   1       	2025-07-14 10:57:25.726526 -0700 PDT	deployed	llm-d-modelservice-0.0.10	0.0.1
+$ helm list -n llm-d-precise-kv-scheduling --all --debug helm list -n llm-d-precise-kv-scheduling --all --debug
+NAME                       	NAMESPACE                  	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
+gaie-precise-kv-scheduling 	llm-d-precise-kv-scheduling	1       	2025-07-25 08:18:06.802006 -0700 PDT	deployed	inferencepool-v0.5.1     	v0.5.1
+infra-precise-kv-scheduling	llm-d-precise-kv-scheduling	1       	2025-07-25 08:17:07.916991 -0700 PDT	deployed	llm-d-infra-1.0.9        	0.1
+ms-precise-kv-scheduling   	llm-d-precise-kv-scheduling	1       	2025-07-25 08:18:11.908269 -0700 PDT	deployed	llm-d-modelservice-0.0.19	0.0.1
 ```
 
 Note: if you chose to use `istio` as your Gateway provider you would see those (`istiod` and `istio-base` in the `istio-system` namespace) instead of the kgateway based ones.
 
 2. Find the gateway service:
 ```bash
-kubectl get services
-NAME                               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
-infra-kv-events-inference-gateway  NodePort    172.30.172.142   <none>        80:30519/TCP        4m7s
-gaie-kv-events-epp                 ClusterIP   172.30.72.170    <none>        9002/TCP,5557/TCP   71s
+$ kubectl get services -n llm-d-precise-kv-scheduling
+NAME                                            TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                      AGE
+gaie-precise-kv-scheduling-epp                  ClusterIP   10.16.0.211   <none>        9002/TCP,9090/TCP,5557/TCP   9m59s
+infra-precise-kv-scheduling-inference-gateway   NodePort    10.16.2.153   <none>        80:30849/TCP                 10m
 ```
-In this case we have found that our gateway service is called `infra-kv-events-inference-gateway`.
+In this case we have found that our gateway service is called `infra-precise-kv-scheduling-inference-gateway`.
 
 3. `port-forward` the service to we can curl it:
 
 ```bash
-kubectl -n llm-d-precise port-forward service/infra-kv-events-inference-gateway 8000:80
+kubectl -n llm-d-precise-kv-scheduling port-forward service/infra-precise-kv-scheduling-inference-gateway 8000:80
 ```
 
 4. Try curling the `/v1/models` endpoint:
@@ -141,7 +143,7 @@ curl http://localhost:8000/v1/completions \
 
 6. Check the inference-scheduler's prefix-cache-scorer's scores with the following command:
 ```bash
-kubectl logs -l inferencepool=gaie-kv-events-epp -n llm-d-precise --tail 100 | grep "Got pod scores"
+kubectl logs -l inferencepool=gaie-precise-kv-scheduling-epp -n llm-d-precise-kv-scheduling --tail 100 | grep "Got pod scores"
 ```
 
 You should see output similar to:
@@ -160,9 +162,9 @@ You should see output similar to:
 Notice that the second time we called the `/v1/completions` endpoint, the prefix-cache-scorer was able to return a score for the pod,
 indicating that it had cached the KV-blocks from the first call.
 
-8. See the `kvblock.Index` metrics in the `gaie-kv-events-epp` pod:
+8. See the `kvblock.Index` metrics in the `gaie-precise-kv-scheduling-epp` pod:
 ```bash
-kubectl logs -l inferencepool=gaie-kv-events-epp -n llm-d-precise --tail 100 | grep "metrics beat"
+kubectl logs -l inferencepool=gaie-precise-kv-scheduling-epp -n llm-d-precise-kv-scheduling --tail 100 | grep "metrics beat"
 ```
 You should see output similar to:
 ```log
@@ -183,11 +185,11 @@ To remove the deployment:
 helmfile --selector managedBy=helmfile destroy
 
 # Remove the infrastructure
-helm uninstall infra-kv-events -n llm-d-precise
+helm uninstall infra-precise-kv-scheduling -n llm-d-precise-kv-scheduling
 ```
 
 ## Customization
 
-- **Change model**: Edit `ms-kv-events/values.yaml` and update the `modelArtifacts.uri` and `routing.modelName`
+- **Change model**: Edit `ms-precise-kv-scheduling/values.yaml` and update the `modelArtifacts.uri` and `routing.modelName`
 - **Adjust resources**: Modify the GPU/CPU/memory requests in the container specifications
 - **Scale workers**: Change the `replicas` count for decode/prefill deployments
