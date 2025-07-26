@@ -23,9 +23,10 @@ export HF_TOKEN=$(YOUR_TOKEN)
 
 ```bash
 cd examples/inference-scheduling
-helmfile --namespace ${NAMESPACE} --selector managedBy=helmfile \
---set provider.name=gke \
-apply -f gke.helmfile.yaml --skip-diff-on-install
+helmfile apply \
+  --namespace ${NAMESPACE} \
+  --selector managedBy=helmfile \
+  apply -f gke.helmfile.yaml --skip-diff-on-install
 ```
 
 ## Verify the Installation

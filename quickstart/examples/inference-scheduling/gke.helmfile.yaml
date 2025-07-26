@@ -18,6 +18,9 @@ releases:
       - infra-inference-scheduling
     values:
       - gaie-inference-scheduling/values.yaml
+    setString:
+      - name: provider.name
+        value: gke
     labels:
       managedBy: helmfile
 
