@@ -16,16 +16,17 @@ cd quickstart
 export HF_TOKEN=$(YOUR_TOKEN)
 ./llmd-infra-installer.sh --namespace ${NAMESPACE} -r infra-inference-scheduling --gateway ${GATEWAY} --disable-metrics-collection
 ```
-    - It should be noted release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
+
+**_NOTE:_** It should be noted release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
 
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
-  ```bash
-  cd examples/inference-scheduling
-  helmfile --namespace ${NAMESPACE} --selector managedBy=helmfile \
-  --set provider.name=gke \
-  apply gke.helmfile.yaml --skip-diff-on-install
-  ```
+```bash
+cd examples/inference-scheduling
+helmfile --namespace ${NAMESPACE} --selector managedBy=helmfile \
+--set provider.name=gke \
+apply -f gke.helmfile.yaml --skip-diff-on-install
+```
 
 ## Verify the Installation
 
@@ -41,12 +42,11 @@ ms-inference-scheduling   	llm-d-inference-scheduling	1       	2025-07-24 10:44:
 
 1. Get the gateway endpoint:
 
-    ```bash
-    GATEWAY_NAME=infra-inference-scheduling-inference-gateway
-    IP=$(kubectl get gateway/${GATEWAY_NAME} -n ${NAMESPACE} -o jsonpath='{.status.addresses[0].value}')
-
-    PORT=80
-    ```
+```bash
+GATEWAY_NAME=infra-inference-scheduling-inference-gateway
+IP=$(kubectl get gateway/${GATEWAY_NAME} -n ${NAMESPACE} -o jsonpath='{.status.addresses[0].value}')
+PORT=80
+```
 
 1. Try curling the `/v1/models` endpoint:
 
@@ -128,5 +128,5 @@ To remove the deployment:
 helmfile --selector managedBy=helmfile destroy --namespace ${NAMESPACE}
 
 # Remove the infrastructure
-helm uninstall infra-inference-scheduling -n ${NAMESPACE}
+helm uninstall infra-inference-scheduling --namespace ${NAMESPACE}
 ```
