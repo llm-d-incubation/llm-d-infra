@@ -5,7 +5,7 @@ repositories:
 releases:
   - name: infra-pd
     namespace: llm-d-pd
-    chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
+    chart: https://llm-d-incubation.github.io/llm-d-infra/
     version: v1.1.0
     installed: true
     values:
