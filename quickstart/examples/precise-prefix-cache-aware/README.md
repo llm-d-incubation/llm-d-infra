@@ -19,13 +19,14 @@ cd quickstart
 export HF_TOKEN=${HFTOKEN}
 ./llmd-infra-installer.sh --namespace llm-d-precise -r infra-kv-events --gateway kgateway --disable-metrics-collection
 ```
-    - It should be noted release name `infra-kv-events` is important here, because it matches up with pre-built values files used in this example.
+
+**_NOTE:_** The release name `infra-kv-events` is important here, because it matches up with pre-built values files used in this example.
 
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
 ```bash
 cd examples/precise-prefix-cache-aware
-helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-install
+helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
 ```
 
 ## Verify the Installation
@@ -174,7 +175,7 @@ To remove the deployment:
 ```bash
 # Remove the model services
 # From examples/precise-prefix-cache-aware
-helmfile --selector managedBy=helmfile destroy
+helmfile --selector managedBy=helmfile destroy -f helmfile.yaml
 
 # Remove the infrastructure
 helm uninstall infra-kv-events -n llm-d-precise

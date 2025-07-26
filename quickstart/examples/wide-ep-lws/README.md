@@ -20,18 +20,19 @@ In this example, we will demonstrate a deployment of `DeepSeek-R1-0528` with:
 ```
 
 2. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart (from `/llm-d-infra/quickstart`). This example only works out of the box with `Istio` as a provider, but with changes its possible to run this with `kgateway`.
+
 ```bash
 export HF_TOKEN=${HFTOKEN}
 ./llmd-infra-installer.sh --namespace llm-d-wide-ep -r infra-wide-ep -f examples/wide-ep-lws/infra-wide-ep/values.yaml --disable-metrics-collection
 ```
 
+**_NOTE:_** The release name `infra-wide-ep` is important here, because it matches up with pre-built values files used in this example.
+
 3. Use the helmfile to apply the modelservice chart on top of it
 ```bash
 cd examples/wide-ep-lws
-helmfile --selector managedBy=helmfile apply --skip-diff-on-install
+helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
 ```
-
-This should spin everything up that you need.
 
 ## Verifying the installation
 
@@ -184,7 +185,7 @@ To remove the deployment:
 ```bash
 # Remove the model services
 # From examples/wide-ep-lws
-helmfile --selector managedBy=helmfile destroy
+helmfile --selector managedBy=helmfile destroy -f helmfile.yaml
 
 # Remove the infrastructure
 helm uninstall infra-wide-ep -n llm-d-wide-ep

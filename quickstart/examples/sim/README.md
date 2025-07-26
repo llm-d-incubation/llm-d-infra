@@ -22,18 +22,17 @@ export HF_TOKEN=${HFTOKEN}
 ./llmd-infra-installer.sh --namespace llm-d-sim -r infra-sim --gateway kgateway --disable-metrics-collection
 ```
 
-    - It should be noted release name `infra-sim` is important here, because it matches up with pre-built values files used in this example.
+**_NOTE:_** The release name `infra-sim` is important here, because it matches up with pre-built values files used in this example.
+
 
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
 ```bash
 cd examples/sim
-helmfile --selector managedBy=helmfile apply helmfile.yaml
+helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
 ```
 
----
-
-> Note: if you are deploying Istio as the gateway, e.g. `--gateway istio`, then you will need to apply a `DestinationRule` described in [Temporary Istio Workaround](../../istio-workaround.md).
+**_NOTE:_** This examples was built with `kgateway` in mind. If you are deploying Istio as the gateway, e.g. `--gateway istio`, then you will need to apply a `DestinationRule` described in [Temporary Istio Workaround](../../istio-workaround.md).
 
 ## Verify the Installation
 
@@ -127,7 +126,7 @@ To remove the deployment:
 ```bash
 # Remove the model services
 # From examples/sim
-helmfile --selector managedBy=helmfile destroy
+helmfile --selector managedBy=helmfile destroy -f helmfile.yaml
 
 # Remove the infrastructure
 helm uninstall infra-sim -n llm-d-sim
