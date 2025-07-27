@@ -34,7 +34,7 @@ releases:
       - llm-d-pd/infra-pd
       - llm-d-pd/gaie-pd
     values:
-      - ms-pd/gke.values.yaml
+      - ms-pd/values.yaml
     labels:
       managedBy: helmfile
     hooks:
