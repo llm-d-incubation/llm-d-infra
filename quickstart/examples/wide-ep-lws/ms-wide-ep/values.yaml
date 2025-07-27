@@ -17,6 +17,7 @@ routing:
     image: "ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0"
     secure: false
     connector: nixlv2
+    debugLevel: 1
 
   inferenceModel:
     criticality: Critical
@@ -32,7 +33,7 @@ routing:
   epp:
     create: true
     image: ghcr.io/llm-d/llm-d-inference-scheduler:v0.2.1
-    debugLevel: 4
+    debugLevel: 1
     pluginsConfigFile: "pd-config.yaml"
     pluginsCustomConfig:
       pd-config.yaml: |
@@ -43,8 +44,7 @@ routing:
         - type: prefill-header-handler
         - type: prefill-filter
         - type: decode-filter
-        - type: max-score-picker
-        - type: queue-scorer
+        - type: random-picker
           parameters:
             hashBlockSize: 5
             maxPrefixBlocksToMatch: 256
@@ -57,15 +57,11 @@ routing:
         - name: prefill
           plugins:
           - pluginRef: prefill-filter
-          - pluginRef: queue-scorer
-            weight: 1.0
-          - pluginRef: max-score-picker
+          - pluginRef: random-picker
         - name: decode
           plugins:
           - pluginRef: decode-filter
-          - pluginRef: queue-scorer
-            weight: 1.0
-          - pluginRef: max-score-picker
+          - pluginRef: random-picker
 decode:
   create: true
   replicas: 1
@@ -76,11 +72,11 @@ decode:
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # This must equal the number of nodes rather than the dp_size.
-    data: 2
+    data: 4
     tensor: 1 # these will be derived based performance testing
   containers:
     - name: vllm-worker-decode
-      image: "ghcr.io/llm-d/llm-d-dev:v0.2.0-rc.1"
+      image: "quay.io/tms/llm-d-dev:0.2.0-h"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash","-c"]
@@ -135,7 +131,7 @@ decode:
         - name: VLLM_USE_DEEP_GEMM
           value: "1"
         - name: VLLM_ALL2ALL_BACKEND
-          value: "deepep_low_latency"
+          value: "deepep_high_throughput"
         - name: NVIDIA_GDRCOPY
           value: "enabled"
         - name: NVSHMEM_DEBUG
@@ -144,16 +140,10 @@ decode:
           value: "ibgda"
         - name: NVSHMEM_IB_ENABLE_IBGDA
           value: "true"
-        - name: NVSHMEM_BOOTSTRAP_UID_SOCK_IFNAME
-          value: "eth0"
-        - name: GLOO_SOCKET_IFNAME
-          value: "eth0"
-        - name: NCCL_SOCKET_IFNAME
-          value: "eth0"
         - name: NCCL_IB_HCA
           value: "ibp"
         - name: VLLM_LOGGING_LEVEL
-          value: "DEBUG"
+          value: "INFO"
         - name: HF_HUB_CACHE
           value: /huggingface-cache
         - name: VLLM_NIXL_SIDE_CHANNEL_HOST
@@ -210,7 +200,7 @@ prefill:
     tensor: 1 # these will be derived based performance testing
   containers:
     - name: vllm-worker-prefill
-      image: "ghcr.io/llm-d/llm-d-dev:v0.2.0-rc.1"
+      image: "quay.io/tms/llm-d-dev:0.2.0-h"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash","-c"]
@@ -237,10 +227,6 @@ prefill:
             --data-parallel-rpc-port 5555 \
             --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
-            --enable-eplb \
-            --num-redundant-experts 32 \
-            --eplb-window-size 1000 \
-            --eplb-step-interval 3000 \
             --api-server-count=8 \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
 
@@ -273,16 +259,10 @@ prefill:
           value: "ibgda"
         - name: NVSHMEM_IB_ENABLE_IBGDA
           value: "true"
-        - name: NVSHMEM_BOOTSTRAP_UID_SOCK_IFNAME
-          value: "eth0"
-        - name: GLOO_SOCKET_IFNAME
-          value: "eth0"
-        - name: NCCL_SOCKET_IFNAME
-          value: "eth0"
         - name: NCCL_IB_HCA
           value: "ibp"
         - name: VLLM_LOGGING_LEVEL
-          value: "DEBUG"
+          value: "INFO"
         - name: HF_HUB_CACHE
           value: /huggingface-cache
         - name: VLLM_NIXL_SIDE_CHANNEL_HOST
