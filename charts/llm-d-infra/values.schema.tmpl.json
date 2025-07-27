@@ -153,7 +153,7 @@
         },
         "gatewayClassName": {
           "default": "kgateway",
-          "description": "Gateway class that determines the backend used Currently supported values: \"kgateway\" or \"istio\"",
+          "description": "Gateway class that determines the backend used Currently supported values: \"kgateway\", \"istio\", or \"gke-l7-regional-external-managed\"",
           "required": [],
           "title": "gatewayClassName"
         },
@@ -166,6 +166,18 @@
               "required": [],
               "title": "enabled",
               "type": "boolean"
+            },
+            "logLevel": {
+              "default": "info",
+              "description": " default: info enum: [error,warn,info,debug] @schema",
+              "enum": [
+                "error",
+                "warn",
+                "info",
+                "debug"
+              ],
+              "required": [],
+              "title": "logLevel"
             },
             "proxyUID": {
               "default": false,

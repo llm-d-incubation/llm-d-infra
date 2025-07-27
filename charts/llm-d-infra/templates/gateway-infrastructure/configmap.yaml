@@ -28,8 +28,12 @@ data:
               - router
               - --domain
               - $(POD_NAMESPACE).svc.cluster.local
+              - --proxyLogLevel
+              - {{ .Values.gateway.gatewayParameters.logLevel }}
               - --proxyComponentLogLevel
-              - misc:error
+              - misc:{{ .Values.gateway.gatewayParameters.logLevel }}
+              - --log_output_level
+              - default:{{ .Values.gateway.gatewayParameters.logLevel }}
             {{- if .Values.gateway.gatewayParameters.resources }}
             resources: {{ .Values.gateway.gatewayParameters.resources | toYaml | nindent 14 }}
             {{- end}}

@@ -1,6 +1,7 @@
 gateway:
   gatewayClassName: istio
   gatewayParameters:
+    logLevel: error
     resources:
       limits:
         cpu: "4"

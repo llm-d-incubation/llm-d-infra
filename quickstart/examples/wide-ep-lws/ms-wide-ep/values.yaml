@@ -16,6 +16,7 @@ routing:
   proxy:
     image: "ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0"
     secure: false
+    debugLevel: 1
     connector: nixlv2
     debugLevel: 1
 
@@ -72,8 +73,8 @@ decode:
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # This must equal the number of nodes rather than the dp_size.
-    data: 4
-    tensor: 1 # these will be derived based performance testing
+    data: 1
+    tensor: 1 # FIXME: This needs to be set to 1, otherwise we only see decode.parallelism.tensor GPUs
   containers:
     - name: vllm-worker-decode
       image: "quay.io/tms/llm-d-dev:0.2.0-h"
@@ -87,6 +88,14 @@ decode:
           # RUN vLLM decode worker
           #################
           START_RANK=$(( ${LWS_WORKER_INDEX:-0} * DP_SIZE_LOCAL ))
+          
+          echo $DP_SIZE_LOCAL
+          echo $TP_SIZE
+          echo $((LWS_GROUP_SIZE * DP_SIZE_LOCAL))
+          echo $START_RANK
+
+          # FIXME: Set TP_SIZE here for a workaround for only seeing decode.parallelism.tensor GPUs
+          export TP_SIZE=1
 
           source /opt/vllm/bin/activate
           exec vllm serve \
@@ -108,7 +117,9 @@ decode:
             --eplb-window-size 1000 \
             --eplb-step-interval 3000 \
             --api-server-count=8 \
-            --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
+            --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}' \
+            --max-model-len 16384 \
+            -O '{"full_cuda_graph":true}'
 
       env:
         - name: VLLM_FUSED_MOE_CHUNK_SIZE
@@ -135,7 +146,7 @@ decode:
         - name: NVIDIA_GDRCOPY
           value: "enabled"
         - name: NVSHMEM_DEBUG
-          value: "INFO"
+          value: "DEBUG"
         - name: NVSHMEM_REMOTE_TRANSPORT
           value: "ibgda"
         - name: NVSHMEM_IB_ENABLE_IBGDA
@@ -180,7 +191,7 @@ decode:
     - name: dshm
       emptyDir:
         medium: Memory
-        sizeLimit: 1Gi
+        sizeLimit: 8Gi
     - name: hf-cache
       hostPath:
         path: /mnt/local/hf-cache
@@ -299,7 +310,7 @@ prefill:
     - name: dshm
       emptyDir:
         medium: Memory
-        sizeLimit: 1Gi
+        sizeLimit: 8Gi
     - name: hf-cache
       hostPath:
         path: /mnt/local/hf-cache

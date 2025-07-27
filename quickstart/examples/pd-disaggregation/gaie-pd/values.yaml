@@ -8,6 +8,7 @@ inferenceExtension:
     pullPolicy: Always
   extProcPort: 9002
   pluginsConfigFile: "pd-config.yaml"
+  logVerbosity: 1
   pluginsCustomConfig:
     pd-config.yaml: |
       # ALWAYS DO PD IN THIS EXAMPLE (THRESHOLD 0)

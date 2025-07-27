@@ -35,6 +35,7 @@ As a result, as you tune you P/D deployments, we suggest focusing on the followi
 ```
 
 2. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart (from `/llm-d-infra/quickstart`). This example only works out of the box with `Istio` as a provider, but with changes its possible to run this with `kgateway`.
+
 ```bash
 # ran from root of repo
 cd quickstart
@@ -42,10 +43,12 @@ export HF_TOKEN=$(HFTOKEN)
 ./llmd-infra-installer.sh --namespace llm-d-pd -r infra-pd -f examples/pd-disaggregation/infra-pd/values.yaml --disable-metrics-collection
 ```
 
+**_NOTE:_** The release name `infra-pd` is important here, because it matches up with pre-built values files used in this example.
+
 3. Use the helmfile to apply the modelservice and GIE charts on top of it
 ```bash
 cd examples/pd-disaggregation
-helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-install
+helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
 ```
 
 ## Verifying the installation
@@ -169,7 +172,7 @@ To remove the deployment:
 ```bash
 # Remove the model services
 # From examples/inference-scheduling
-helmfile --selector managedBy=helmfile destroy
+helmfile --selector managedBy=helmfile destroy -f helmfile.yaml
 
 # Remove the infrastructure
 helm uninstall infra-pd -n llm-d-pd

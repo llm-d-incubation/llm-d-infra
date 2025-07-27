@@ -1,6 +1,6 @@
 # llm-d-infra Helm Chart
 
-![Version: v1.1.0](https://img.shields.io/badge/Version-v1.1.0-informational?style=flat-square)
+![Version: v1.1.1](https://img.shields.io/badge/Version-v1.1.1-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
@@ -112,7 +112,7 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.destinationRule | object | `{"enabled":false,"exportTo":[],"host":"localhost","subsets":[],"trafficPolicy":{},"workloadSelector":{}}` | see: https://istio.io/latest/docs/reference/config/networking/destination-rule/ |
 | gateway.enabled | bool | `true` | Deploy resources related to Gateway |
 | gateway.fullnameOverride | string | `""` | String to fully override gateway.fullname |
-| gateway.gatewayClassName | string | `"kgateway"` | Gateway class that determines the backend used Currently supported values: "kgateway" or "istio" |
+| gateway.gatewayClassName | string | `"kgateway"` | Gateway class that determines the backend used Currently supported values: "kgateway", "istio", or "gke-l7-regional-external-managed" |
 | gateway.gatewayParameters.resources | object | `{"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"100m","memory":"128Mi"}}` | Resource requests/limits <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container |
 | gateway.nameOverride | string | `""` | String to partially override gateway.fullname |
 | gateway.serviceType | string | `"NodePort"` | Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: ["LoadBalancer", "NodePort"] |
@@ -140,7 +140,7 @@ This chart deploys all infrastructure required to run the [llm-d](https://llm-d.
 - An optional ingress to sit in front of the gateway
 # llm-d-infra
 
-![Version: v1.1.0](https://img.shields.io/badge/Version-v1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.2.0](https://img.shields.io/badge/AppVersion-v0.2.0-informational?style=flat-square)
+![Version: v1.1.1](https://img.shields.io/badge/Version-v1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.2.0](https://img.shields.io/badge/AppVersion-v0.2.0-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
 
@@ -180,7 +180,7 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.destinationRule | object | `{"enabled":false,"exportTo":[],"host":"localhost","subsets":[],"trafficPolicy":{},"workloadSelector":{}}` | see: https://istio.io/latest/docs/reference/config/networking/destination-rule/ |
 | gateway.enabled | bool | `true` | Deploy resources related to Gateway |
 | gateway.fullnameOverride | string | `""` | String to fully override gateway.fullname |
-| gateway.gatewayClassName | string | `"kgateway"` | Gateway class that determines the backend used Currently supported values: "kgateway" or "istio" |
+| gateway.gatewayClassName | string | `"kgateway"` | Gateway class that determines the backend used Currently supported values: "kgateway", "istio", or "gke-l7-regional-external-managed" |
 | gateway.gatewayParameters.resources | object | `{"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"100m","memory":"128Mi"}}` | Resource requests/limits <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container |
 | gateway.nameOverride | string | `""` | String to partially override gateway.fullname |
 | gateway.serviceType | string | `"NodePort"` | Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: ["LoadBalancer", "NodePort"] |

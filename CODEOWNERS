@@ -7,3 +7,7 @@
 /quickstart/examples/precise-prefix-cache-aware/ @vMaroon @ahg-g
 /quickstart/examples/sim/ @shmuelk
 /quickstart/examples/wide-ep-lws/ @njhill @wseaton
+
+# GKE specific example files
+**/gke.helmfile.yaml  @liu-cong @smarterclayton
+**/gke.md             @liu-cong @smarterclayton

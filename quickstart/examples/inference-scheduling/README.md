@@ -11,7 +11,8 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 > To adjust the model or any other modelservice values, simply change the values.yaml file in [ms-inference-scheduling/values.yaml](ms-inference-scheduling/values.yaml)
 
 1. Install the dependencies; see [install-deps.sh](../../install-deps.sh)
-2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart. This example uses `kgateway` but should work with `istio` given some modifications as described below step 3.
+
+2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart. This example uses `kgateway` but should work with `istio` given some modifications as described below step 3. If you use GKE Gateway, please refer to [gke.md](./gke.md).
 
 ```bash
 # From the repo root
@@ -19,18 +20,17 @@ cd quickstart
 export HF_TOKEN=${HFTOKEN}
 ./llmd-infra-installer.sh --namespace llm-d-inference-scheduling -r infra-inference-scheduling --gateway kgateway --disable-metrics-collection
 ```
-    - It should be noted release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
+
+**_NOTE:_** The release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
 
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
 ```bash
 cd examples/inference-scheduling
-helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-install
+helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
 ```
 
----
-
-> Note: if you are deploying Istio as the gateway, e.g. `--gateway istio`, then you will need to apply a `DestinationRule` described in [Temporary Istio Workaround](../../istio-workaround.md).
+**_NOTE:_** This examples was built with `kgateway` in mind. If you are deploying Istio as the gateway, e.g. `--gateway istio`, then you will need to apply a `DestinationRule` described in [Temporary Istio Workaround](../../istio-workaround.md).
 
 ## Verify the Installation
 
@@ -136,7 +136,7 @@ To remove the deployment:
 ```bash
 # Remove the model services
 # From examples/inference-scheduling
-helmfile --selector managedBy=helmfile destroy
+helmfile --selector managedBy=helmfile destroy -f helmfile.yaml
 
 # Remove the infrastructure
 helm uninstall infra-inference-scheduling -n llm-d-inference-scheduling

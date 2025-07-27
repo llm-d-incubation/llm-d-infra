@@ -164,7 +164,7 @@ validation() {
   echo
 
   echo "-> Discovering gateway service…"
-  GATEWAY_SVC=$(kubectl get svc -n "$NAMESPACE" -o json | jq -r '.items[] | select(.metadata.name | test(".*-inference-gateway$")).metadata.name' | head -n1)
+  GATEWAY_SVC=$(kubectl get svc -n "$NAMESPACE" -o json | jq -r '.items[] | select(.metadata.name | test(".*-inference-gateway(-.*)?$")).metadata.name' | head -n1)
 
   if [[ -z "$GATEWAY_SVC" ]]; then
     echo "❌ Failed: Could not find a gateway service in namespace $NAMESPACE"

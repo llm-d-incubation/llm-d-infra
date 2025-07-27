@@ -60,7 +60,7 @@ gateway:
   nameOverride: ""
 
   # -- Gateway class that determines the backend used
-  # Currently supported values: "kgateway" or "istio"
+  # Currently supported values: "kgateway", "istio", or "gke-l7-regional-external-managed"
   gatewayClassName: kgateway
 
   # @schema
@@ -78,6 +78,11 @@ gateway:
 
     enabled: true
 
+    # @schema
+    # default: info
+    # enum: [error,warn,info,debug]
+    # @schema
+    logLevel: info
 
     # @schema
     # $ref: https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master/_definitions.json#/definitions/io.k8s.api.core.v1.ResourceRequirements

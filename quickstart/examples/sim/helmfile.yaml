@@ -5,8 +5,8 @@ repositories:
 releases:
   - name: infra-sim
     namespace: llm-d-sim
-    chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
-    version: v1.1.0
+    chart: https://llm-d-incubation.github.io/llm-d-infra/
+    version: v1.1.1
     installed: true
     labels:
       managedBy: llm-d-infra-installer
