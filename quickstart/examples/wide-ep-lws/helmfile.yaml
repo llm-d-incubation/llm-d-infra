@@ -6,7 +6,7 @@ releases:
   - name: infra-wide-ep
     namespace: llm-d-wide-ep
     chart: https://llm-d-incubation.github.io/llm-d-infra/
-    version: v1.1.0
+    version: v1.1.1
     installed: true
     values:
       - infra-wide-ep/values.yaml
