@@ -167,6 +167,18 @@
                             "title": "enabled",
                             "type": "boolean"
                         },
+                        "logLevel": {
+                            "default": "info",
+                            "description": " default: info enum: [error,warn,info,debug] @schema",
+                            "enum": [
+                                "error",
+                                "warn",
+                                "info",
+                                "debug"
+                            ],
+                            "required": [],
+                            "title": "logLevel"
+                        },
                         "proxyUID": {
                             "default": false,
                             "description": " type: [number, boolean] @schema",
