@@ -59,7 +59,7 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 $ helm list -n llm-d-pd
 NAME    	NAMESPACE	REVISION	UPDATED                             	STATUS  	CHART                   	APP VERSION
 gaie-pd 	llm-d-pd 	1       	2025-07-25 11:27:47.419598 -0700 PDT	deployed	inferencepool-v0.5.1    	v0.5.1
-infra-pd	llm-d-pd 	1       	2025-07-25 11:27:18.453254 -0700 PDT	deployed	llm-d-infra-v1.1.0      	v0.2.0
+infra-pd	llm-d-pd 	1       	2025-07-25 11:27:18.453254 -0700 PDT	deployed	llm-d-infra-v1.1.1      	v0.2.0
 ms-pd   	llm-d-pd 	1       	2025-07-25 11:27:53.138175 -0700 PDT	deployed	llm-d-modelservice-0.2.0	v0.2.0
 ```
 

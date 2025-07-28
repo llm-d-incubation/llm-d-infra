@@ -37,7 +37,7 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 $ helm list -n llm-d-precise --all --debug
 NAME           	NAMESPACE    	REVISION	UPDATED                             	STATUS  	CHART                   	APP VERSION
 gaie-kv-events 	llm-d-precise	1       	2025-07-25 11:20:57.162464 -0700 PDT	deployed	inferencepool-v0.5.1    	v0.5.1
-infra-kv-events	llm-d-precise	1       	2025-07-25 11:20:48.115947 -0700 PDT	deployed	llm-d-infra-v1.1.0      	v0.2.0
+infra-kv-events	llm-d-precise	1       	2025-07-25 11:20:48.115947 -0700 PDT	deployed	llm-d-infra-v1.1.1      	v0.2.0
 ms-kv-events   	llm-d-precise	1       	2025-07-25 11:21:03.244736 -0700 PDT	deployed	llm-d-modelservice-0.2.0	v0.2.0
 ```
 

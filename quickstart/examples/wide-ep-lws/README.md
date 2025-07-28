@@ -39,9 +39,9 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 1. First you should be able to see that both of your release of infra and modelservice charts went smoothly:
 
 ```bash
-helm list -n llm-d-wide-ep
+$ helm list -n llm-d-wide-ep
 NAME         	NAMESPACE    	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
-infra-wide-ep	llm-d-wide-ep	1       	2025-07-25 05:43:35.263697 -0700 PDT	deployed	llm-d-infra-v1.1.0       	v0.2.0
+infra-wide-ep	llm-d-wide-ep	1       	2025-07-25 05:43:35.263697 -0700 PDT	deployed	llm-d-infra-v1.1.1       	v0.2.0
 ms-wide-ep   	llm-d-wide-ep	1       	2025-07-25 06:16:29.31419 -0700 PDT 	deployed	llm-d-modelservice-v0.2.0	v0.2.0
 ```
 

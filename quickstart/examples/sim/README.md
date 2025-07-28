@@ -42,7 +42,7 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 $ helm list -n llm-d-sim --all --debug
 NAME     	NAMESPACE	REVISION	UPDATED                             	STATUS  	CHART                   	APP VERSION
 gaie-sim 	llm-d-sim	1       	2025-07-25 10:39:08.317195 -0700 PDT	deployed	inferencepool-v0.5.1    	v0.5.1
-infra-sim	llm-d-sim	1       	2025-07-25 10:38:48.360829 -0700 PDT	deployed	llm-d-infra-v1.1.0      	v0.2.0
+infra-sim	llm-d-sim	1       	2025-07-25 10:38:48.360829 -0700 PDT	deployed	llm-d-infra-v1.1.1      	v0.2.0
 ms-sim   	llm-d-sim	1       	2025-07-25 10:39:15.127738 -0700 PDT	deployed	llm-d-modelservice-0.2.0	v0.2.0
 ```
 

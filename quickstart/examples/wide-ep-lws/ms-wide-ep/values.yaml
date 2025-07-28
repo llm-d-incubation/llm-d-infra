@@ -149,7 +149,7 @@ decode:
         - name: NCCL_IB_HCA
           value: "ibp"
         - name: VLLM_LOGGING_LEVEL
-          value: "DEBUG"
+          value: "INFO"
         - name: HF_HUB_CACHE
           value: /huggingface-cache
         - name: VLLM_NIXL_SIDE_CHANNEL_HOST
@@ -273,7 +273,7 @@ prefill:
         - name: NCCL_IB_HCA
           value: "ibp"
         - name: VLLM_LOGGING_LEVEL
-          value: "DEBUG"
+          value: "INFO"
         - name: HF_HUB_CACHE
           value: /huggingface-cache
         - name: VLLM_NIXL_SIDE_CHANNEL_HOST
