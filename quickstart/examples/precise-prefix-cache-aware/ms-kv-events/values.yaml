@@ -36,7 +36,7 @@ decode:
   replicas: 2
   containers:
   - name: "vllm"
-    image: "ghcr.io/llm-d/llm-d-dev:v0.2.0"
+    image: "ghcr.io/llm-d/llm-d:v0.2.0"
     modelCommand: custom
     command:
       - /bin/sh
