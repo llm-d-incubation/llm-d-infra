@@ -77,7 +77,7 @@ decode:
     tensor: 1 # FIXME: This needs to be set to 1, otherwise we only see decode.parallelism.tensor GPUs
   containers:
     - name: vllm-worker-decode
-      image: "quay.io/tms/llm-d-dev:0.2.0-j"
+      image: "quay.io/tms/llm-d-dev:0.2.0-k"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash","-c"]
@@ -210,7 +210,7 @@ prefill:
     tensor: 1 # these will be derived based performance testing
   containers:
     - name: vllm-worker-prefill
-      image: "quay.io/tms/llm-d-dev:0.2.0-j"
+      image: "quay.io/tms/llm-d-dev:0.2.0-k"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash","-c"]
