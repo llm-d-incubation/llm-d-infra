@@ -73,7 +73,7 @@ decode:
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # This must equal the number of nodes rather than the dp_size.
-    data: 2
+    data: 1
     tensor: 1 # FIXME: This needs to be set to 1, otherwise we only see decode.parallelism.tensor GPUs
   containers:
     - name: vllm-worker-decode
@@ -118,7 +118,7 @@ decode:
             --eplb-step-interval 3000 \
             --api-server-count=8 \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}' \
-            --max-model-len 16384
+            -O '{"full_cuda_graph":true}'
 
       env:
         - name: VLLM_FUSED_MOE_CHUNK_SIZE
@@ -238,9 +238,7 @@ prefill:
             --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
             --api-server-count=8 \
-            --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}' \
-            --max-model-len 16384 \
--           -O '{"full_cuda_graph":true}'
+            --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
 
       env:
         - name: DP_SIZE_LOCAL
