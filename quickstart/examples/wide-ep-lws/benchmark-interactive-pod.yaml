@@ -1,0 +1,28 @@
+# benchmark-client-interactive-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+    name: benchmark-interactive
+    labels:
+        app: benchmark-interactive # Labels for organization
+spec:
+    containers:
+        - name: benchmark-runner
+          image: "quay.io/tms/pd-disagg-benchmark:0.0.6"
+          imagePullPolicy: Always
+          stdin: true
+          tty: true
+          resources:
+              requests:
+                  cpu: "16"
+                  memory: "64Gi"
+              limits:
+                  cpu: "16"
+                  memory: "64Gi"
+          env:
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hf-secret # set up with just hf_token
+                  key: HF_TOKEN
+    restartPolicy: Never

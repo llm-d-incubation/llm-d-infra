@@ -1,0 +1,58 @@
+BASE_URL := __BASE_URL__
+
+# Use this Justfile within the cluster.
+
+eval:
+    lm_eval --model local-completions --tasks gsm8k \
+    --model_args model={{MODEL}},base_url={{BASE_URL}}/v1/completions,num_concurrent=50,max_retries=3,tokenized_requests=False \
+    --limit 100
+
+benchmark MC NUM_REQUESTS INPUT_LEN OUTPUT_LEN:
+    python vllm/benchmarks/benchmark_serving.py \
+        --base-url {{BASE_URL}} \
+        --model {{MODEL}} \
+        --dataset-name random \
+        --random-input-len {{INPUT_LEN}} \
+        --random-output-len {{OUTPUT_LEN}}  \
+        --request-rate 512 \
+        --max-concurrency {{MC}} \
+        --seed $(date +%M%H%M%S) \
+        --num-prompts {{NUM_REQUESTS}} \
+        --ignore-eos
+
+# Simulates a pure decode workload, for measuring output token throughput and TTFT.
+# Designed to approximate the decode side of a P/D deployment in a steady state.
+benchmark_decode_workload NUM_REQUESTS OUTPUT_LEN:
+    python vllm/benchmarks/benchmark_serving.py \
+        --base-url {{BASE_URL}} \
+        --model {{MODEL}} \
+        --dataset-name random \
+        --random-input-len 1 \
+        --random-output-len {{OUTPUT_LEN}}  \
+        --seed $(date +%M%H%M%S) \
+        --num-prompts {{NUM_REQUESTS}} \
+        --ignore-eos
+
+# For hitting an individual vLLM instance while deploying a P/D setup
+benchmark_no_pd POD_IP RR NUM_REQUESTS INPUT_LEN OUTPUT_LEN:
+    python vllm/benchmarks/benchmark_serving.py \
+        --base-url http://{{POD_IP}}:8000 \
+        --model {{MODEL}} \
+        --dataset-name random \
+        --random-input-len {{INPUT_LEN}} \
+        --random-output-len {{OUTPUT_LEN}}  \
+        --request-rate {{RR}} \
+        --seed $(date +%M%H%M%S) \
+        --num-prompts {{NUM_REQUESTS}} \
+        --ignore-eos
+
+# For vLLM PyTorch traces.
+# vLLM serve must be run with the VLLM_TORCH_PROFILER_DIR env set.
+start_profile:
+  curl -X POST {{BASE_URL}}/start_profile
+stop_profile:
+  curl -X POST {{BASE_URL}}/stop_profile
+profile:
+  just start_profile \
+  && sleep 1 \
+  && just stop_profile
