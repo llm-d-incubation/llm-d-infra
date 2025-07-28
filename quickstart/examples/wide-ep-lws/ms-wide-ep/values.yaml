@@ -73,11 +73,11 @@ decode:
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # This must equal the number of nodes rather than the dp_size.
-    data: 1
+    data: 2
     tensor: 1 # FIXME: This needs to be set to 1, otherwise we only see decode.parallelism.tensor GPUs
   containers:
     - name: vllm-worker-decode
-      image: "quay.io/tms/llm-d-dev:0.2.0-h"
+      image: "quay.io/tms/llm-d-dev:0.2.0-j"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash","-c"]
@@ -118,12 +118,11 @@ decode:
             --eplb-step-interval 3000 \
             --api-server-count=8 \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}' \
-            --max-model-len 16384 \
-            -O '{"full_cuda_graph":true}'
+            --max-model-len 16384
 
       env:
         - name: VLLM_FUSED_MOE_CHUNK_SIZE
-          value: "1024"
+          value: "2048"
 
         - name: DP_SIZE_LOCAL
           value: "8"
@@ -142,7 +141,7 @@ decode:
         - name: VLLM_USE_DEEP_GEMM
           value: "1"
         - name: VLLM_ALL2ALL_BACKEND
-          value: "deepep_high_throughput"
+          value: "deepep_low_latency"
         - name: NVIDIA_GDRCOPY
           value: "enabled"
         - name: NVSHMEM_DEBUG
@@ -211,7 +210,7 @@ prefill:
     tensor: 1 # these will be derived based performance testing
   containers:
     - name: vllm-worker-prefill
-      image: "quay.io/tms/llm-d-dev:0.2.0-h"
+      image: "quay.io/tms/llm-d-dev:0.2.0-j"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash","-c"]
@@ -239,7 +238,9 @@ prefill:
             --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
             --api-server-count=8 \
-            --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
+            --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}' \
+            --max-model-len 16384 \
+-           -O '{"full_cuda_graph":true}'
 
       env:
         - name: DP_SIZE_LOCAL
