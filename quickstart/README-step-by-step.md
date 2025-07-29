@@ -207,7 +207,7 @@ helm upgrade -i llm-d-infra . --namespace "${NAMESPACE}" \
 helm upgrade -i llm-d-infra . --namespace "${NAMESPACE}" \
   --values ./values.yaml \
   --set gateway.gatewayClassName=kgateway \
-  --set gateway.gatewayParameters.proxyUID=0
+  --set gateway.gatewayParameters.proxyUID=0 \
   --set gateway.serviceType=LoadBalancer
 ```
 
