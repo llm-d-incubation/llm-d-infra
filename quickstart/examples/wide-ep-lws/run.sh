@@ -20,8 +20,10 @@ outdir="/app/results/$(cat ./TIMESTAMP)"
 
 # reproducibility
 mkdir -p "${outdir}/repro"
+cp "/app/NAME" "${outdir}/NAME"
 cat "$0" > ${outdir}/repro/run.sh # 
 cp "/app/values.yaml" "${outdir}/repro/values.yaml"
+
 
 # Sweep it
 for (( X=256; X<=32768; X*=2 )); do
