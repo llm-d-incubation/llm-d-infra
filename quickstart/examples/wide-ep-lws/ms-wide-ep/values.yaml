@@ -117,8 +117,8 @@ decode:
             --eplb-window-size 1000 \
             --eplb-step-interval 3000 \
             --api-server-count=8 \
+            --enforce-eager \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}' \
-            --max-model-len 16384
 
       env:
         - name: VLLM_FUSED_MOE_CHUNK_SIZE
@@ -167,6 +167,10 @@ decode:
           add:
           - "IPC_LOCK"
           - "SYS_RAWIO"
+      ports:
+        - containerPort: 8200
+          name: metrics
+          protocol: TCP
       resources:
         limits:
           memory: 512Gi
@@ -264,7 +268,7 @@ prefill:
         - name: NVIDIA_GDRCOPY
           value: "enabled"
         - name: NVSHMEM_DEBUG
-          value: "INFO"
+          value: "DEBUG"
         - name: NVSHMEM_REMOTE_TRANSPORT
           value: "ibgda"
         - name: NVSHMEM_IB_ENABLE_IBGDA
