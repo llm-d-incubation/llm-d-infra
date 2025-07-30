@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  labels:
+    app.kubernetes.io/component: decode
+  name: ms-wide-ep-llm-d-modelservice-decode-podmonitor
+  namespace: llm-d-wide-ep
+spec:
+  podMetricsEndpoints:
+  - interval: 30s
+    path: /metrics
+    port: metrics
+  selector:
+    matchLabels:
+      llm-d.ai/inferenceServing: "true"
+      llm-d.ai/model: ms-wide-ep-llm-d-modelservice
+      llm-d.ai/role: decode
