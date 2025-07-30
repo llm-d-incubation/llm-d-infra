@@ -1,6 +1,9 @@
 name: E2E Accelerator EC2 Test
 
 on:
+  issue_comment:
+    # Runs with a PR comment /run-e2e or /run-e2e-istio
+    types: [created]
 #  schedule: # TODO: enable once validated functional
 #    - cron: '0 8 * * *'  # 4AM Eastern (08:00 UTC)
   workflow_dispatch:
@@ -31,6 +34,21 @@ permissions:
 
 jobs:
   setup:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        (
+          contains(github.event.comment.body, '/run-e2e') ||
+          contains(github.event.comment.body, '/run-e2e-istio')
+        ) &&
+        (
+          github.event.comment.author_association == 'OWNER' ||
+          github.event.comment.author_association == 'MEMBER' ||
+          github.event.comment.author_association == 'COLLABORATOR'
+        )
+      )
     runs-on: ubuntu-latest
     outputs:
       instance_id: ${{ steps.launch.outputs.instance_id }}
@@ -44,9 +62,11 @@ jobs:
       HF_TOKEN: ${{secrets.HF_TOKEN}}
       TERMINATION_TIMEOUT: ${{ github.event.inputs.wait_for_termination }}
       DISK_SIZE: "300"
-      PR_OR_BRANCH: ${{ github.event.inputs.pr_or_branch || 'main' }}
+      PR_OR_BRANCH: ${{ github.event.inputs.pr_or_branch || github.event.issue.number }}
       NAMESPACE: ${{ github.event.inputs.namespace }}
-      GATEWAY_TYPE: ${{ github.event.inputs.gateway_type || 'kgateway' }}
+      GATEWAY_TYPE: ${{ github.event.inputs.gateway_type ||
+        (contains(github.event.comment.body || '', '/run-e2e-istio') && 'istio') ||
+        'kgateway' }}
 
     steps:
       - name: Checkout
