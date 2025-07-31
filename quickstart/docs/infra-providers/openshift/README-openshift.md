@@ -26,7 +26,7 @@ If running on OpenShift with user workload monitoring enabled, you can access th
 The metrics are automatically integrated into the OpenShift monitoring stack. The llm-d-infra does not install Grafana on OpenShift,
 but it's recommended that users install Grafana to view metrics and import dashboards.
 
-Follow the [Grafana setup guide](./grafana-setup.md).
+Follow the [Grafana setup guide](/quickstart/docs/monitoring/grafana-setup.md).
 The guide includes manifests to install the following:
 
 - Grafana instance

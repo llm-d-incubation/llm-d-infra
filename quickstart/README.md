@@ -251,9 +251,9 @@ Access the User Interfaces at:
 
 #### Grafana Dashboards
 
-Import the [llm-d dashboard](./grafana/dashboards/llm-d-dashboard.json) from the Grafana UI. Go to `Dashboards -> New -> Import`.
+Import the [llm-d dashboard](./docs/monitoring/grafana/dashboards/llm-d-dashboard.json) from the Grafana UI. Go to `Dashboards -> New -> Import`.
 Similarly, import the [inference-gateway dashboard](https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/main/tools/dashboards/inference_gateway.json)
-from the gateway-api-inference-extension repository. Or, if the Grafana Operator is installed in your environment, you might follow the [Grafana setup guide](./grafana-setup.md)
+from the gateway-api-inference-extension repository. Or, if the Grafana Operator is installed in your environment, you might follow the [Grafana setup guide](./docs/monitoring/grafana-setup.md)
 to install the dashboards as `GrafanaDashboard` custom resources.
 
 #### Security Note
