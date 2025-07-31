@@ -228,7 +228,7 @@ prometheus-community [kube-prometheus-stack helm charts](https://github.com/prom
 
 #### Accessing the Metrics UIs
 
-If running on OpenShift, skip to [OpenShift and Grafana](#openshift-and-grafana).
+If running on OpenShift, skip to [OpenShift and Grafana](./docs/infra-providers/openshift/README-openshift.md#openshift-and-grafana).
 
 #### Port Forwarding
 
