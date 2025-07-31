@@ -38,10 +38,10 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 
 ```bash
 $ helm list -n llm-d-inference-scheduling
-NAME                      	NAMESPACE                 	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
-gaie-inference-scheduling 	llm-d-inference-scheduling	1       	2025-07-24 10:44:30.543527 -0700 PDT	deployed	inferencepool-v0.5.1     	v0.5.1
-infra-inference-scheduling	llm-d-inference-scheduling	1       	2025-07-24 10:41:49.452841 -0700 PDT	deployed	llm-d-infra-v1.1.1        v0.2.0
-ms-inference-scheduling   	llm-d-inference-scheduling	1       	2025-07-24 10:44:35.91079 -0700 PDT 	deployed	llm-d-modelservice-v0.2.0	v0.2.0
+NAME                          NAMESPACE                     REVISION    UPDATED                                 STATUS      CHART                        APP VERSION
+gaie-inference-scheduling     llm-d-inference-scheduling    1           2025-07-24 10:44:30.543527 -0700 PDT    deployed    inferencepool-v0.5.1         v0.5.1
+infra-inference-scheduling    llm-d-inference-scheduling    1           2025-07-24 10:41:49.452841 -0700 PDT    deployed    llm-d-infra-v1.1.1        v0.2.0
+ms-inference-scheduling       llm-d-inference-scheduling    1           2025-07-24 10:44:35.91079 -0700 PDT     deployed    llm-d-modelservice-v0.2.0    v0.2.0
 ```
 
 2. Find the gateway service:

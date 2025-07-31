@@ -1,19 +1,19 @@
 # llm-d-infra Quick Start for OpenShift
 
-# Prerequisites
+## Prerequisites
 
-## Platform Setup
+### Platform Setup
 
 - OpenShift - This quickstart was tested on OpenShift 4.17. Older versions may work but have not been tested.
 - NVIDIA GPU Operator and NFD Operator - The installation instructions can be found [here](https://docs.nvidia.com/datacenter/cloud-native/openshift/latest/steps-overview.html).
 - NO Service Mesh or Istio installation as Istio CRDs will conflict with the gateway
 - Cluster administrator privileges are required to install the llm-d cluster scoped resources
 
-# llm-d-infra Installation
+## llm-d-infra Installation
 
 TBD
 
-# OpenShift and Grafana
+## OpenShift and Grafana
 
 If running on OpenShift with user workload monitoring enabled, you can access the metrics through the OpenShift console:
 

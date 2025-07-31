@@ -11,7 +11,7 @@ This is a simple quickstart demonstrating how to configure the inference schedul
 > Note that the decode vLLM container `--prefix-caching-hash-algo` argument must not change
 
 1. Install the dependencies; see [install-deps.sh](../../../../../../llm-d-incubation/llm-d-infra/quickstart/install-deps.sh)
-2. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart:
+1. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart:
 
 ```bash
 # From the repo root
@@ -22,7 +22,7 @@ export HF_TOKEN=${HFTOKEN}
 
 **_NOTE:_** The release name `infra-kv-events` is important here, because it matches up with pre-built values files used in this example.
 
-3. Use the helmfile to apply the modelservice and GIE charts on top of it.
+1. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
 ```bash
 cd examples/precise-prefix-cache-aware
@@ -35,15 +35,15 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 
 ```bash
 $ helm list -n llm-d-precise --all --debug
-NAME           	NAMESPACE    	REVISION	UPDATED                             	STATUS  	CHART                   	APP VERSION
-gaie-kv-events 	llm-d-precise	1       	2025-07-25 11:20:57.162464 -0700 PDT	deployed	inferencepool-v0.5.1    	v0.5.1
-infra-kv-events	llm-d-precise	1       	2025-07-25 11:20:48.115947 -0700 PDT	deployed	llm-d-infra-v1.1.1      	v0.2.0
-ms-kv-events   	llm-d-precise	1       	2025-07-25 11:21:03.244736 -0700 PDT	deployed	llm-d-modelservice-0.2.0	v0.2.0
+NAME               NAMESPACE        REVISION    UPDATED                                 STATUS      CHART                       APP VERSION
+gaie-kv-events     llm-d-precise    1           2025-07-25 11:20:57.162464 -0700 PDT    deployed    inferencepool-v0.5.1        v0.5.1
+infra-kv-events    llm-d-precise    1           2025-07-25 11:20:48.115947 -0700 PDT    deployed    llm-d-infra-v1.1.1          v0.2.0
+ms-kv-events       llm-d-precise    1           2025-07-25 11:21:03.244736 -0700 PDT    deployed    llm-d-modelservice-0.2.0    v0.2.0
 ```
 
 Note: if you chose to use `istio` as your Gateway provider you would see those (`istiod` and `istio-base` in the `istio-system` namespace) instead of the kgateway based ones.
 
-2. Find the gateway service:
+1. Find the gateway service:
 
 ```bash
 $ kubectl get services -n llm-d-precise
@@ -54,13 +54,13 @@ infra-kv-events-inference-gateway   NodePort    10.16.2.175   <none>        80:3
 
 In this case we have found that our gateway service is called `infra-kv-events-inference-gateway`.
 
-3. `port-forward` the service to we can curl it:
+1. `port-forward` the service to we can curl it:
 
 ```bash
 kubectl -n llm-d-precise port-forward service/infra-kv-events-inference-gateway 8000:80
 ```
 
-4. Try curling the `/v1/models` endpoint:
+1. Try curling the `/v1/models` endpoint:
 
 ```bash
 curl -s http://localhost:8000/v1/models \
@@ -97,7 +97,8 @@ curl -s http://localhost:8000/v1/models \
 }
 ```
 
-5. Curl the `v1/completions` endpoint once:
+1. Curl the `v1/completions` endpoint once:
+
 ```bash
 export LONG_TEXT_200_WORDS="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." && \
 curl -s http://localhost:8000/v1/completions \
@@ -134,19 +135,22 @@ curl -s http://localhost:8000/v1/completions \
 }
 ```
 
-6. Check the inference-scheduler's prefix-cache-scorer's scores with the following command:
+1. Check the inference-scheduler's prefix-cache-scorer's scores with the following command:
+
 ```bash
 kubectl logs -l inferencepool=gaie-kv-events-epp -n llm-d-precise --tail 100 | grep "Got pod scores"
 ```
 
 You should see output similar to:
+
 ```bash
 2025-07-18T22:00:24Z    LEVEL(-4)       prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:133     Got pod scores  {"x-request-id": "0e08703d-30c0-4624-a7b3-31e94dc99bc8", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
 ```
 
-7. Repeat steps 5 and 6 to see the prefix-cache-scorer in action
+1. Repeat steps 5 and 6 to see the prefix-cache-scorer in action
 
 You should see output similar to:
+
 ```log
 2025-07-18T22:00:24Z    LEVEL(-4)       prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:133     Got pod scores  {"x-request-id": "0e08703d-30c0-4624-a7b3-31e94dc99bc8", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
 2025-07-18T22:00:46Z    LEVEL(-4)       prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:133     Got pod scores  {"x-request-id": "8d0b587d-058f-4d2e-a062-a859a565d37a", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": {"${POD_IP}":2}}
@@ -155,11 +159,14 @@ You should see output similar to:
 Notice that the second time we called the `/v1/completions` endpoint, the prefix-cache-scorer was able to return a score for the pod,
 indicating that it had cached the KV-blocks from the first call.
 
-8. See the `kvblock.Index` metrics in the `gaie-kv-events-epp` pod:
+1. See the `kvblock.Index` metrics in the `gaie-kv-events-epp` pod:
+
 ```bash
 kubectl logs -l inferencepool=gaie-kv-events-epp -n llm-d-precise --tail 100 | grep "metrics beat"
 ```
+
 You should see output similar to:
+
 ```log
 I0718 23:57:10.781371       1 collector.go:107] "metrics beat" logger="metrics" admissions=3 evictions=0 lookups=1 hits=2 latency_count=1 latency_sum=0.000006859 latency_avg=0.0000022863333333333334
 ```
@@ -172,6 +179,7 @@ If the beat is missing lookups, wait for the next one (1 minute beats).
 ## Cleanup
 
 To remove the deployment:
+
 ```bash
 # Remove the model services
 # From examples/precise-prefix-cache-aware

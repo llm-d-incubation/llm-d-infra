@@ -1,8 +1,10 @@
 
+# Inference Scheduling on GKE
+
 ## Installation
 
 1. Install the dependencies; see [install-deps.sh](../../install-deps.sh)
-2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart.
+1. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart.
 
 ```bash
 # Set common environment variables
@@ -19,7 +21,7 @@ export HF_TOKEN=$(YOUR_TOKEN)
 
 **_NOTE:_** It should be noted release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
 
-3. Use the helmfile to apply the modelservice and GIE charts on top of it.
+1. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
 ```bash
 cd examples/inference-scheduling
@@ -35,10 +37,10 @@ helmfile apply \
 
 ```bash
 $ helm list -n ${NAMESPACE}
-NAME                      	NAMESPACE                 	REVISION	UPDATED                             	STATUS  	CHART                    	APP VERSION
-gaie-inference-scheduling 	llm-d-inference-scheduling	1       	2025-07-24 10:44:30.543527 -0700 PDT	deployed	inferencepool-v0.5.1     	v0.5.1
-infra-inference-scheduling	llm-d-inference-scheduling	1       	2025-07-24 10:41:49.452841 -0700 PDT	deployed	llm-d-infra-v1.1.0        v0.2.0
-ms-inference-scheduling   	llm-d-inference-scheduling	1       	2025-07-24 10:44:35.91079 -0700 PDT 	deployed	llm-d-modelservice-v0.2.0	v0.2.0
+NAME                       NAMESPACE                  REVISION UPDATED                              STATUS   CHART                     APP VERSION
+gaie-inference-scheduling  llm-d-inference-scheduling 1        2025-07-24 10:44:30.543527 -0700 PDT deployed inferencepool-v0.5.1      v0.5.1
+infra-inference-scheduling llm-d-inference-scheduling 1        2025-07-24 10:41:49.452841 -0700 PDT deployed llm-d-infra-v1.1.0         v0.2.0
+ms-inference-scheduling    llm-d-inference-scheduling 1        2025-07-24 10:44:35.91079 -0700 PDT  deployed llm-d-modelservice-v0.2.0 v0.2.0
 ```
 
 1. Get the gateway endpoint:
@@ -87,6 +89,7 @@ curl http://${IP}:${PORT}/v1/models \
 ```
 
 1. Try curling the `v1/completions` endpoint:
+
 ```bash
 curl http://${IP}:${PORT}/v1/completions \
   -H "Content-Type: application/json" \
@@ -123,6 +126,7 @@ curl http://${IP}:${PORT}/v1/completions \
 ## Cleanup
 
 To remove the deployment:
+
 ```bash
 # Remove the model services
 # From examples/inference-scheduling

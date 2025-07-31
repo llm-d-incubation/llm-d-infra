@@ -23,8 +23,6 @@ export HF_TOKEN=${HFTOKEN}
 ```
 
 **_NOTE:_** The release name `infra-sim` is important here, because it matches up with pre-built values files used in this example.
-
-
 3. Use the helmfile to apply the modelservice and GIE charts on top of it.
 
 ```bash
@@ -40,10 +38,10 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 
 ```bash
 $ helm list -n llm-d-sim --all --debug
-NAME     	NAMESPACE	REVISION	UPDATED                             	STATUS  	CHART                   	APP VERSION
-gaie-sim 	llm-d-sim	1       	2025-07-25 10:39:08.317195 -0700 PDT	deployed	inferencepool-v0.5.1    	v0.5.1
-infra-sim	llm-d-sim	1       	2025-07-25 10:38:48.360829 -0700 PDT	deployed	llm-d-infra-v1.1.1      	v0.2.0
-ms-sim   	llm-d-sim	1       	2025-07-25 10:39:15.127738 -0700 PDT	deployed	llm-d-modelservice-0.2.0	v0.2.0
+NAME         NAMESPACE    REVISION    UPDATED                                 STATUS      CHART                       APP VERSION
+gaie-sim     llm-d-sim    1           2025-07-25 10:39:08.317195 -0700 PDT    deployed    inferencepool-v0.5.1        v0.5.1
+infra-sim    llm-d-sim    1           2025-07-25 10:38:48.360829 -0700 PDT    deployed    llm-d-infra-v1.1.1          v0.2.0
+ms-sim       llm-d-sim    1           2025-07-25 10:39:15.127738 -0700 PDT    deployed    llm-d-modelservice-0.2.0    v0.2.0
 ```
 
 Note: if you chose to use `istio` as your Gateway provider you would see those (`istiod` and `istio-base` in the `istio-system` namespace) instead of the kgateway based ones.

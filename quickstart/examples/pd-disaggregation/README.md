@@ -8,21 +8,25 @@
 > WARNING: We are still investigating and optimizing performance for other hardware and networking configurations
 
 In this example, we will demonstrate a deployment of `Llama-3.3-70B-Instruct-Fp8` with:
+
 - 4 TP=1 Prefill Workers
 - 1 TP=4 Decode Worker
 
 ## P/D Best Practices
 
 P/D disaggregation can benefit overall throughput by:
+
 - Specializing P and D workers for compute-bound vs latency-bound workloads
 - Reducing the number of copies of the model (increasing KV cache RAM) with wide parallelism
 
 However, P/D disaggregation is not a target for all workloads. We suggest exploring P/D disaggregation for workloads with:
+
 - Large models (e.g. Llama-70B+, not Llama-8B)
 - Longer input sequence lengths (e.g 10k ISL | 1k OSL, not 200 ISL | 200 OSL)
 - Sparse MoE architectures with opportunities for wide-EP
 
 As a result, as you tune you P/D deployments, we suggest focusing on the following parameters:
+
 - **Heterogenous Parallelism**: deploy P workers with less parallelism and more replicas and D workers with more parallelism and fewer replicas
 - **xPyD Ratios**: tuning the ratio of P workers to D workers to ensure balance for your ISL|OSL ratio
 
@@ -30,26 +34,27 @@ As a result, as you tune you P/D deployments, we suggest focusing on the followi
 
 1. Install your local dependencies (from `/llm-d-infra/quickstart`)
 
-```bash
-./install-deps.sh
-```
+   ```bash
+   ./install-deps.sh
+   ```
 
-2. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart (from `/llm-d-infra/quickstart`). This example only works out of the box with `Istio` as a provider, but with changes its possible to run this with `kgateway`.
+1. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart (from `/llm-d-infra/quickstart`). This example only works out of the box with `Istio` as a provider, but with changes its possible to run this with `kgateway`.
 
-```bash
-# ran from root of repo
-cd quickstart
-export HF_TOKEN=$(HFTOKEN)
-./llmd-infra-installer.sh --namespace llm-d-pd -r infra-pd -f examples/pd-disaggregation/infra-pd/values.yaml --disable-metrics-collection
-```
+   ```bash
+   # ran from root of repo
+   cd quickstart
+   export HF_TOKEN=$(HFTOKEN)
+   ./llmd-infra-installer.sh --namespace llm-d-pd -r infra-pd -f examples/pd-disaggregation/infra-pd/values.yaml --disable-metrics-collection
+   ```
 
-**_NOTE:_** The release name `infra-pd` is important here, because it matches up with pre-built values files used in this example.
+   **_NOTE:_** The release name `infra-pd` is important here, because it matches up with pre-built values files used in this example.
 
-3. Use the helmfile to apply the modelservice and GIE charts on top of it
-```bash
-cd examples/pd-disaggregation
-helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
-```
+1. Use the helmfile to apply the modelservice and GIE charts on top of it
+
+   ```bash
+   cd examples/pd-disaggregation
+   helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
+   ```
 
 ## Verifying the installation
 
@@ -57,13 +62,13 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 
 ```bash
 $ helm list -n llm-d-pd
-NAME    	NAMESPACE	REVISION	UPDATED                             	STATUS  	CHART                   	APP VERSION
-gaie-pd 	llm-d-pd 	1       	2025-07-25 11:27:47.419598 -0700 PDT	deployed	inferencepool-v0.5.1    	v0.5.1
-infra-pd	llm-d-pd 	1       	2025-07-25 11:27:18.453254 -0700 PDT	deployed	llm-d-infra-v1.1.1      	v0.2.0
-ms-pd   	llm-d-pd 	1       	2025-07-25 11:27:53.138175 -0700 PDT	deployed	llm-d-modelservice-0.2.0	v0.2.0
+NAME        NAMESPACE    REVISION    UPDATED                                 STATUS      CHART                       APP VERSION
+gaie-pd     llm-d-pd     1           2025-07-25 11:27:47.419598 -0700 PDT    deployed    inferencepool-v0.5.1        v0.5.1
+infra-pd    llm-d-pd     1           2025-07-25 11:27:18.453254 -0700 PDT    deployed    llm-d-infra-v1.1.1          v0.2.0
+ms-pd       llm-d-pd     1           2025-07-25 11:27:53.138175 -0700 PDT    deployed    llm-d-modelservice-0.2.0    v0.2.0
 ```
 
-2. Next lets check our pod health of our 4 prefill replicas and 1 decode replica:
+1. Next lets check our pod health of our 4 prefill replicas and 1 decode replica:
 
 ```bash
 $ kubectl get pods -n llm-d-pd
@@ -77,7 +82,8 @@ ms-pd-llm-d-modelservice-prefill-549598dd6c-ft89l   1/1     Running   0         
 ms-pd-llm-d-modelservice-prefill-549598dd6c-pbjzx   1/1     Running   0          49s
 ```
 
-3. Find the gateway service:
+1. Find the gateway service:
+
 ```bash
 $ kubectl get services -n llm-d-pd
 NAME                               TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                        AGE
@@ -85,15 +91,16 @@ gaie-pd-epp                        ClusterIP   10.16.0.161   <none>        9002/
 gaie-pd-ip-bb618139                ClusterIP   None          <none>        54321/TCP                      6m1s
 infra-pd-inference-gateway-istio   NodePort    10.16.0.146   <none>        15021:34743/TCP,80:30212/TCP   6m36s
 ```
+
 In this case we have found that our gateway service is called `infra-pd-inference-gateway-istio`.
 
-4. `port-forward` the service to we can curl it:
+1. `port-forward` the service to we can curl it:
 
 ```bash
 kubectl port-forward -n llm-d-pd service/infra-pd-inference-gateway-istio 8000:80
 ```
 
-5. Try curling the `/v1/models` endpoint:
+1. Try curling the `/v1/models` endpoint:
 
 ```bash
 curl -s http://localhost:8000/v1/models \
@@ -130,7 +137,8 @@ curl -s http://localhost:8000/v1/models \
 }
 ```
 
-6. Try curling the `v1/completions` endpoint:
+1. Try curling the `v1/completions` endpoint:
+
 ```bash
 curl -s http://localhost:8000/v1/completions \
   -H "Content-Type: application/json" \
@@ -169,6 +177,7 @@ curl -s http://localhost:8000/v1/completions \
 ## Cleanup
 
 To remove the deployment:
+
 ```bash
 # Remove the model services
 # From examples/inference-scheduling

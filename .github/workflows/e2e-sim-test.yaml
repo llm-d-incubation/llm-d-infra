@@ -44,6 +44,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Determine if pr_or_branch is a PR number
         id: check_pr
@@ -89,7 +91,7 @@ jobs:
           EOF
 
       - name: Create kind cluster
-        uses: helm/kind-action@v1
+        uses: helm/kind-action@0025e74dda8014893bcb1eeaa18140bf8d4ad6a0
         with:
           config: helpers/kind-testing/kind-config.yaml
           cluster_name: llm-d-test
@@ -102,20 +104,24 @@ jobs:
           ./install-deps.sh
 
       - name: Install chart dependencies (CRDs and Gateway provider)
+        env:
+          GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
           chmod +x chart-dependencies/ci-deps.sh
-          ./chart-dependencies/ci-deps.sh apply ${{ env.GATEWAY_TYPE }}
+          ./chart-dependencies/ci-deps.sh apply "${GATEWAY_TYPE}"
 
       - name: Create namespace
         run: |
           kubectl create namespace "${{ env.NAMESPACE }}" || echo "Namespace already exists"
 
       - name: Deploy llm-d infra
+        env:
+          GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
           cd quickstart
           ./llmd-infra-installer.sh \
             --namespace "${{ env.NAMESPACE }}" \
-            --gateway "${{ env.GATEWAY_TYPE }}" \
+            --gateway "${GATEWAY_TYPE}" \
             --release infra-sim
 
       - name: Wait for infrastructure pods to be ready

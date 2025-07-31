@@ -31,7 +31,7 @@ Before you begin, ensure you have:
    kubectl create ns llm-d-observability
    ```
 
-2. Deploy Grafana with Prometheus datasource, llm-d dashboard, and inference-gateway dashboard:
+1. Deploy Grafana with Prometheus datasource, llm-d dashboard, and inference-gateway dashboard:
 
    ```bash
    kubectl apply -n llm-d-observability --kustomize grafana
@@ -46,7 +46,7 @@ Before you begin, ensure you have:
    - Deploy the GrafanaDashboard inference-gateway dashboard that references the upstream
    [k8s-sigs/gateway-api-inference-extension dashboard JSON](https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/main/tools/dashboards/inference_gateway.json)
 
-3. Access Grafana:
+1. Access Grafana:
    - Go to the OpenShift Console
    - Navigate to Networking -> Routes
    - Find the Grafana route (it will be in the llm-d-observability namespace)

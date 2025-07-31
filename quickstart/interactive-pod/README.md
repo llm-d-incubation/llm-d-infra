@@ -4,7 +4,7 @@ This example shows some utilities for interacting with a running `llm-d` deploym
 
 > WARNING: this example assumes you have an `llm-d` deployment running
 
-### 1. Create the interactive pod
+## 1. Create the interactive pod
 
 ```bash
 NAMESPACE="llm-d"

@@ -29,9 +29,9 @@ Since the llm-d-infra is based on helm charts, llm-d-infra can be deployed on a 
 This document instruct you the totally following 4 steps to deploy llm-d-infra.
 
 1. Installing GAIE Kubernetes infrastructure
-2. Installing Network stack
-3. Creating HF token secret
-4. Installing llm-d-infra
+1. Installing Network stack
+1. Creating HF token secret
+1. Installing llm-d-infra
 
 Before proceeding with the installation, ensure you have completed the prerequisites and are able to issue kubectl commands to your cluster by configuring your ~/.kube/config file.
 
@@ -78,7 +78,7 @@ After that, deploy istiod.
 helm upgrade -i istiod oci://$HUB/charts/istiod --version $TAG -n istio-system --set tag=$TAG --set hub=$HUB --wait
 ```
 
-The resources are created as follows.
+The resources are created as follows:
 
 ```bash
 kubectl get pods,svc -n istio-system
@@ -92,7 +92,7 @@ NAME             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)              
 service/istiod   ClusterIP   [Cluster IP]    <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   41s
 ```
 
-You can also find GatewayClass is created.
+You can also find GatewayClass is created:
 
 ```bash
 kubectl get gc
@@ -131,7 +131,7 @@ helm upgrade -i \
   kgateway oci://cr.kgateway.dev/kgateway-dev/charts/kgateway
 ```
 
-The resources are created as follows.
+The resources are created as follows:
 
 ```bash
 kubectl get pods,svc -n kgateway-system
@@ -142,7 +142,7 @@ NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 service/kgateway   ClusterIP   [Cluster IP]    <none>        9977/TCP   114s
 ```
 
-You can also find GatewayClass is created.
+You can also find GatewayClass is created:
 
 ```bash
 kubectl get gc
@@ -210,7 +210,6 @@ helm upgrade -i llm-d-infra . --namespace "${NAMESPACE}" \
   --set gateway.gatewayParameters.proxyUID=0 \
   --set gateway.serviceType=LoadBalancer
 ```
-
 
 ## Validation
 
