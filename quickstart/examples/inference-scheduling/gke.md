@@ -1,7 +1,7 @@
 
 ## Installation
 
-1. Install the dependencies; see [install-deps.sh](../../install-deps.sh)
+1. Install the dependencies; see [install-deps.sh](https://github.com/llm-d-incubation/llm-d-infra/blob/main/quickstart/install-deps.sh)
 2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart.
 
 ```bash

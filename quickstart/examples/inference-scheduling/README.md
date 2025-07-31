@@ -10,7 +10,7 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 
 > To adjust the model or any other modelservice values, simply change the values.yaml file in [ms-inference-scheduling/values.yaml](ms-inference-scheduling/values.yaml)
 
-1. Install the dependencies; see [install-deps.sh](../../install-deps.sh)
+1. Install the dependencies; see [install-deps.sh](https://github.com/llm-d-incubation/llm-d-infra/blob/main/quickstart/install-deps.sh)
 
 2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart. This example uses `kgateway` but should work with `istio` given some modifications as described below step 3. If you use GKE Gateway, please refer to [gke.md](./gke.md).
 
@@ -30,7 +30,7 @@ cd examples/inference-scheduling
 helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
 ```
 
-**_NOTE:_** This examples was built with `kgateway` in mind. If you are deploying Istio as the gateway, e.g. `--gateway istio`, then you will need to apply a `DestinationRule` described in [Temporary Istio Workaround](../../istio-workaround.md).
+**_NOTE:_** This examples was built with `kgateway` in mind. If you are deploying Istio as the gateway, e.g. `--gateway istio`, then you will need to apply a `DestinationRule` described in [Temporary Istio Workaround](https://github.com/llm-d-incubation/llm-d-infra/blob/main/quickstart/istio-workaround.md).
 
 ## Verify the Installation
 

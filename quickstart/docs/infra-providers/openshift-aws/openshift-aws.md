@@ -43,4 +43,4 @@ Refer to the NVIDIA documentation for detailed instructions on installing and co
 
 Once the operators are installed and configured, you can proceed with deploying llm-d using the llm-d-deployer quick start.
 
-See the [README.md](../../README.md) for more information.
+See the [README.md](https://github.com/llm-d-incubation/llm-d-infra/blob/main/quickstart/README.md) for more information.

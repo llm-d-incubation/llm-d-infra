@@ -10,7 +10,7 @@ This is a simple quickstart demonstrating how to configure the inference schedul
 >
 > Note that the decode vLLM container `--prefix-caching-hash-algo` argument must not change
 
-1. Install the dependencies; see [install-deps.sh](../../../../../../llm-d-incubation/llm-d-infra/quickstart/install-deps.sh)
+1. Install the dependencies; see [install-deps.sh](https://github.com/llm-d-incubation/llm-d-infra/blob/main/quickstart/install-deps.sh)
 2. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart:
 
 ```bash
