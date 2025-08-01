@@ -22,7 +22,6 @@ export HF_TOKEN=${HFTOKEN}
 
 **_NOTE:_** The release name `infra-kv-events` is important here, because it matches up with pre-built values files used in this example.
 
-
 If you have already deployed llm-d-infra according to [README.md](../../README.md) or [README-step-by-step.md](../../README-step-by-step.md), you have to execute the following commnad to overwrite the release name and namespace before applying helmfile in the next step.
 
 ```
