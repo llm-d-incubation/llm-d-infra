@@ -36,6 +36,12 @@ routing:
 decode:
   create: true
   replicas: 1
+  monitoring:
+    podmonitor:
+      enabled: false
+      portName: "metrics"  # decode vLLM service port (from routing.proxy.targetPort)
+      path: "/metrics"
+      interval: "30s"
   containers:
   - name: "vllm"
     image: "ghcr.io/llm-d/llm-d:v0.2.0"
@@ -56,6 +62,12 @@ decode:
         valueFrom:
           fieldRef:
             fieldPath: status.podIP
+    ports:
+      - containerPort: 5557
+        protocol: TCP
+      - containerPort: 8200
+        name: metrics
+        protocol: TCP
     resources:
       limits:
         memory: 64Gi
@@ -88,6 +100,12 @@ decode:
 prefill:
   create: true
   replicas: 4
+  monitoring:
+    podmonitor:
+      enabled: false
+      portName: "metrics"  # prefill vLLM service port (from routing.servicePort)
+      path: "/metrics"
+      interval: "30s"
   containers:
   - name: "vllm"
     image: "ghcr.io/llm-d/llm-d:v0.2.0"
@@ -106,6 +124,12 @@ prefill:
         valueFrom:
           fieldRef:
             fieldPath: status.podIP
+    ports:
+      - containerPort: 5557
+        protocol: TCP
+      - containerPort: 8000
+        name: metrics
+        protocol: TCP
     resources:
       limits:
         memory: 64Gi

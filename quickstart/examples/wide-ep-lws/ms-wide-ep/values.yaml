@@ -79,6 +79,12 @@ decode:
     # This must equal the number of nodes rather than the dp_size.
     data: 2
     tensor: 1 # these will be derived based performance testing
+  monitoring:
+    podmonitor:
+      enabled: false
+      portName: "metrics"  # decode vLLM service port (from routing.proxy.targetPort)
+      path: "/metrics"
+      interval: "30s"
   containers:
     - name: vllm-worker-decode
       image: "ghcr.io/llm-d/llm-d:v0.2.0"
@@ -110,6 +116,10 @@ decode:
             --trust-remote-code \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
 
+      ports:
+        - containerPort: 8200
+          name: metrics
+          protocol: TCP
       env:
         - name: VLLM_FUSED_MOE_CHUNK_SIZE
           value: "1024"
@@ -204,6 +214,12 @@ prefill:
     # It must equal the number of nodes rather than the dp_size.
     data: 1
     tensor: 1 # these will be derived based performance testing
+  monitoring:
+    podmonitor:
+      enabled: false
+      portName: "metrics"  # prefill vLLM service port (from routing.servicePort)
+      path: "/metrics"
+      interval: "30s"
   containers:
     - name: vllm-worker-prefill
       image: "ghcr.io/llm-d/llm-d:v0.2.0"
@@ -235,6 +251,10 @@ prefill:
             --trust-remote-code \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
 
+      ports:
+        - containerPort: 8000
+          name: metrics
+          protocol: TCP
       env:
         - name: DP_SIZE_LOCAL
           value: "8"

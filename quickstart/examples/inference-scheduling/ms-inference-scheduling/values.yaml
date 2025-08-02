@@ -36,6 +36,12 @@ routing:
 decode:
   create: true
   replicas: 2
+  monitoring:
+    podmonitor:
+      enabled: false
+      portName: "metrics"  # decode vLLM service port (from routing.proxy.targetPort)
+      path: "/metrics"
+      interval: "30s"
   containers:
   - name: "vllm"
     image: "ghcr.io/llm-d/llm-d:v0.2.0"
@@ -59,6 +65,9 @@ decode:
         value: DEBUG
     ports:
       - containerPort: 5557
+        protocol: TCP
+      - containerPort: 8200
+        name: metrics
         protocol: TCP
     resources:
       limits:
@@ -77,11 +86,18 @@ decode:
   - name: torch-compile-cache
     emptyDir: {}
 
+
 # The prefill replica is disabled via 'create: false' since pd is not
 # enabled for this configuration, uncomment to deploy a p replica
 prefill:
   create: false
   replicas: 0
+  monitoring:
+    podmonitor:
+      enabled: false
+      portName: "metrics"  # prefill vLLM service port (from routing.servicePort)
+      path: "/metrics"
+      interval: "30s"
   containers:
   - name: "vllm"
     image: "ghcr.io/llm-d/llm-d:v0.2.0"
@@ -104,9 +120,10 @@ prefill:
       - name: VLLM_LOGGING_LEVEL
         value: DEBUG
     ports:
-      - containerPort: 8000
-        protocol: TCP
       - containerPort: 5557
+        protocol: TCP
+      - containerPort: 8000
+        name: metrics
         protocol: TCP
     resources:
       limits:
