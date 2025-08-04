@@ -61,9 +61,7 @@ jobs:
           helm dependency build charts/llm-d-infra
 
       - name: Setup helm-docs
-        run: |
-          curl -L https://github.com/norwoodj/helm-docs/releases/download/v1.14.2/helm-docs_1.14.2_Linux_x86_64.tar.gz | tar xz
-          sudo mv helm-docs /usr/local/bin/
+        run: go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
 
       - name: Run pre-commit
         run: pre-commit run --show-diff-on-failure --color=always --verbose --all-files --show-diff-on-failure
