@@ -60,9 +60,6 @@ jobs:
           helm repo update
           helm dependency build charts/llm-d-infra
 
-      - name: Setup helm-docs
-        run: go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
-
       - name: Run pre-commit
         run: pre-commit run --show-diff-on-failure --color=always --verbose --all-files --show-diff-on-failure
         shell: bash
