@@ -36,86 +36,92 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 
 1. Firstly, you should be able to list all helm releases to view all charts that should be installed:
 
-```bash
-$ helm list -n llm-d-sim --all --debug
-NAME         NAMESPACE    REVISION    UPDATED                                 STATUS      CHART                       APP VERSION
-gaie-sim     llm-d-sim    1           2025-07-25 10:39:08.317195 -0700 PDT    deployed    inferencepool-v0.5.1        v0.5.1
-infra-sim    llm-d-sim    1           2025-07-25 10:38:48.360829 -0700 PDT    deployed    llm-d-infra-v1.1.1          v0.2.0
-ms-sim       llm-d-sim    1           2025-07-25 10:39:15.127738 -0700 PDT    deployed    llm-d-modelservice-0.2.0    v0.2.0
-```
+   ```console
+   $ helm list -n llm-d-sim --all --debug
+   NAME         NAMESPACE    REVISION     UPDATED                                 STATUS      CHART                       APP VERSION
+   gaie-sim     llm-d-sim    1           2025-07-25 10:39:08.317195 -0700 PDT    deployed    inferencepool-v0.5.1        v0.5.1
+   infra-sim    llm-d-sim    1           2025-07-25 10:38:48.360829 -0700 PDT    deployed    llm-d-infra-v1.1.1          v0.2.0
+   ms-sim       llm-d-sim    1           2025-07-25 10:39:15.127738  -0700 PDT    deployed    llm-d-modelservice-0.2.0    v0.2.0
+   ```
 
-Note: if you chose to use `istio` as your Gateway provider you would see those (`istiod` and `istio-base` in the `istio-system` namespace) instead of the kgateway based ones.
+   Note: if you chose to use `istio` as your Gateway provider you would  see those (`istiod` and `istio-base` in the `istio-system` namespace)  instead of the kgateway based ones.
 
 2. Find the gateway service:
 
-```bash
-$ kubectl get services -n llm-d-simget services -n llm-d-sim
-NAME                          TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)             AGE
-gaie-sim-epp                  ClusterIP   10.16.2.6     <none>        9002/TCP,9090/TCP   42s
-infra-sim-inference-gateway   NodePort    10.16.2.157   <none>        80:37479/TCP        64s
-```
+   ```console
+   $ kubectl get services -n llm-d-sim
+   NAME                          TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)             AGE
+   gaie-sim-epp                  ClusterIP   10.16.2.6     <none>        9002/TCP,9090/TCP   42s
+   infra-sim-inference-gateway   NodePort    10.16.2.157   <none>        80:37479/TCP        64s
+   ```
 
-In this case we have found that our gateway service is called `infra-sim-inference-gateway`.
+   In this case we have found that our gateway service is called `infra-sim-inference-gateway`.
 
 3. `port-forward` the service to we can curl it:
 
-```bash
-kubectl port-forward -n llm-d-sim service/infra-sim-inference-gateway 8000:80
-```
+   ```bash
+   kubectl port-forward -n llm-d-sim service/infra-sim-inference-gateway 8000:80
+   ```
 
 4. Try curling the `/v1/models` endpoint:
 
-```bash
-curl -s http://localhost:8000/v1/models \
-  -H "Content-Type: application/json" | jq
-{
-  "data": [
-    {
-      "created": 1752727169,
-      "id": "random",
-      "object": "model",
-      "owned_by": "vllm",
-      "parent": null,
-      "root": "random"
-    },
-    {
-      "created": 1752727169,
-      "id": "",
-      "object": "model",
-      "owned_by": "vllm",
-      "parent": "random",
-      "root": ""
-    }
-  ],
-  "object": "list"
-}
-```
+   ```bash
+   curl -s <http://localhost:8000/v1/models> \
+     -H "Content-Type: application/json" | jq
+   ```
+
+   ```json
+   {
+     "data": [
+       {
+         "created": 1752727169,
+         "id": "random",
+         "object": "model",
+         "owned_by": "vllm",
+         "parent": null,
+         "root": "random"
+       },
+       {
+         "created": 1752727169,
+         "id": "",
+         "object": "model",
+         "owned_by": "vllm",
+         "parent": "random",
+         "root": ""
+       }
+     ],
+     "object": "list"
+   }
+   ```
 
 5. Try curling the `v1/chat/completions` endpoint:
 
-```bash
-curl -X POST http://localhost:8000/v1/completions \
--H 'Content-Type: application/json' \
--d '{
-      "model": "random",
-      "prompt": "How are you today?"
-    }' | jq
-{
-  "choices": [
-    {
-      "finish_reason": "stop",
-      "index": 0,
-      "message": {
-        "content": "Today is a nice sunny day.",
-        "role": "assistant"
-      }
-    }
-  ],
-  "created": 1752727735,
-  "id": "chatcmpl-af42e9e3-dab0-420f-872b-d23353d982da",
-  "model": "random"
-}
-```
+   ```bash
+   curl -X POST <http://localhost:8000/v1/completions> \
+   -H 'Content-Type: application/json' \
+   -d '{
+         "model": "random",
+         "prompt": "How are you today?"
+         }' | jq
+   ```
+
+   ```json
+   {
+     "choices": [
+       {
+         "finish_reason": "stop",
+         "index": 0,
+         "message": {
+           "content": "Today is a nice sunny day.",
+           "role": "assistant"
+         }
+       }
+     ],
+     "created": 1752727735,
+     "id": "chatcmpl-af42e9e3-dab0-420f-872b-d23353d982da",
+     "model": "random"
+   }
+   ```
 
 ## Cleanup
 

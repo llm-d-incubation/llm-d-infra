@@ -12,4 +12,4 @@ We currently offer three tested and benchmarked paths to help deploying large mo
 
 ## Supporting Examples
 
-* [llm-d Simulation](./sim) can deploy a vLLM model server simulator that allows testing inference scheduling at scale as each instance does not need accelerators.
+- [llm-d Simulation](./sim) can deploy a vLLM model server simulator that allows testing inference scheduling at scale as each instance does not need accelerators.
