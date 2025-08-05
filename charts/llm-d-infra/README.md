@@ -1,6 +1,7 @@
+
 # llm-d-infra Helm Chart
 
-![Version: v1.1.2](https://img.shields.io/badge/Version-v1.1.2-informational?style=flat-square)
+![Version: v1.1.3](https://img.shields.io/badge/Version-v1.1.3-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
@@ -96,40 +97,40 @@ Kubernetes: `>= 1.28.0-0`
 
 ## Values
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| auth.hf_token.enabled | bool | `true` |  |
-| auth.hf_token.secretKey | string | `"HF_TOKEN"` |  |
-| auth.hf_token.secretName | string | `"llm-d-hf-token"` |  |
-| clusterDomain | string | `"cluster.local"` | Default Kubernetes cluster domain |
-| common | object | `{}` | Parameters for bitnami.common dependency |
-| commonAnnotations | object | `{}` | Annotations to add to all deployed objects |
-| commonLabels | object | `{}` | Labels to add to all deployed objects |
-| extraDeploy | list | `[]` | Array of extra objects to deploy with the release |
-| fullnameOverride | string | `""` | String to fully override common.names.fullname |
-| gateway | object | See below | Gateway configuration |
-| gateway.annotations | object | `{}` | Additional annotations provided to the Gateway resource |
-| gateway.destinationRule | object | `{"enabled":false,"exportTo":[],"host":"localhost","subsets":[],"trafficPolicy":{},"workloadSelector":{}}` | see: https://istio.io/latest/docs/reference/config/networking/destination-rule/ |
-| gateway.enabled | bool | `true` | Deploy resources related to Gateway |
-| gateway.fullnameOverride | string | `""` | String to fully override gateway.fullname |
-| gateway.gatewayClassName | string | `"kgateway"` | Gateway class that determines the backend used Currently supported values: "kgateway", "istio", or "gke-l7-regional-external-managed" |
-| gateway.gatewayParameters.resources | object | `{"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"100m","memory":"128Mi"}}` | Resource requests/limits <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container |
-| gateway.nameOverride | string | `""` | String to partially override gateway.fullname |
-| gateway.serviceType | string | `"LoadBalancer"` | Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: ["LoadBalancer", "NodePort"] |
-| ingress | object | See below | Ingress configuration |
-| ingress.annotations | object | `{}` | Additional annotations for the Ingress resource |
-| ingress.clusterRouterBase | string | `""` | used as part of the host dirivation if not specified from OCP cluster domain (dont edit) |
-| ingress.enabled | bool | `true` | Deploy Ingress |
-| ingress.extraHosts | list | `[]` | List of additional hostnames to be covered with this ingress record (e.g. a CNAME) <!-- E.g. extraHosts:   - name: llm-d.env.example.com     path: / (Optional)     pathType: Prefix (Optional)     port: 7007 (Optional) --> |
-| ingress.extraTls | list | `[]` | The TLS configuration for additional hostnames to be covered with this ingress record. <br /> Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls <!-- E.g. extraTls:   - hosts:     - llm-d.env.example.com     secretName: llm-d-env --> |
-| ingress.host | string | `""` | Hostname to be used to expose the NodePort service to the inferencing gateway |
-| ingress.ingressClassName | string | `""` | Name of the IngressClass cluster resource which defines which controller will implement the resource (e.g nginx) |
-| ingress.path | string | `"/"` | Path to be used to expose the full route to access the inferencing gateway |
-| ingress.tls | object | `{"enabled":false,"secretName":""}` | Ingress TLS parameters |
-| ingress.tls.enabled | bool | `false` | Enable TLS configuration for the host defined at `ingress.host` parameter |
-| ingress.tls.secretName | string | `""` | The name to which the TLS Secret will be called |
-| kubeVersion | string | `""` | Override Kubernetes version |
-| nameOverride | string | `""` | String to partially override common.names.fullname |
+| Key | Description | Type | Default |
+|-----|-------------|------|---------|
+| auth.hf_token.enabled |  | bool | `true` |
+| auth.hf_token.secretKey |  | string | `"HF_TOKEN"` |
+| auth.hf_token.secretName |  | string | `"llm-d-hf-token"` |
+| clusterDomain | Default Kubernetes cluster domain | string | `"cluster.local"` |
+| common | Parameters for bitnami.common dependency | object | `{}` |
+| commonAnnotations | Annotations to add to all deployed objects | object | `{}` |
+| commonLabels | Labels to add to all deployed objects | object | `{}` |
+| extraDeploy | Array of extra objects to deploy with the release | list | `[]` |
+| fullnameOverride | String to fully override common.names.fullname | string | `""` |
+| gateway | Gateway configuration | object | See below |
+| gateway.annotations | Additional annotations provided to the Gateway resource | object | `{}` |
+| gateway.destinationRule | see: https://istio.io/latest/docs/reference/config/networking/destination-rule/ | object | `{"enabled":false,"exportTo":[],"host":"localhost","subsets":[],"trafficPolicy":{},"workloadSelector":{}}` |
+| gateway.enabled | Deploy resources related to Gateway | bool | `true` |
+| gateway.fullnameOverride | String to fully override gateway.fullname | string | `""` |
+| gateway.gatewayClassName | Gateway class that determines the backend used Currently supported values: "kgateway", "istio", or "gke-l7-regional-external-managed" | string | `"kgateway"` |
+| gateway.gatewayParameters.resources | Resource requests/limits <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container | object | `{"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"100m","memory":"128Mi"}}` |
+| gateway.nameOverride | String to partially override gateway.fullname | string | `""` |
+| gateway.serviceType | Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: ["LoadBalancer", "NodePort"] | string | `"LoadBalancer"` |
+| ingress | Ingress configuration | object | See below |
+| ingress.annotations | Additional annotations for the Ingress resource | object | `{}` |
+| ingress.clusterRouterBase | used as part of the host dirivation if not specified from OCP cluster domain (dont edit) | string | `""` |
+| ingress.enabled | Deploy Ingress | bool | `true` |
+| ingress.extraHosts | List of additional hostnames to be covered with this ingress record (e.g. a CNAME) <!-- E.g. extraHosts:   - name: llm-d.env.example.com     path: / (Optional)     pathType: Prefix (Optional)     port: 7007 (Optional) --> | list | `[]` |
+| ingress.extraTls | The TLS configuration for additional hostnames to be covered with this ingress record. <br /> Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls <!-- E.g. extraTls:   - hosts:     - llm-d.env.example.com     secretName: llm-d-env --> | list | `[]` |
+| ingress.host | Hostname to be used to expose the NodePort service to the inferencing gateway | string | `""` |
+| ingress.ingressClassName | Name of the IngressClass cluster resource which defines which controller will implement the resource (e.g nginx) | string | `""` |
+| ingress.path | Path to be used to expose the full route to access the inferencing gateway | string | `"/"` |
+| ingress.tls | Ingress TLS parameters | object | `{"enabled":false,"secretName":""}` |
+| ingress.tls.enabled | Enable TLS configuration for the host defined at `ingress.host` parameter | bool | `false` |
+| ingress.tls.secretName | The name to which the TLS Secret will be called | string | `""` |
+| kubeVersion | Override Kubernetes version | string | `""` |
+| nameOverride | String to partially override common.names.fullname | string | `""` |
 
 ## Features
 
