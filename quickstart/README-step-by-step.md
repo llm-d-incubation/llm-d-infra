@@ -158,6 +158,12 @@ kgateway-waypoint   kgateway.dev/kgateway         True       25s
 
 Create a namespace to deploy llm-d-infra.
 
+***If you follow some [examples](./examples) after this installation, you have to change the namespace name according to the example you'll work on as follows.***
+
+- [inference-scheduling](./examples/inference-scheduling): llm-d-inference-scheduling
+- [pd-disaggregation](./examples/pd-disaggregation): llm-d-pd
+- [precise-prefix-cache-aware](./examples/precise-prefix-cache-aware): llm-d-wide-ep
+
 ```bash
 export NAMESPACE="llm-d"
 kubectl create ns "${NAMESPACE}"
@@ -191,7 +197,7 @@ helm dependency build .
 
 We have everything we need to deploy llm-d-infra.
 
-Important: The installation command and its options differ depending on the Network Stack selected in step 2.
+***Important: The installation command and its options differ depending on the Network Stack selected in step 2.***
 
 #### with istio
 
@@ -207,9 +213,12 @@ helm upgrade -i llm-d-infra . --namespace "${NAMESPACE}" \
 helm upgrade -i llm-d-infra . --namespace "${NAMESPACE}" \
   --values ./values.yaml \
   --set gateway.gatewayClassName=kgateway \
-  --set gateway.gatewayParameters.proxyUID=0 \
-  --set gateway.serviceType=LoadBalancer
+  --set gateway.gatewayParameters.proxyUID=0
 ```
+
+Service is create as NodePort type.
+
+If you want to change Service type, then please add the `serviceType` option like `--set gateway.serviceType=LoadBalancer`.
 
 ## Validation
 
@@ -225,8 +234,8 @@ kubectl get pods,svc,gateway -n llm-d
 NAME                                                      READY   STATUS    RESTARTS   AGE
 pod/llm-d-infra-inference-gateway-istio-d5959b668-qrc2x   1/1     Running   0          44s
 
-NAME                                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)            AGE
-service/llm-d-infra-inference-gateway-istio   ClusterIP   [Cluster IP]    <none>        15021/TCP,80/TCP   44s
+NAME                                          TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)                        AGE
+service/llm-d-infra-inference-gateway-istio   NodePort   [Cluster IP]    <none>        15021:30108/TCP,80:32468/TCP   44s
 
 NAME                                                              CLASS   ADDRESS                                                       PROGRAMMED   AGE
 gateway.gateway.networking.k8s.io/llm-d-infra-inference-gateway   istio   llm-d-infra-inference-gateway-istio.llm-d.svc.cluster.local   True         44s
@@ -242,9 +251,9 @@ kubectl get pods,svc,gateway -n llm-d
 NAME                                                READY   STATUS    RESTARTS   AGE
 pod/llm-d-infra-inference-gateway-947558945-8zfwq   1/1     Running   0          6s
 
-NAME                                    TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)        AGE
-service/llm-d-infra-inference-gateway   LoadBalancer   [Cluster IP]    [External IP]    80:31572/TCP   6s
+NAME                                    TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+service/llm-d-infra-inference-gateway   NodePort   [Cluster IP]    <none>        80:31644/TCP   6s
 
 NAME                                                              CLASS      ADDRESS          PROGRAMMED   AGE
-gateway.gateway.networking.k8s.io/llm-d-infra-inference-gateway   kgateway   [External IP]    True         6s
+gateway.gateway.networking.k8s.io/llm-d-infra-inference-gateway   kgateway   [IP Address]     True         6s
 ```
