@@ -106,13 +106,14 @@ istio-remote   istio.io/unmanaged-gateway    True       39s
 
 #### Installing kgateway
 
-Apply kgateway CRD.
+Apply the kgateway CRDs.
 
 ```bash
+KGTW_VERSION="v2.0.4"
 helm upgrade -i \
   --namespace kgateway-system \
   --create-namespace \
-  --version v2.0.3 \
+  --version "${KGTW_VERSION}" \
   kgateway-crds oci://cr.kgateway.dev/kgateway-dev/charts/kgateway-crds
 ```
 
@@ -122,13 +123,19 @@ After that, deploy kgateway.
 helm upgrade -i \
   --namespace kgateway-system \
   --create-namespace \
-  --version v2.0.3 \
+  --version "${KGTW_VERSION}" \
   --set inferenceExtension.enabled=true \
   --set securityContext.allowPrivilegeEscalation=false \
   --set securityContext.capabilities.drop={ALL} \
   --set podSecurityContext.seccompProfile.type=RuntimeDefault \
   --set podSecurityContext.runAsNonRoot=true \
   kgateway oci://cr.kgateway.dev/kgateway-dev/charts/kgateway
+```
+
+Wait for the kgateway rollout to complete:
+
+```bash
+kubectl rollout status deploy/kgateway -n kgateway-system
 ```
 
 The resources are created as follows:
@@ -163,6 +170,7 @@ Create a namespace to deploy llm-d-infra.
 - [inference-scheduling](./examples/inference-scheduling): llm-d-inference-scheduling
 - [pd-disaggregation](./examples/pd-disaggregation): llm-d-pd
 - [precise-prefix-cache-aware](./examples/precise-prefix-cache-aware): llm-d-wide-ep
+- [llm-d-simulator](./examples/sim): llm-d-sim
 
 ```bash
 export NAMESPACE="llm-d"
@@ -216,9 +224,9 @@ helm upgrade -i llm-d-infra . --namespace "${NAMESPACE}" \
   --set gateway.gatewayParameters.proxyUID=0
 ```
 
-Service is create as NodePort type.
+Service is created as LoadBalancer type.
 
-If you want to change Service type, then please add the `serviceType` option like `--set gateway.serviceType=LoadBalancer`.
+If you want to change Service type, then please add the `serviceType` option like `--set gateway.serviceType=NodePort`.
 
 ## Validation
 
