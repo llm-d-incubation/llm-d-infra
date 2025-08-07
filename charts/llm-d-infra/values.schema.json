@@ -253,6 +253,12 @@
                     "title": "gatewayParameters",
                     "type": "object"
                 },
+                "labels": {
+                    "additionalProperties": true,
+                    "description": "Additional labels provided to the Gateway resource",
+                    "required": [],
+                    "title": "labels"
+                },
                 "listeners": {
                     "description": " items:  type: object  properties:    name:      description: Name is the name of the Listener. This name MUST be unique within a Gateway      type: string    path:      description: Path to expose via Ingress      type: string    port:      description: Port is the network port. Multiple listeners may use the same port, subject to the Listener compatibility rules      type: integer      minimum: 1      maximum: 65535    protocol:      description: Protocol specifies the network protocol this listener expects to receive      type: string @schema Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled",
                     "items": {

@@ -66,6 +66,12 @@ gateway:
   # @schema
   # additionalProperties: true
   # @schema
+  # -- Additional labels provided to the Gateway resource
+  labels: {}
+
+  # @schema
+  # additionalProperties: true
+  # @schema
   # -- Additional annotations provided to the Gateway resource
   annotations: {}
 
