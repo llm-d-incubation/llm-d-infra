@@ -130,9 +130,9 @@ export HF_TOKEN="your-token"
 
 ### Validation
 
-After executing install script, you can find the resources will be created according to installation option.
+After executing the install script, you will find that resources are created according to the installation options.
 
-#### Installation with istio
+#### Installation with Istio
 
 - istio-system
 

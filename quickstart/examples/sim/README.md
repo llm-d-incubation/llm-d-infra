@@ -6,11 +6,11 @@ This is a simulation example that demonstrates how to deploy using the llm-d-inf
 
 ### EPP Image Compatibility
 
-As documented in the [GIE values file](./gaie-sim/values.yaml#L4-L13), either the upstream EPP GIE image or the midstream `llm-d-inference-scheduler` image will for EPP.
+As documented in the [GIE values file](./gaie-sim/values.yaml#L4-L13), either the upstream EPP GIE image or the midstream `llm-d-inference-scheduler` image will work for EPP.
 
 ## Installation
 
-> To adjust the simulation settings or any other modelservice values, simply change the values.yaml file in [ms-llm-d-sim/values.yaml](ms-llm-d-sim/values.yaml)
+> To adjust the simulation settings or any other modelservice values, simply change the values.yaml file in [ms-sim/values.yaml](ms-sim/values.yaml)
 
 1. Install the dependencies; see [install-deps.sh](../../install-deps.sh)
 2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart:
@@ -30,7 +30,7 @@ cd examples/sim
 helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
 ```
 
-**_NOTE:_** This examples was built with `kgateway` in mind. If you are deploying Istio as the gateway, e.g. `--gateway istio`, then you will need to apply a `DestinationRule` described in [Temporary Istio Workaround](../../istio-workaround.md).
+**_NOTE:_** This example was built with `kgateway` in mind. If you are deploying Istio as the gateway, e.g. `--gateway istio`, then you will need to apply a `DestinationRule` described in [Temporary Istio Workaround](../../istio-workaround.md).
 
 ## Verify the Installation
 
@@ -44,7 +44,7 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
    ms-sim       llm-d-sim    1           2025-07-25 10:39:15.127738  -0700 PDT    deployed    llm-d-modelservice-0.2.0    v0.2.0
    ```
 
-   Note: if you chose to use `istio` as your Gateway provider you would  see those (`istiod` and `istio-base` in the `istio-system` namespace)  instead of the kgateway based ones.
+Note: if you chose to use `istio` as your Gateway provider you would see those (`istiod` and `istio-base` in the `istio-system` namespace) instead of the kgateway based ones.
 
 1. Find the gateway service:
 
@@ -57,7 +57,7 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 
    In this case we have found that our gateway service is called `infra-sim-inference-gateway`.
 
-1. `port-forward` the service to we can curl it:
+1. `port-forward` the service so we can curl it:
 
    ```bash
    kubectl port-forward -n llm-d-sim service/infra-sim-inference-gateway 8000:80
@@ -94,7 +94,7 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
    }
    ```
 
-1. Try curling the `v1/chat/completions` endpoint:
+1. Try curling the `v1/completions` endpoint:
 
    ```bash
    curl -X POST <http://localhost:8000/v1/completions> \
@@ -138,7 +138,7 @@ helm uninstall infra-sim -n llm-d-sim
 
 ## Customization
 
-- **Change simulation behavior**: Edit `ms-llm-d-sim/values.yaml` and update the simulation parameters
+- **Change simulation behavior**: Edit `ms-sim/values.yaml` and update the simulation parameters
 - **Adjust resources**: Modify the CPU/memory requests in the container specifications (no GPU required for simulation)
 - **Scale workers**: Change the `replicas` count for decode/prefill deployments
 - **Different model simulation**: Update `routing.modelName` to simulate different model names

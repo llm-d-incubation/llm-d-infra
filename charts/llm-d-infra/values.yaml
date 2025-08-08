@@ -207,7 +207,7 @@ ingress:
   #     secretName: llm-d-env -->
   extraTls: []
 
-  # -- used as part of the host dirivation if not specified from OCP cluster domain (dont edit)
+  # -- used as part of the host derivation if not specified from OCP cluster domain (don't edit)
   clusterRouterBase: ""
 
 auth:

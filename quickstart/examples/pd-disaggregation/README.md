@@ -3,11 +3,11 @@
 ## Overview
 
 - This example demonstrates how to deploy Llama-70B using vLLM's P/D disaggregation support with NIXL
-- This "path" has been validated on an 8xH200 cluster with infiniband networking
+- This "path" has been validated on an 8xH200 cluster with InfiniBand networking
 
 > WARNING: We are still investigating and optimizing performance for other hardware and networking configurations
 
-In this example, we will demonstrate a deployment of `Llama-3.3-70B-Instruct-Fp8` with:
+In this example, we will demonstrate a deployment of `Llama-3.3-70B-Instruct-FP8` with:
 
 - 4 TP=1 Prefill Workers
 - 1 TP=4 Decode Worker
@@ -25,9 +25,9 @@ However, P/D disaggregation is not a target for all workloads. We suggest explor
 - Longer input sequence lengths (e.g 10k ISL | 1k OSL, not 200 ISL | 200 OSL)
 - Sparse MoE architectures with opportunities for wide-EP
 
-As a result, as you tune you P/D deployments, we suggest focusing on the following parameters:
+As a result, as you tune your P/D deployments, we suggest focusing on the following parameters:
 
-- **Heterogenous Parallelism**: deploy P workers with less parallelism and more replicas and D workers with more parallelism and fewer replicas
+- **Heterogeneous Parallelism**: deploy P workers with less parallelism and more replicas and D workers with more parallelism and fewer replicas
 - **xPyD Ratios**: tuning the ratio of P workers to D workers to ensure balance for your ISL|OSL ratio
 
 ## Installation
@@ -43,7 +43,7 @@ As a result, as you tune you P/D deployments, we suggest focusing on the followi
    ```bash
    # ran from root of repo
    cd quickstart
-   export HF_TOKEN=$(HFTOKEN)
+   export HF_TOKEN=${HFTOKEN}
    ./llmd-infra-installer.sh --namespace llm-d-pd -r infra-pd -f examples/pd-disaggregation/infra-pd/values.yaml --disable-metrics-collection
    ```
 
@@ -58,7 +58,7 @@ As a result, as you tune you P/D deployments, we suggest focusing on the followi
 
 ## Verifying the installation
 
-1. First lets check that all three charts were deployed successfully to our `llm-d-pd` namespace:
+1. First, let's check that all three charts were deployed successfully to our `llm-d-pd` namespace:
 
 ```bash
 $ helm list -n llm-d-pd
@@ -68,7 +68,7 @@ infra-pd    llm-d-pd     1           2025-07-25 11:27:18.453254 -0700 PDT    dep
 ms-pd       llm-d-pd     1           2025-07-25 11:27:53.138175 -0700 PDT    deployed    llm-d-modelservice-0.2.0    v0.2.0
 ```
 
-1. Next lets check our pod health of our 4 prefill replicas and 1 decode replica:
+1. Next, let's check the pod health of our 4 prefill replicas and 1 decode replica:
 
 ```bash
 $ kubectl get pods -n llm-d-pd
@@ -94,7 +94,7 @@ infra-pd-inference-gateway-istio   NodePort    10.16.0.146   <none>        15021
 
 In this case we have found that our gateway service is called `infra-pd-inference-gateway-istio`.
 
-1. `port-forward` the service to we can curl it:
+1. `port-forward` the service so we can curl it:
 
 ```bash
 kubectl port-forward -n llm-d-pd service/infra-pd-inference-gateway-istio 8000:80

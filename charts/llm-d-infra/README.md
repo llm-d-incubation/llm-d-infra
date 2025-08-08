@@ -4,7 +4,7 @@
 ![Version: v1.1.3](https://img.shields.io/badge/Version-v1.1.3-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
-llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
+llm-d-infra comprises the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
 
 ## Maintainers
 
@@ -119,7 +119,7 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.serviceType | Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: ["LoadBalancer", "NodePort"] | string | `"LoadBalancer"` |
 | ingress | Ingress configuration | object | See below |
 | ingress.annotations | Additional annotations for the Ingress resource | object | `{}` |
-| ingress.clusterRouterBase | used as part of the host dirivation if not specified from OCP cluster domain (dont edit) | string | `""` |
+| ingress.clusterRouterBase | used as part of the host derivation if not specified from OCP cluster domain (don't edit) | string | `""` |
 | ingress.enabled | Deploy Ingress | bool | `true` |
 | ingress.extraHosts | List of additional hostnames to be covered with this ingress record (e.g. a CNAME) <!-- E.g. extraHosts:   - name: llm-d.env.example.com     path: / (Optional)     pathType: Prefix (Optional)     port: 7007 (Optional) --> | list | `[]` |
 | ingress.extraTls | The TLS configuration for additional hostnames to be covered with this ingress record. <br /> Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls <!-- E.g. extraTls:   - hosts:     - llm-d.env.example.com     secretName: llm-d-env --> | list | `[]` |
