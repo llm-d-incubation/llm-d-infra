@@ -4,7 +4,7 @@
 ![Version: v1.1.3](https://img.shields.io/badge/Version-v1.1.3-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
-llm-d-infra comprises the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
+llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
 
 ## Maintainers
 

@@ -44,7 +44,7 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
    ms-sim       llm-d-sim    1           2025-07-25 10:39:15.127738  -0700 PDT    deployed    llm-d-modelservice-0.2.0    v0.2.0
    ```
 
-Note: if you chose to use `istio` as your Gateway provider you would see those (`istiod` and `istio-base` in the `istio-system` namespace) instead of the kgateway based ones.
+   Note: if you chose to use `istio` as your Gateway provider you would  see those (`istiod` and `istio-base` in the `istio-system` namespace)  instead of the kgateway based ones.
 
 1. Find the gateway service:
 
