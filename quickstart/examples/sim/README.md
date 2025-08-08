@@ -10,7 +10,7 @@ As documented in the [GIE values file](./gaie-sim/values.yaml#L4-L13), either th
 
 ## Installation
 
-> To adjust the simulation settings or any other modelservice values, simply change the values.yaml file in [ms-sim/values.yaml](ms-sim/values.yaml)
+> To adjust the simulation settings or any other modelservice values, simply change the values.yaml file in [ms-llm-d-sim/values.yaml](ms-llm-d-sim/values.yaml)
 
 1. Install the dependencies; see [install-deps.sh](../../install-deps.sh)
 2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart:
