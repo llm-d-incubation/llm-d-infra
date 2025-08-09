@@ -15,7 +15,7 @@ just start-bench $NAMESPACE
 ### 2. Get the address of the gateway
 
 ```bash
-kubectl get gatways
+kubectl get gateways
 
 >> NAME                         CLASS      ADDRESS       PROGRAMMED   AGE
 >> infra-pd-inference-gateway   kgateway   10.16.0.216   True         7m49s

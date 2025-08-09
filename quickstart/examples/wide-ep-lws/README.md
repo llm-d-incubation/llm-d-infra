@@ -3,14 +3,14 @@
 ## Overview
 
 - This example demonstrates how to deploy DeepSeek-R1-0528 using vLLM's P/D disaggregation support with NIXL in a wide expert parallel pattern with LeaderWorkerSets
-- This "path" has been validated on a Cluster with 16xH200 GPUs split across two nodes with infiniband networking
+- This "path" has been validated on a Cluster with 16xH200 GPUs split across two nodes with InfiniBand networking
 
 > WARNING: We are still investigating and optimizing performance for other hardware and networking configurations
 
 In this example, we will demonstrate a deployment of `DeepSeek-R1-0528` with:
 
 - 1 DP=8 Prefill Workers
-- 2 DP=4 Decode Worker
+- 2 DP=4 Decode Workers
 
 ## Installation
 
@@ -59,14 +59,14 @@ ms-wide-ep-llm-d-modelservice-epp-749696866d-n24tx     1/1     Running   0      
 ms-wide-ep-llm-d-modelservice-prefill-0                1/1     Running   0          22m
 ```
 
-1. You should be able to do inferencing requests. The first thing we need to check is that all our vllm servers have started which can take some time. We recommend using `stern` to grep the decode logs together wand wait for the messaging saying that the vllm API server is spun up:
+1. You should be able to do inferencing requests. The first thing we need to check is that all our vLLM servers have started which can take some time. We recommend using `stern` to grep the decode logs together and wait for the messaging saying that the vLLM API server is spun up:
 
 ```bash
 DECODE_PODS=$(kubectl get pods -n llm-d-wide-ep -l "llm-d.ai/inferenceServing=true,llm-d.ai/role=decode" --no-headers | awk '{print}' | tail -n 2)
 stern "$(echo "$DECODE_PODS" | paste -sd'|' -)" -c vllm | grep -v "Avg prompt throughput"
 ```
 
-Eventually you should see something logs indicating vllm is ready to start accepting requests:
+Eventually you should see log lines indicating vLLM is ready to start accepting requests:
 
 ```log
 ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO 07-25 13:57:57 [api_server.py:1818] Starting vLLM API server 0 on http://0.0.0.0:8200
@@ -99,7 +99,7 @@ INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 ```
 
-After this we can port-forwarding your gateway service in one terminal:
+After this, we can port-forward your gateway service in one terminal:
 
 ```bash
 kubectl port-forward -n llm-d-wide-ep service/infra-wide-ep-inference-gateway-istio 8000:80
@@ -142,7 +142,7 @@ curl -s http://localhost:8000/v1/models \
 }
 ```
 
-Finally, we should be able to inferencing `curl`s:
+Finally, we should be able to perform inference with curl:
 
 ```bash
 curl -s http://localhost:8000/v1/completions \

@@ -54,7 +54,7 @@ infra-kv-events-inference-gateway   NodePort    10.16.2.175   <none>        80:3
 
 In this case we have found that our gateway service is called `infra-kv-events-inference-gateway`.
 
-1. `port-forward` the service to we can curl it:
+1. `port-forward` the service so we can curl it:
 
 ```bash
 kubectl -n llm-d-precise port-forward service/infra-kv-events-inference-gateway 8000:80

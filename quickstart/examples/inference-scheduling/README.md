@@ -55,7 +55,7 @@ infra-inference-scheduling-inference-gateway   NodePort    10.16.3.58    <none> 
 
 In this case we have found that our gateway service is called `infra-inference-scheduling-inference-gateway`.
 
-1. `port-forward` the service to we can curl it:
+1. `port-forward` the service so we can curl it:
 
 ```bash
 kubectl port-forward -n llm-d-inference-scheduling service/infra-inference-scheduling-inference-gateway 8000:80
