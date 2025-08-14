@@ -34,14 +34,3 @@ releases:
       - ms-pd/values.yaml
     labels:
       managedBy: helmfile
-    hooks:
-      - events: [ "postsync" ]
-        command: bash
-        args:
-          - -c
-          - |
-            echo "Patching HTTPRoute to trigger reconciliation..."
-            kubectl patch httproute ms-pd-llm-d-modelservice \
-              -n ${NAMESPACE} \
-              -p '{"metadata":{"labels":{"inferencepool":"gaie-pd"}}}' \
-              --type=merge
