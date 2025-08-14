@@ -24,7 +24,8 @@ In this example, we will demonstrate a deployment of `DeepSeek-R1-0528` with:
 
    ```bash
    export HF_TOKEN=${HFTOKEN}
-   ./llmd-infra-installer.sh --namespace llm-d-wide-ep -r infra-wide-ep -f examples/wide-ep-lws/infra-wide-ep/values.yaml --disable-metrics-collection
+   export NAMESPACE=${NAMESPACE:-llm-d-wide-ep}
+   ./llmd-infra-installer.sh --namespace ${NAMESPACE} -r infra-wide-ep -f examples/wide-ep-lws/infra-wide-ep/values.yaml --disable-metrics-collection
    ```
 
    **_NOTE:_** The release name `infra-wide-ep` is important here, because it matches up with pre-built values files used in this example.
@@ -41,7 +42,7 @@ In this example, we will demonstrate a deployment of `DeepSeek-R1-0528` with:
 1. First you should be able to see that both of your release of infra and modelservice charts went smoothly:
 
 ```bash
-$ helm list -n llm-d-wide-ep
+$ helm list -m ${NAMESPACE}
 NAME             NAMESPACE        REVISION    UPDATED                                 STATUS      CHART                        APP VERSION
 infra-wide-ep    llm-d-wide-ep    1           2025-07-25 05:43:35.263697 -0700 PDT   deployed    llm-d-infra-v1.1.1           v0.2.0
 ms-wide-ep       llm-d-wide-ep    1           2025-07-25 06:16:29.31419 -0700 PDT    deployed    llm-d-modelservice-v0.2.0    v0.2.0
@@ -50,7 +51,7 @@ ms-wide-ep       llm-d-wide-ep    1           2025-07-25 06:16:29.31419 -0700 PD
 1. You should all the pods you expect to (2 decodes, 1 prefill, 1 gateway pod, 1 EPP pod):
 
 ```bash
-$ kubectl get pods -n llm-d-wide-ep
+$ kubectl get pods -m ${NAMESPACE}
 NAME                                                   READY   STATUS    RESTARTS   AGE
 infra-wide-ep-inference-gateway-istio-7f4cf9f5-hpqg4   1/1     Running   0          55m
 ms-wide-ep-llm-d-modelservice-decode-0                 2/2     Running   0          22m
@@ -62,7 +63,7 @@ ms-wide-ep-llm-d-modelservice-prefill-0                1/1     Running   0      
 1. You should be able to do inferencing requests. The first thing we need to check is that all our vLLM servers have started which can take some time. We recommend using `stern` to grep the decode logs together and wait for the messaging saying that the vLLM API server is spun up:
 
 ```bash
-DECODE_PODS=$(kubectl get pods -n llm-d-wide-ep -l "llm-d.ai/inferenceServing=true,llm-d.ai/role=decode" --no-headers | awk '{print}' | tail -n 2)
+DECODE_PODS=$(kubectl get pods -m ${NAMESPACE} -l "llm-d.ai/inferenceServing=true,llm-d.ai/role=decode" --no-headers | awk '{print}' | tail -n 2)
 stern "$(echo "$DECODE_PODS" | paste -sd'|' -)" -c vllm | grep -v "Avg prompt throughput"
 ```
 
@@ -82,7 +83,7 @@ ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO:     Application start
 We also should make sure that prefill has come up:
 
 ```bash
-PREFILL_POD=$(kubectl get pods -n llm-d-wide-ep -l "llm-d.ai/inferenceServing=true,llm-d.ai/role=prefill" | tail -n 1 | awk '{print}')
+PREFILL_POD=$(kubectl get pods -m ${NAMESPACE} -l "llm-d.ai/inferenceServing=true,llm-d.ai/role=prefill" | tail -n 1 | awk '{print}')
 kubectl logs pod/${PREFILL_POD} | grep -v "Avg prompt throughput"
 ```
 
@@ -102,7 +103,7 @@ INFO:     Application startup complete.
 After this, we can port-forward your gateway service in one terminal:
 
 ```bash
-kubectl port-forward -n llm-d-wide-ep service/infra-wide-ep-inference-gateway-istio 8000:80
+kubectl port-forward -m ${NAMESPACE} service/infra-wide-ep-inference-gateway-istio 8000:80
 ```
 
 And then you should be able to curl your gateway service:
@@ -191,7 +192,7 @@ To remove the deployment:
 helmfile --selector managedBy=helmfile destroy -f helmfile.yaml
 
 # Remove the infrastructure
-helm uninstall infra-wide-ep -n llm-d-wide-ep
+helm uninstall infra-wide-ep -m ${NAMESPACE}
 ```
 
 ## Customization
