@@ -35,6 +35,12 @@ routing:
     image: ghcr.io/llm-d/llm-d-inference-scheduler:v0.2.1
     debugLevel: 1
     pluginsConfigFile: "pd-config.yaml"
+    monitoring:
+      servicemonitor:
+        enabled: false
+        port: "http-metrics"  # EPP service port for metrics
+        path: "/metrics"
+        interval: "30s"
     pluginsCustomConfig:
       pd-config.yaml: |
         # ALWAYS DO PD IN THIS EXAMPLE (THRESHOLD 0)

@@ -6,6 +6,13 @@ inferenceExtension:
     hub: ghcr.io/llm-d
     tag: v0.2.1
     pullPolicy: Always
+  # Monitoring configuration for EPP
+  monitoring:
+    servicemonitor:
+      enabled: false
+      port: "http-metrics"
+      path: "/metrics"
+      interval: "10s"
   extProcPort: 9002
   pluginsConfigFile: "pd-config.yaml"
   logVerbosity: 1
