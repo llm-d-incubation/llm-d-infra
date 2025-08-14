@@ -20,7 +20,7 @@
     # From the repo root
     cd quickstart
     export HF_TOKEN=$(YOUR_TOKEN)
-    ./llmd-infra-installer.sh --namespace ${NAMESPACE} -r infra-pd --gateway ${GATEWAY} --disable-metrics-collection
+    ./llmd-infra-installer.sh --namespace ${NAMESPACE} -r infra-pd --gateway ${GATEWAY}
     ```
 
 1. Use the helmfile to apply the modelservice and GIE charts on top of it.

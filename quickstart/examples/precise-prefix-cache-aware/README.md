@@ -17,7 +17,7 @@ This is a simple quickstart demonstrating how to configure the inference schedul
 # From the repo root
 cd quickstart
 export HF_TOKEN=${HFTOKEN}
-./llmd-infra-installer.sh --namespace llm-d-precise -r infra-kv-events --gateway kgateway --disable-metrics-collection
+./llmd-infra-installer.sh --namespace llm-d-precise -r infra-kv-events --gateway kgateway
 ```
 
 **_NOTE:_** The release name `infra-kv-events` is important here, because it matches up with pre-built values files used in this example.

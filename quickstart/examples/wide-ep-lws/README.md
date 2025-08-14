@@ -24,7 +24,7 @@ In this example, we will demonstrate a deployment of `DeepSeek-R1-0528` with:
 
    ```bash
    export HF_TOKEN=${HFTOKEN}
-   ./llmd-infra-installer.sh --namespace llm-d-wide-ep -r infra-wide-ep -f examples/wide-ep-lws/infra-wide-ep/values.yaml --disable-metrics-collection
+   ./llmd-infra-installer.sh --namespace llm-d-wide-ep -r infra-wide-ep -f examples/wide-ep-lws/infra-wide-ep/values.yaml
    ```
 
    **_NOTE:_** The release name `infra-wide-ep` is important here, because it matches up with pre-built values files used in this example.

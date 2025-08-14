@@ -19,7 +19,7 @@ As documented in the [GIE values file](./gaie-sim/values.yaml#L4-L13), either th
 # From the repo root
 cd quickstart
 export HF_TOKEN=${HFTOKEN}
-./llmd-infra-installer.sh --namespace llm-d-sim -r infra-sim --gateway kgateway --disable-metrics-collection
+./llmd-infra-installer.sh --namespace llm-d-sim -r infra-sim --gateway kgateway
 ```
 
 **_NOTE:_** The release name `infra-sim` is important here, because it matches up with pre-built values files used in this example.

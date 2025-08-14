@@ -18,7 +18,7 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
     # From the repo root
     cd quickstart
     export HF_TOKEN=${HFTOKEN}
-    ./llmd-infra-installer.sh --namespace llm-d-inference-scheduling -r infra-inference-scheduling --gateway kgateway --disable-metrics-collection
+    ./llmd-infra-installer.sh --namespace llm-d-inference-scheduling -r infra-inference-scheduling --gateway kgateway
     ```
 
     **_NOTE:_** The release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.

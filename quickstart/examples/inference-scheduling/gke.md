@@ -16,7 +16,7 @@ export GATEWAY=gke-l7-regional-external-managed
 # From the repo root
 cd quickstart
 export HF_TOKEN=$(YOUR_TOKEN)
-./llmd-infra-installer.sh --namespace ${NAMESPACE} -r infra-inference-scheduling --gateway ${GATEWAY} --disable-metrics-collection
+./llmd-infra-installer.sh --namespace ${NAMESPACE} -r infra-inference-scheduling --gateway ${GATEWAY}
 ```
 
 **_NOTE:_** It should be noted release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
