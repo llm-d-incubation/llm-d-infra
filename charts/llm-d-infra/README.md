@@ -1,7 +1,7 @@
 
 # llm-d-infra Helm Chart
 
-![Version: v1.2.2](https://img.shields.io/badge/Version-v1.2.2-informational?style=flat-square)
+![Version: v1.2.3](https://img.shields.io/badge/Version-v1.2.3-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
@@ -110,7 +110,6 @@ Kubernetes: `>= 1.28.0-0`
 | fullnameOverride | String to fully override common.names.fullname | string | `""` |
 | gateway | Gateway configuration | object | See below |
 | gateway.annotations | Additional annotations provided to the Gateway resource | object | `{}` |
-| gateway.destinationRule | see: https://istio.io/latest/docs/reference/config/networking/destination-rule/ | object | `{"enabled":false,"exportTo":[],"host":"localhost","subsets":[],"trafficPolicy":{},"workloadSelector":{}}` |
 | gateway.enabled | Deploy resources related to Gateway | bool | `true` |
 | gateway.fullnameOverride | String to fully override gateway.fullname | string | `""` |
 | gateway.gatewayClassName | Gateway class that determines the backend used Currently supported values: "kgateway", "istio", or "gke-l7-regional-external-managed" | string | `"istio"` |
