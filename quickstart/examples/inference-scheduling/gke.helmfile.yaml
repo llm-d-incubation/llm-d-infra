@@ -32,7 +32,12 @@ releases:
       - infra-inference-scheduling
       - gaie-inference-scheduling
     values:
-      - ms-inference-scheduling/values.yaml
+      # NVIDIA driver path changes broke the vllm image on GKE: https://github.com/vllm-project/vllm/issues/18859
+      # To fix this, we added the new paths to the image: https://github.com/llm-d/llm-d/pull/151/
+      # However the above fix didn't work and we are still root causing the issue.
+      # As a temporary workaround, we are overriding the PATH and LD_LIBRARY_PATH environment variables in
+      # gke.values.yaml.
+      - ms-inference-scheduling/gke.values.yaml
     labels:
       managedBy: helmfile
     # NOTE: This is a temporary workaround.
