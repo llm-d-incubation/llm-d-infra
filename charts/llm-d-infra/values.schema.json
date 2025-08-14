@@ -152,7 +152,7 @@
                     "title": "fullnameOverride"
                 },
                 "gatewayClassName": {
-                    "default": "kgateway",
+                    "default": "istio",
                     "description": "Gateway class that determines the backend used Currently supported values: \"kgateway\", \"istio\", or \"gke-l7-regional-external-managed\"",
                     "required": [],
                     "title": "gatewayClassName"
@@ -253,38 +253,56 @@
                     "title": "gatewayParameters",
                     "type": "object"
                 },
+                "labels": {
+                    "additionalProperties": true,
+                    "description": "Additional labels provided to the Gateway resource",
+                    "required": [],
+                    "title": "labels"
+                },
                 "listeners": {
-                    "description": " items:  type: object  properties:    name:      description: Name is the name of the Listener. This name MUST be unique within a Gateway      type: string    path:      description: Path to expose via Ingress      type: string    port:      description: Port is the network port. Multiple listeners may use the same port, subject to the Listener compatibility rules      type: integer      minimum: 1      maximum: 65535    protocol:      description: Protocol specifies the network protocol this listener expects to receive      type: string @schema Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled",
+                    "description": "Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled",
                     "items": {
+                        "additionalProperties": false,
                         "properties": {
+                            "allowedRoutes": {
+                                "additionalProperties": true,
+                                "description": "AllowedRoutes defines the types of routes that MAY be attached to a Listener and the trusted namespaces where those Route resources MAY be present.",
+                                "required": [],
+                                "type": "object"
+                            },
                             "name": {
-                                "description": "Name is the name of the Listener. This name MUST be unique within a Gateway",
+                                "description": "Name is the name of the Listener. This name MUST be unique within a Gateway.",
                                 "required": [],
                                 "type": "string"
                             },
                             "path": {
-                                "description": "Path to expose via Ingress",
+                                "description": "Path to expose via Ingress.",
                                 "required": [],
                                 "type": "string"
                             },
                             "port": {
-                                "description": "Port is the network port. Multiple listeners may use the same port, subject to the Listener compatibility rules",
+                                "description": "Port is the network port. Multiple listeners may use the same port (subject to compatibility rules).",
                                 "maximum": 65535,
                                 "minimum": 1,
                                 "required": [],
                                 "type": "integer"
                             },
                             "protocol": {
-                                "description": "Protocol specifies the network protocol this listener expects to receive",
+                                "description": "Protocol specifies the network protocol this listener expects to receive.",
                                 "required": [],
                                 "type": "string"
                             }
                         },
-                        "required": [],
+                        "required": [
+                            "port",
+                            "protocol"
+                        ],
                         "type": "object"
                     },
+                    "minItems": 1,
                     "required": [],
-                    "title": "listeners"
+                    "title": "listeners",
+                    "type": "array"
                 },
                 "nameOverride": {
                     "default": "",

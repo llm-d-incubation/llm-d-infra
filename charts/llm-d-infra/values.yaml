@@ -61,7 +61,13 @@ gateway:
 
   # -- Gateway class that determines the backend used
   # Currently supported values: "kgateway", "istio", or "gke-l7-regional-external-managed"
-  gatewayClassName: kgateway
+  gatewayClassName: istio
+
+  # @schema
+  # additionalProperties: true
+  # @schema
+  # -- Additional labels provided to the Gateway resource
+  labels: {}
 
   # @schema
   # additionalProperties: true
@@ -126,30 +132,41 @@ gateway:
     workloadSelector: {}
 
   # @schema
+  # type: array
+  # minItems: 1
   # items:
-  #  type: object
-  #  properties:
-  #    name:
-  #      description: Name is the name of the Listener. This name MUST be unique within a Gateway
-  #      type: string
-  #    path:
-  #      description: Path to expose via Ingress
-  #      type: string
-  #    port:
-  #      description: Port is the network port. Multiple listeners may use the same port, subject to the Listener compatibility rules
-  #      type: integer
-  #      minimum: 1
-  #      maximum: 65535
-  #    protocol:
-  #      description: Protocol specifies the network protocol this listener expects to receive
-  #      type: string
+  #   type: object
+  #   additionalProperties: false
+  #   required: [port, protocol]
+  #   properties:
+  #     name:
+  #       description: Name is the name of the Listener. This name MUST be unique within a Gateway.
+  #       type: string
+  #     path:
+  #       description: Path to expose via Ingress.
+  #       type: string
+  #     port:
+  #       description: Port is the network port. Multiple listeners may use the same port (subject to compatibility rules).
+  #       type: integer
+  #       minimum: 1
+  #       maximum: 65535
+  #     protocol:
+  #       description: Protocol specifies the network protocol this listener expects to receive.
+  #       type: string
+  #     allowedRoutes:
+  #       type: object
+  #       description: AllowedRoutes defines the types of routes that MAY be attached to a Listener and the trusted namespaces where those Route resources MAY be present.
+  #       additionalProperties: true
   # @schema
-  # Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled
+  # -- Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled
   listeners:
     - name: default
       path: /
       port: 80
       protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
 
   # -- Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: ["LoadBalancer", "NodePort"]
   serviceType: LoadBalancer

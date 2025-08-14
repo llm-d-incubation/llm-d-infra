@@ -11,6 +11,9 @@ metadata:
     {{- if .Values.commonLabels }}
     {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" . ) | nindent 4 }}
     {{- end }}
+    {{- if .Values.gateway.labels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.gateway.labels "context" .) | nindent 4 }}
+    {{- end }}
     {{- if $isIstio }}
     istio.io/enable-inference-extproc: "true"
     {{- end }}
@@ -26,20 +29,29 @@ metadata:
     {{- end }}
 spec:
   gatewayClassName: {{ .Values.gateway.gatewayClassName | quote }}
+  {{- $listeners := required "gateway.listeners must have at least 1 item" .Values.gateway.listeners }}
   listeners:
-  {{- range .Values.gateway.listeners }}
-    - name: {{ .name }}
-      port: {{ .port }}
-      protocol: {{ .protocol }}
-  {{- end }}
+  {{- range $i, $l := $listeners }}
+    - port: {{ required (printf "gateway.listeners[%d].port is required" $i) $l.port }}
+      protocol: {{ required (printf "gateway.listeners[%d].protocol is required" $i) $l.protocol }}
+      {{- with $l.name }}
+      name: {{ . }}
+      {{- end }}
+      {{- with $l.path }}
+      path: {{ . }}
+      {{- end }}
+      {{- with $l.allowedRoutes }}
+      allowedRoutes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- end}}
   {{- if and (eq .Values.gateway.gatewayClassName "kgateway") .Values.gateway.gatewayParameters.enabled }}
   infrastructure:
     parametersRef:
       name: {{ include "gateway.fullname" . }}
       group: gateway.kgateway.dev
       kind: GatewayParameters
-  {{- end}}
-  {{- if and (eq .Values.gateway.gatewayClassName "istio") .Values.gateway.gatewayParameters.enabled }}
+  {{- else if and (eq .Values.gateway.gatewayClassName "istio") .Values.gateway.gatewayParameters.enabled }}
   infrastructure:
     parametersRef:
       name: {{ include "gateway.fullname" . }}

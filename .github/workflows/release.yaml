@@ -1,79 +1,47 @@
-name: Release Charts
+name: Helm Chart Release
 
 on:
   push:
     branches:
       - main
     paths:
-      - "charts/**"
+      - charts/**
+
+  workflow_dispatch:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
-
     permissions:
       contents: write
-      packages: write
-      id-token: write
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          fetch-depth: 0
-          persist-credentials: true
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        # Checks out the main branch
+        ref: main
+        fetch-depth: 0
+        persist-credentials: false
 
-      - name: Configure Git
-        run: |
-          git config user.name "BUMPER bot (llm-d)"
-          git config user.email "1229152+bumper-bot-llm-d@users.noreply.github.com"
+    - name: Configure Git
+      run: |
+        git config user.name "$GITHUB_ACTOR"
+        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Generate token
-        id: generate_token
-        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2
-        with:
-          app_id: "1229152"
-          private_key: ${{ secrets.BUMPER_GITHUB_APP_PRIVATE_KEY }}
+    - name: Install Helm
+      uses: azure/setup-helm@b9e51907a09c216f16ebe8536097933489208112 # v4.3.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Add dependencies
-        run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
+    - name: Add Helm dependency repos
+      run: |
+        for dir in $(ls -d charts/*/); do
+          helm dependency list  --max-col-width 120 $dir 2> /dev/null | tail +2 | head -n -1 | awk '{ print "helm repo add " $1 " " $3 }' | while read cmd; do $cmd; done
+        done
 
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
-        with:
-          config: cr.yaml
-        env:
-          CR_TOKEN: ${{ steps.generate_token.outputs.token }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a # v3.8.1
-
-      - name: Install Oras
-        uses: oras-project/setup-oras@5c0b487ce3fe0ce3ab0d034e63669e426e294e4d # v1.2.2
-
-      - name: Publish and Sign OCI Charts
-        run: |
-          for chart in `find .cr-release-packages -name '*.tgz' -print`; do
-            echo "[INFO] Handling chart at ${chart}..."
-            helm push ${chart} oci://ghcr.io/${GITHUB_REPOSITORY} |& tee helm-push-output.log
-            file_name=${chart##*/}
-            chart_name=${file_name%-*}
-            digest=$(awk -F "[, ]+" '/Digest/{print $NF}' < helm-push-output.log)
-            cosign sign -y "ghcr.io/${GITHUB_REPOSITORY}/${chart_name}@${digest}"
-
-            if test -f "./charts/${chart_name}/artifacthub-repo.yml"; then
-              oras push "ghcr.io/${GITHUB_REPOSITORY}/${chart_name}:artifacthub.io" \
-                "./charts/${chart_name}/artifacthub-repo.yml:application/vnd.cncf.artifacthub.repository-metadata.layer.v1.yaml"
-            fi
-            echo "[INFO] ... Done with chart at ${chart}."
-          done
-        env:
-          COSIGN_EXPERIMENTAL: 1
+    - name: Run chart-releaser
+      uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
+      env:
+        CR_TOKEN: "${{ secrets.CR_PAT }}"
+        CR_RELEASE_NAME_TEMPLATE: "{{ .Version }}"
+        CR_SKIP_EXISTING: "true"
