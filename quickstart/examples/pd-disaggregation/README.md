@@ -44,7 +44,8 @@ As a result, as you tune your P/D deployments, we suggest focusing on the follow
    # ran from root of repo
    cd quickstart
    export HF_TOKEN=${HFTOKEN}
-   ./llmd-infra-installer.sh --namespace llm-d-pd -r infra-pd -f examples/pd-disaggregation/infra-pd/values.yaml --disable-metrics-collection
+   export NAMESPACE=${NAMESPACE:-llm-d-pd}
+   ./llmd-infra-installer.sh --namespace ${NAMESPACE} -r infra-pd -f examples/pd-disaggregation/infra-pd/values.yaml --disable-metrics-collection
    ```
 
    **_NOTE:_** The release name `infra-pd` is important here, because it matches up with pre-built values files used in this example.
@@ -58,10 +59,10 @@ As a result, as you tune your P/D deployments, we suggest focusing on the follow
 
 ## Verifying the installation
 
-1. First, let's check that all three charts were deployed successfully to our `llm-d-pd` namespace:
+1. First, let's check that all three charts were deployed successfully to our chosen namespace:
 
 ```bash
-$ helm list -n llm-d-pd
+$ helm list -n ${NAMESPACE}
 NAME        NAMESPACE    REVISION    UPDATED                                 STATUS      CHART                       APP VERSION
 gaie-pd     llm-d-pd     1           2025-07-25 11:27:47.419598 -0700 PDT    deployed    inferencepool-v0.5.1        v0.5.1
 infra-pd    llm-d-pd     1           2025-07-25 11:27:18.453254 -0700 PDT    deployed    llm-d-infra-v1.1.1          v0.2.0
@@ -71,7 +72,7 @@ ms-pd       llm-d-pd     1           2025-07-25 11:27:53.138175 -0700 PDT    dep
 1. Next, let's check the pod health of our 4 prefill replicas and 1 decode replica:
 
 ```bash
-$ kubectl get pods -n llm-d-pd
+$ kubectl get pods -n ${NAMESPACE}
 NAME                                                READY   STATUS    RESTARTS   AGE
 gaie-pd-epp-69888bdd8d-6pnbk                        1/1     Running   0          54s
 infra-pd-inference-gateway-istio-776797b79f-6clvr   1/1     Running   0          2m9s
@@ -85,7 +86,7 @@ ms-pd-llm-d-modelservice-prefill-549598dd6c-pbjzx   1/1     Running   0         
 1. Find the gateway service:
 
 ```bash
-$ kubectl get services -n llm-d-pd
+$ kubectl get services -n ${NAMESPACE}
 NAME                               TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                        AGE
 gaie-pd-epp                        ClusterIP   10.16.0.161   <none>        9002/TCP,9090/TCP              6m6s
 gaie-pd-ip-bb618139                ClusterIP   None          <none>        54321/TCP                      6m1s
@@ -97,7 +98,7 @@ In this case we have found that our gateway service is called `infra-pd-inferenc
 1. `port-forward` the service so we can curl it:
 
 ```bash
-kubectl port-forward -n llm-d-pd service/infra-pd-inference-gateway-istio 8000:80
+kubectl port-forward -n ${NAMESPACE} service/infra-pd-inference-gateway-istio 8000:80
 ```
 
 1. Try curling the `/v1/models` endpoint:
@@ -184,7 +185,7 @@ To remove the deployment:
 helmfile --selector managedBy=helmfile destroy -f helmfile.yaml
 
 # Remove the infrastructure
-helm uninstall infra-pd -n llm-d-pd
+helm uninstall infra-pd -n ${NAMESPACE}
 ```
 
 ## Customization

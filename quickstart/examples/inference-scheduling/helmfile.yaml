@@ -4,7 +4,6 @@ repositories:
 
 releases:
   - name: infra-inference-scheduling
-    namespace: llm-d-inference-scheduling
     chart: https://llm-d-incubation.github.io/llm-d-infra/
     version: v1.1.1
     installed: true
@@ -12,25 +11,23 @@ releases:
       managedBy: llm-d-infra-installer
 
   - name: gaie-inference-scheduling
-    namespace: llm-d-inference-scheduling
     chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
     version: v0.5.1
     installed: true
     needs:
-      - llm-d-inference-scheduling/infra-inference-scheduling
+      - infra-inference-scheduling
     values:
       - gaie-inference-scheduling/values.yaml
     labels:
       managedBy: helmfile
 
   - name: ms-inference-scheduling
-    namespace: llm-d-inference-scheduling
     chart: llm-d-modelservice/llm-d-modelservice
     version: v0.2.0
     installed: true
     needs:
-      - llm-d-inference-scheduling/infra-inference-scheduling
-      - llm-d-inference-scheduling/gaie-inference-scheduling
+      - infra-inference-scheduling
+      - gaie-inference-scheduling
     values:
       - ms-inference-scheduling/values.yaml
     labels:

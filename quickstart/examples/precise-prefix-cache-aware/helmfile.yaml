@@ -4,7 +4,6 @@ repositories:
 
 releases:
   - name: infra-kv-events
-    namespace: llm-d-precise
     chart: https://llm-d-incubation.github.io/llm-d-infra/
     version: v1.1.1
     installed: true
@@ -12,25 +11,23 @@ releases:
       managedBy: llm-d-infra-installer
 
   - name: gaie-kv-events
-    namespace: llm-d-precise
     chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
     version: v0.5.1
     installed: true
     needs:
-      - llm-d-precise/infra-kv-events
+      - infra-kv-events
     values:
       - gaie-kv-events/values.yaml
     labels:
       managedBy: helmfile
 
   - name: ms-kv-events
-    namespace: llm-d-precise
     chart: llm-d-modelservice/llm-d-modelservice
     version: v0.2.0
     installed: true
     needs:
-      - llm-d-precise/infra-kv-events
-      - llm-d-precise/gaie-kv-events
+      - infra-kv-events
+      - gaie-kv-events
     values:
       - ms-kv-events/values.yaml
     labels:
