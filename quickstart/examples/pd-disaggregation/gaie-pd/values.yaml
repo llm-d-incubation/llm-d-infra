@@ -47,3 +47,25 @@ inferencePool:
   modelServers:
     matchLabels:
       llm-d.ai/inferenceServing: "true"
+
+provider:
+  name: istio
+
+istio:
+  destinationRule:
+    enabled: true
+    trafficPolicy:
+      connectionPool:
+        http:
+          http1MaxPendingRequests: 256000
+          maxRequestsPerConnection: 256000
+          http2MaxRequests: 256000
+          idleTimeout: "900s"
+          maxRequestsPerConnection: 256000
+        tcp:
+          maxConnections: 256000
+          maxConnectionDuration: "1800s"
+          connectTimeout: "900s"
+      tls:
+        mode: SIMPLE
+        insecureSkipVerify: true
