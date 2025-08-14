@@ -41,7 +41,7 @@
 
 ## Verifying the installation
 
-1. First lets check that all three charts were deployed successfully to our `llm-d-pd` namespace:
+1. First lets check that all three charts were deployed successfully to our chosen namespace:
 
     ```bash
     $ helm list -n ${NAMESPACE}

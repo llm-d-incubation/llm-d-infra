@@ -4,7 +4,6 @@ repositories:
 
 releases:
   - name: infra-pd
-    namespace: llm-d-pd
     chart: oci://ghcr.io/llm-d-incubation/llm-d-infra/llm-d-infra
     version: v1.1.0
     installed: true
@@ -14,25 +13,23 @@ releases:
       managedBy: llm-d-infra-installer
 
   - name: gaie-pd
-    namespace: llm-d-pd
     chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
     version: v0.5.1
     installed: true
     needs:
-      - llm-d-pd/infra-pd
+      - infra-pd
     values:
       - gaie-pd/values.yaml
     labels:
       managedBy: helmfile
 
   - name: ms-pd
-    namespace: llm-d-pd
     chart: llm-d-modelservice/llm-d-modelservice
     version: v0.2.0
     installed: true
     needs:
-      - llm-d-pd/infra-pd
-      - llm-d-pd/gaie-pd
+      - infra-pd
+      - gaie-pd
     values:
       - ms-pd/values.yaml
     labels:
@@ -45,7 +42,7 @@ releases:
           - |
             echo "Patching HTTPRoute to trigger reconciliation..."
             kubectl patch httproute ms-pd-llm-d-modelservice \
-              -n llm-d-pd \
+              -n ${NAMESPACE} \
               -p '{"metadata":{"labels":{"inferencepool":"gaie-pd"}}}' \
               --type=merge
       # NOTE: This is a temporary workaround.
