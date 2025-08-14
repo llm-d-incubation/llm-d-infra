@@ -19,7 +19,8 @@ As documented in the [GIE values file](./gaie-sim/values.yaml#L4-L13), either th
 # From the repo root
 cd quickstart
 export HF_TOKEN=${HFTOKEN}
-./llmd-infra-installer.sh --namespace llm-d-sim -r infra-sim --gateway kgateway --disable-metrics-collection
+export NAMESPACE=${NAMESPACE:-llm-d-sim}
+./llmd-infra-installer.sh --namespace ${NAMESPACE} -r infra-sim --gateway kgateway --disable-metrics-collection
 ```
 
 **_NOTE:_** The release name `infra-sim` is important here, because it matches up with pre-built values files used in this example.
@@ -37,7 +38,7 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 1. Firstly, you should be able to list all helm releases to view all charts that should be installed:
 
    ```console
-   $ helm list -n llm-d-sim --all --debug
+   $ helm list -n ${NAMESPACE} --all --debug
    NAME         NAMESPACE    REVISION     UPDATED                                 STATUS      CHART                       APP VERSION
    gaie-sim     llm-d-sim    1           2025-07-25 10:39:08.317195 -0700 PDT    deployed    inferencepool-v0.5.1        v0.5.1
    infra-sim    llm-d-sim    1           2025-07-25 10:38:48.360829 -0700 PDT    deployed    llm-d-infra-v1.1.1          v0.2.0
@@ -49,7 +50,7 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 1. Find the gateway service:
 
    ```console
-   $ kubectl get services -n llm-d-sim
+   $ kubectl get services -n ${NAMESPACE}
    NAME                          TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)             AGE
    gaie-sim-epp                  ClusterIP   10.16.2.6     <none>        9002/TCP,9090/TCP   42s
    infra-sim-inference-gateway   NodePort    10.16.2.157   <none>        80:37479/TCP        64s
@@ -60,7 +61,7 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
 1. `port-forward` the service so we can curl it:
 
    ```bash
-   kubectl port-forward -n llm-d-sim service/infra-sim-inference-gateway 8000:80
+   kubectl port-forward -n ${NAMESPACE} service/infra-sim-inference-gateway 8000:80
    ```
 
 1. Try curling the `/v1/models` endpoint:
@@ -133,7 +134,7 @@ To remove the deployment:
 helmfile --selector managedBy=helmfile destroy -f helmfile.yaml
 
 # Remove the infrastructure
-helm uninstall infra-sim -n llm-d-sim
+helm uninstall infra-sim -n ${NAMESPACE}
 ```
 
 ## Customization
