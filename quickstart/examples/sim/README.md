@@ -16,10 +16,10 @@ As documented in the [GIE values file](./gaie-sim/values.yaml#L4-L13), either th
 2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart:
 
 ```bash
-# From the repo root
+# From the repo root, no need for an actual HF_TOKEN here since we are running a simulator
 cd quickstart
-export HF_TOKEN=${HFTOKEN}
-./llmd-infra-installer.sh --namespace llm-d-sim -r infra-sim --gateway kgateway --disable-metrics-collection
+export HF_TOKEN=dummy
+./llmd-infra-installer.sh --namespace llm-d-sim -r infra-sim --gateway kgateway
 ```
 
 **_NOTE:_** The release name `infra-sim` is important here, because it matches up with pre-built values files used in this example.
@@ -122,6 +122,35 @@ helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-ins
      "model": "random"
    }
    ```
+
+## Scaling Out Inference Replicas
+
+If you want to scale out a decode or prefill replica, you simply adjust the `llm-d-infra/quickstart/examples/sim/ms-sim/values.yaml` file:
+
+```yaml
+decode:
+  create: true
+  replicas: 3 # <- adjust this value to the desired replica count
+```
+
+Then simply apply the new value from the `llm-d-infra/quickstart/examples/sim` directory with:
+
+```shell
+helmfile --selector managedBy=helmfile apply
+```
+
+Now you will see 3 decode pods:
+
+```shell
+kubectl get pods -n llm-d
+NAME                                                 READY   STATUS    RESTARTS   AGE
+gaie-sim-epp-67666fcfb5-mjskd                        1/1     Running   0          12m
+infra-sim-inference-gateway-856ccd85b7-cwwhr         1/1     Running   0          14m
+ms-sim-llm-d-modelservice-decode-55d48485f-2brw8     2/2     Running   0          2m52s
+ms-sim-llm-d-modelservice-decode-55d48485f-bp2w5     2/2     Running   0          12m
+ms-sim-llm-d-modelservice-decode-55d48485f-wpmqc     2/2     Running   0          12m
+ms-sim-llm-d-modelservice-prefill-5f4dc68d77-p9xd9   1/1     Running   0          12m
+```
 
 ## Cleanup
 
