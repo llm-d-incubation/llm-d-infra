@@ -16,7 +16,7 @@ releases:
   - name: gaie-pd
     namespace: llm-d-pd
     chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
-    version: v0 # use main until our changes land in a release candidate or release image
+    version: v0 # TODO: convert back to new release chart with 1381 landed, use main for now
     # version: v0.5.1
     installed: true
     needs:

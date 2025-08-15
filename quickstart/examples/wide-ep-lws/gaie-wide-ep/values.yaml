@@ -11,7 +11,6 @@ inferenceExtension:
   pluginsConfigFile: "pd-config.yaml"
   pluginsCustomConfig:
     pd-config.yaml: |
-      # ALWAYS DO PD IN THIS EXAMPLE (THRESHOLD 0)
       apiVersion: inference.networking.x-k8s.io/v1alpha1
       kind: EndpointPickerConfig
       plugins:
@@ -26,6 +25,7 @@ inferenceExtension:
           lruCapacityPerServer: 31250
       - type: pd-profile-handler
         parameters:
+          # ALWAYS DO PD IN THIS EXAMPLE (THRESHOLD 0)
           threshold: 0
           hashBlockSize: 5
       schedulingProfiles:
@@ -33,13 +33,11 @@ inferenceExtension:
         plugins:
         - pluginRef: prefill-filter
         - pluginRef: queue-scorer
-          weight: 1.0
         - pluginRef: max-score-picker
       - name: decode
         plugins:
         - pluginRef: decode-filter
         - pluginRef: queue-scorer
-          weight: 1.0
         - pluginRef: max-score-picker
 inferencePool:
   targetPortNumber: 8000
