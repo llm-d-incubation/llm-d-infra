@@ -464,27 +464,31 @@ jobs:
       - name: Run installer to deploy llm-d infrastructure
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "HF_TOKEN=$HF_TOKEN GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
-          set -euo pipefail
-          set -x
-          cd llm-d-infra/quickstart
-          echo "Deploying llm-d infrastructure for Wide EP into namespace: llm-d-wide-ep ..."
-          ./llmd-infra-installer.sh \
-              --namespace "llm-d-wide-ep" \
-              -r infra-wide-ep \
-              -f examples/wide-ep-lws/infra-wide-ep/values.yaml \
-              --disable-metrics-collection | tee ~/llmd-wide-ep-installer.log
+            set -euo pipefail
+            set -x
+            cd llm-d-infra/quickstart
+            echo "Deploying llm-d infrastructure for Wide EP into namespace: llm-d-wide-ep ..."
+            ./llmd-infra-installer.sh \
+                --namespace "llm-d-wide-ep" \
+                -r infra-wide-ep \
+                -f examples/wide-ep-lws/infra-wide-ep/values.yaml \
+                --disable-metrics-collection | tee ~/llmd-wide-ep-installer.log
           EOF
 
       - name: Install LeaderWorkerSet helm chart and wait for controller
         run: |
-          CHART_VERSION=0.7.0
-          helm install lws oci://registry.k8s.io/lws/charts/lws \
-            --version=$CHART_VERSION \
-            --namespace lws-system \
-            --create-namespace \
-            --wait --timeout 300s
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
+            set -euo pipefail
+            set -x
+            export LWS_CHART_VERSION=0.7.0
+            helm install lws oci://registry.k8s.io/lws/charts/lws \
+              --version=${LWS_CHART_VERSION} \
+              --namespace lws-system \
+              --create-namespace \
+              --wait --timeout 300s
 
-          kubectl wait deploy/lws-controller-manager -n lws-system --for=condition=available --timeout=5m
+            kubectl wait deploy/lws-controller-manager -n lws-system --for=condition=available --timeout=5m
+          EOF
 
       - name: Deploy Wide EP example
         run: |
