@@ -220,72 +220,74 @@ jobs:
             yq e '.modelArtifacts.size = "30Gi"' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
             yq e '.routing.modelName = "'${NEW_MODEL_NAME}'"' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
-            # ## Decode specific changes
-            # ### Unbound the accelerator type from H100
+            ## Decode specific changes
+            ### Unbound the accelerator type from H100
             yq e 'del(.decode.acceleratorTypes.labelValues)' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
-            # ### Swap the model name in custom startup script
+            ### Swap the model name in custom startup script
             decode_args=$(yq '.decode.containers[0].args' ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml)
             export decode_args_updated=$(echo "${decode_args}" | sed 's/deepseek-ai\/DeepSeek-R1-0528/Qwen\/Qwen1.5-MoE-A2.7B-Chat/g')
             yq e '.decode.containers[0].args = strenv(decode_args_updated)' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
-            # ### See above, example is a 2 by 2
+            ### See above, example is a 2 by 2
             yq e '(.decode.containers[0].env[] | select(.name == "DP_SIZE_LOCAL")).value = "2"' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
-            # ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead
+            ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead
             yq 'del(.decode.containers[0].env[] | select(.name == "HF_HUB_CACHE"))' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
             yq 'del(.decode.containers[0].env[] | select(.name == "HF_HUB_DISABLE_XET"))' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
-            # ### See above, example is a 2 by 2
+            ### See above, example is a 2 by 2
             yq e '
             (.decode.containers[0].resources = {}) |
             (.decode.containers[0].resources.limits = {"nvidia.com/gpu": 2}) |
             (.decode.containers[0].resources.requests = {"nvidia.com/gpu": 2})
             ' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
-            # ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead.
-            # ### Thus we can remove the HF Cache volume mounts and let HF take care of a default cache path.
+            ### Using model from HF rather than host storage, already discussed
+            yq e ' (.decode.containers[0].mountModelVolume = true)' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
+
+            ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead.
+            ### Thus we can remove the HF Cache volume mounts and let HF take care of a default cache path.
             yq e '
-            # remove from the 0th container
             .decode.containers[0].volumeMounts
                 |= map(select(.name != "hf-cache"))
             |
-            # remove from pod spec volumes
             .decode.volumes
                 |= map(select(.name != "hf-cache"))
             ' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
-            # ## Prefill specific changes
-            # ### Unbound the accelerator type from H100
+            ## Prefill specific changes
+            ### Unbound the accelerator type from H100
             yq e 'del(.prefill.acceleratorTypes.labelValues)' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
-            # ### Swap the model name in custom startup script
+            ### Swap the model name in custom startup script
             prefill_args=$(yq '.prefill.containers[0].args' ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml)
             export prefill_args_updated=$(echo "${prefill_args}" | sed 's/deepseek-ai\/DeepSeek-R1-0528/Qwen\/Qwen1.5-MoE-A2.7B-Chat/g')
             yq e '.prefill.containers[0].args = strenv(prefill_args_updated)' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
-            # ### See above, example is a 2 by 2
+            ### See above, example is a 2 by 2
             yq e '(.prefill.containers[0].env[] | select(.name == "DP_SIZE_LOCAL")).value = "2"' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
-            # ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead
+            ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead
             yq 'del(.prefill.containers[0].env[] | select(.name == "HF_HUB_CACHE"))' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
             yq 'del(.prefill.containers[0].env[] | select(.name == "HF_HUB_DISABLE_XET"))' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
-            # ### See above, example is a 2 by 2
+            ### See above, example is a 2 by 2
             yq e '
             (.prefill.containers[0].resources = {}) |
             (.prefill.containers[0].resources.limits = {"nvidia.com/gpu": 2}) |
             (.prefill.containers[0].resources.requests = {"nvidia.com/gpu": 2})
             ' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
-            # ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead.
-            # ### Thus we can remove the HF Cache volume mounts and let HF take care of a default cache path.
+            ### Using model from HF rather than host storage, already discussed
+            yq e ' (.prefill.containers[0].mountModelVolume = true)' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
+
+            ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead.
+            ### Thus we can remove the HF Cache volume mounts and let HF take care of a default cache path.
             yq e '
-            # remove from the 0th container
             .prefill.containers[0].volumeMounts
                 |= map(select(.name != "hf-cache"))
             |
-            # remove from pod spec volumes
             .prefill.volumes
                 |= map(select(.name != "hf-cache"))
             ' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
