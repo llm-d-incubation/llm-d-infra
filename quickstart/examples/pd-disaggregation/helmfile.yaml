@@ -6,7 +6,7 @@ releases:
   - name: infra-pd
     namespace: llm-d-pd
     chart: https://llm-d-incubation.github.io/llm-d-infra/
-    version: v1.1.1
+    version: v1.2.3
     installed: true
     values:
       - infra-pd/values.yaml
@@ -16,7 +16,8 @@ releases:
   - name: gaie-pd
     namespace: llm-d-pd
     chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
-    version: v0.5.1
+    version: v0 # TODO: convert back to new release chart with 1381 landed, use main for now
+    # version: v0.5.1
     installed: true
     needs:
       - llm-d-pd/infra-pd

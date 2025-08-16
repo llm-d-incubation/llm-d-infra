@@ -1,29 +1,11 @@
 gateway:
   gatewayClassName: istio
   gatewayParameters:
-    logLevel: error
-    resources:
+    logLevel: error # drop log level to improve performance
+    resources: # increase default gateway envoy container resources for higher performance
       limits:
         cpu: "4"
         memory: 4Gi
       requests:
         cpu: "1"
         memory: 1Gi
-  destinationRule:
-    enabled: true
-    host: ms-wide-ep-llm-d-modelservice-epp.llm-d-wide-ep.svc.cluster.local
-    trafficPolicy:
-      connectionPool:
-        http:
-          http1MaxPendingRequests: 256000
-          maxRequestsPerConnection: 256000
-          http2MaxRequests: 256000
-          idleTimeout: "900s"
-          maxRequestsPerConnection: 256000
-        tcp:
-          maxConnections: 256000
-          maxConnectionDuration: "1800s"
-          connectTimeout: "900s"
-      tls:
-        mode: SIMPLE
-        insecureSkipVerify: true

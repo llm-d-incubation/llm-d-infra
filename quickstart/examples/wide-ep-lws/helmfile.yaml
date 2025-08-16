@@ -6,12 +6,25 @@ releases:
   - name: infra-wide-ep
     namespace: llm-d-wide-ep
     chart: https://llm-d-incubation.github.io/llm-d-infra/
-    version: v1.1.1
+    version: v1.2.3
     installed: true
     values:
       - infra-wide-ep/values.yaml
     labels:
       managedBy: llm-d-infra-installer
+
+  - name: gaie-wide-ep
+    namespace: llm-d-wide-ep
+    chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
+    version: v0 # TODO: convert back to new release chart with 1381 landed, use main for now
+    # version: v0.5.1
+    installed: true
+    needs:
+      - llm-d-wide-ep/infra-wide-ep
+    values:
+      - gaie-wide-ep/values.yaml
+    labels:
+      managedBy: helmfile
 
   - name: ms-wide-ep
     namespace: llm-d-wide-ep
@@ -20,6 +33,7 @@ releases:
     installed: true
     needs:
       - llm-d-wide-ep/infra-wide-ep
+      - llm-d-wide-ep/gaie-wide-ep
     values:
       - ms-wide-ep/values.yaml
     labels:
