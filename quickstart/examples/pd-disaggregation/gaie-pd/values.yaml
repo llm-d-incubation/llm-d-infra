@@ -18,7 +18,7 @@ inferenceExtension:
       - type: prefill-filter
       - type: decode-filter
       - type: max-score-picker
-      - type: queue-scorer
+      - type: prefix-cache-scorrer
         parameters:
           hashBlockSize: 5
           maxPrefixBlocksToMatch: 256
@@ -32,12 +32,12 @@ inferenceExtension:
       - name: prefill
         plugins:
         - pluginRef: prefill-filter
-        - pluginRef: queue-scorer
+        - pluginRef: prefix-cache-scorer
         - pluginRef: max-score-picker
       - name: decode
         plugins:
         - pluginRef: decode-filter
-        - pluginRef: queue-scorer
+        - pluginRef: prefix-cache-scorer
         - pluginRef: max-score-picker
 inferencePool:
   targetPortNumber: 8000
