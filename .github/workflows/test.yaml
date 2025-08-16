@@ -4,6 +4,14 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - charts/**.yaml
+      - charts/**.json
+      - charts/**.yml
+    paths-ignore:
+      - charts/**/charts/**
+      - charts/**/charts.lock
+      - charts/**/README.md*
   push:
     tags:
       - "**"
