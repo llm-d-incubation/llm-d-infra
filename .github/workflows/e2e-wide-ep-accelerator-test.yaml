@@ -2,7 +2,7 @@ name: E2E Wide EP Test
 
 on:
   issue_comment:
-    # Runs with a PR comment /run-e2e-wide-ep or /run-e2e-wide-ep-istio
+    # Runs with a PR comment /run-e2e-wide-ep
     types: [created]
   workflow_dispatch:
     inputs:
@@ -14,10 +14,9 @@ on:
       gateway_type:
         description: 'Gateway type to use'
         required: false
-        default: 'kgateway'
+        default: 'istio' # currently only istio supported because thats the default used in infra values
         type: choice
         options:
-          - kgateway
           - istio
       wait_for_termination:
         description: 'Wait time (in minutes) before terminating for debugging'
@@ -40,8 +39,7 @@ jobs:
         github.event_name == 'issue_comment' &&
         github.event.issue.pull_request &&
         (
-          contains(github.event.comment.body, '/run-e2e-wide-ep') ||
-          contains(github.event.comment.body, '/run-e2e-wide-ep-istio')
+          contains(github.event.comment.body, '/run-e2e-wide-ep')
         ) &&
         (
           github.event.comment.author_association == 'OWNER' ||
@@ -64,9 +62,7 @@ jobs:
       DISK_SIZE: "300"
       PR_OR_BRANCH: ${{ github.event.inputs.pr_or_branch || github.event.issue.number }}
       NAMESPACE: ${{ github.event.inputs.namespace }}
-      GATEWAY_TYPE: ${{ github.event.inputs.gateway_type ||
-        (contains(github.event.comment.body || '', '/run-e2e-wide-ep-istio') && 'istio') ||
-        'istio' }}
+      GATEWAY_TYPE: ${{ github.event.inputs.gateway_type || 'istio' }}
 
     steps:
       - name: Checkout
@@ -221,7 +217,7 @@ jobs:
             yq e '.routing.modelName = "'${NEW_MODEL_NAME}'"' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
             ## Decode specific changes
-            ### Unbound the accelerator type from H100
+            ### Unbound the accelerator type from H200
             yq e 'del(.decode.acceleratorTypes.labelValues)' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
             ### Swap the model name in custom startup script
@@ -257,7 +253,7 @@ jobs:
             ' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
             ## Prefill specific changes
-            ### Unbound the accelerator type from H100
+            ### Unbound the accelerator type from H200
             yq e 'del(.prefill.acceleratorTypes.labelValues)' -i ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
             ### Swap the model name in custom startup script
