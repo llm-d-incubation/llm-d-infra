@@ -82,7 +82,7 @@ decode:
   monitoring:
     podmonitor:
       enabled: false
-      portName: "metrics"  # decode vLLM service port (from routing.proxy.targetPort)
+      portName: "metrics" # decode vLLM service port (from routing.proxy.targetPort)
       path: "/metrics"
       interval: "30s"
   containers:
@@ -90,7 +90,7 @@ decode:
       image: "ghcr.io/llm-d/llm-d:v0.2.0"
       imagePullPolicy: Always
       workingDir: /code
-      command: ["/bin/bash","-c"]
+      command: ["/bin/bash", "-c"]
       modelCommand: "custom"
       args:
         - |
@@ -217,7 +217,7 @@ prefill:
   monitoring:
     podmonitor:
       enabled: false
-      portName: "metrics"  # prefill vLLM service port (from routing.servicePort)
+      portName: "metrics" # prefill vLLM service port (from routing.servicePort)
       path: "/metrics"
       interval: "30s"
   containers:
@@ -225,7 +225,7 @@ prefill:
       image: "ghcr.io/llm-d/llm-d:v0.2.0"
       imagePullPolicy: Always
       workingDir: /code
-      command: ["/bin/bash","-c"]
+      command: ["/bin/bash", "-c"]
       modelCommand: "custom"
       args:
         - |
