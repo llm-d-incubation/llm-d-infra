@@ -1,15 +1,36 @@
+environments:
+  istio:
+    values:
+      - ../../providers/istio.yaml
+  kgateway:
+    values:
+      - ../../providers/kgateway.yaml
+  gke:
+    values:
+      - ../../providers/gke.yaml
+
+  # Default pointer to istio for now
+  default:
+    values:
+      - ../../providers/istio.yaml
+
+helmfiles:
+  - ../../providers/helmfile.yaml.gotmpl
+
+---
+
 repositories:
   - name: llm-d-modelservice
     url: https://llm-d-incubation.github.io/llm-d-modelservice/
+  - name: llm-d-infra
+    url: https://llm-d-incubation.github.io/llm-d-infra/
 
 releases:
   - name: infra-inference-scheduling
     namespace: llm-d-inference-scheduling
-    chart: https://llm-d-incubation.github.io/llm-d-infra/
+    chart: llm-d-infra/llm-d-infra
     version: v1.1.1
     installed: true
-    labels:
-      managedBy: llm-d-infra-installer
 
   - name: gaie-inference-scheduling
     namespace: llm-d-inference-scheduling
