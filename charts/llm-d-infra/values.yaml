@@ -77,11 +77,6 @@ gateway:
 
   # Special parameters applied to kGateway via GatewayParameters resource
   gatewayParameters:
-    # @schema
-    # type: [number, boolean]
-    # @schema
-    proxyUID: false
-
     enabled: true
 
     # @schema

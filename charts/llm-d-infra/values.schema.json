@@ -179,16 +179,6 @@
                             "required": [],
                             "title": "logLevel"
                         },
-                        "proxyUID": {
-                            "default": false,
-                            "description": " type: [number, boolean] @schema",
-                            "required": [],
-                            "title": "proxyUID",
-                            "type": [
-                                "number",
-                                "boolean"
-                            ]
-                        },
                         "resources": {
                             "description": "ResourceRequirements describes the compute resource requirements.",
                             "properties": {

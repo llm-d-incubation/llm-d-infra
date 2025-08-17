@@ -10,7 +10,6 @@ SCRIPT_DIR=""
 REPO_ROOT=""
 INSTALL_DIR=""
 CHART_DIR=""
-PROXY_UID=""
 VALUES_FILE="values.yaml"
 DEBUG=""
 KUBERNETES_CONTEXT=""
@@ -94,20 +93,6 @@ check_cluster_reachability() {
     log_info "kubectl can reach to a running Kubernetes cluster."
   else
     die "kubectl cannot reach any running Kubernetes cluster. The installer requires a running cluster"
-  fi
-}
-
-# Derive an OpenShift PROXY_UID; default to 0 if not available
-fetch_kgateway_proxy_uid() {
-  log_info "Fetching OCP proxy UID..."
-  local uid_range
-  uid_range=$($KCMD get namespace "${NAMESPACE}" -o jsonpath='{.metadata.annotations.openshift\.io/sa\.scc\.uid-range}' 2>/dev/null || true)
-  if [[ -n "$uid_range" ]]; then
-    PROXY_UID=$(echo "$uid_range" | awk -F'/' '{print $1 + 1}')
-    log_success "Derived PROXY_UID=${PROXY_UID}"
-  else
-    PROXY_UID=0
-    log_info "No OpenShift SCC annotation found; defaulting PROXY_UID=${PROXY_UID}"
   fi
 }
 
@@ -257,9 +242,6 @@ install() {
     log_success "HF token secret \`${HF_NAME}\` created with secret stored in key \`${HF_KEY}\`"
   fi
 
-  # can be fetched non-invasily if using kgateway or not
-  fetch_kgateway_proxy_uid
-
   $HCMD repo add bitnami  https://charts.bitnami.com/bitnami
   log_info "🛠️ Building Helm chart dependencies..."
   $HCMD dependency build .
@@ -306,7 +288,6 @@ install() {
     "${VALUES_ARGS[@]}" \
     "${OCP_DISABLE_INGRESS_ARGS[@]+"${OCP_DISABLE_INGRESS_ARGS[@]}"}" \
     --set gateway.gatewayClassName="${GATEWAY_TYPE}" \
-    --set gateway.gatewayParameters.proxyUID="${PROXY_UID}" \
     --set ingress.clusterRouterBase="${BASE_OCP_DOMAIN}" \
     --set gateway.serviceType="${SERVICE_TYPE:-NodePort}"
   log_success "$HELM_RELEASE_NAME deployed"

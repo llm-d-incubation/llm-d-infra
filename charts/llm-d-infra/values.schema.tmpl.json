@@ -179,16 +179,6 @@
               "required": [],
               "title": "logLevel"
             },
-            "proxyUID": {
-              "default": false,
-              "description": " type: [number, boolean] @schema",
-              "required": [],
-              "title": "proxyUID",
-              "type": [
-                "number",
-                "boolean"
-              ]
-            },
             "resources": {
               "$ref": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master/_definitions.json#/definitions/io.k8s.api.core.v1.ResourceRequirements",
               "description": "Resource requests/limits \u003cbr /\u003e Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container",

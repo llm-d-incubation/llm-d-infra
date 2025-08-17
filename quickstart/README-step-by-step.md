@@ -220,8 +220,7 @@ helm upgrade -i llm-d-infra . --namespace "${NAMESPACE}" \
 ```bash
 helm upgrade -i llm-d-infra . --namespace "${NAMESPACE}" \
   --values ./values.yaml \
-  --set gateway.gatewayClassName=kgateway \
-  --set gateway.gatewayParameters.proxyUID=0
+  --set gateway.gatewayClassName=kgateway
 ```
 
 Service is created as LoadBalancer type.
