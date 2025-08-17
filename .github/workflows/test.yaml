@@ -116,5 +116,4 @@ jobs:
           ct install \
             --debug \
             --config ct-install.yaml \
-            --upgrade \
             --target-branch "$TARGET_BRANCH"
