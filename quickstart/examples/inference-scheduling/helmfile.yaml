@@ -25,8 +25,7 @@ releases:
 
   - name: ms-inference-scheduling
     namespace: llm-d-inference-scheduling
-    chart: llm-d-modelservice/llm-d-modelservice
-    version: v0.2.0
+    chart: /home/edwinhernandez/llm-d-modelservice/charts/llm-d-modelservice
     installed: true
     needs:
       - llm-d-inference-scheduling/infra-inference-scheduling
