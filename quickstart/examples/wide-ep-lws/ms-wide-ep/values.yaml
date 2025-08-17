@@ -93,7 +93,7 @@ decode:
       command: ["/bin/bash", "-c"]
       modelCommand: "custom"
       args:
-        - |
+        - |-
           #################
           # RUN vLLM decode worker
           #################
@@ -228,7 +228,7 @@ prefill:
       command: ["/bin/bash", "-c"]
       modelCommand: "custom"
       args:
-        - |
+        - |-
           #################
           # RUN vLLM prefill worker
           #################
