@@ -5,11 +5,10 @@ on:
     branches:
       - main
     paths:
-      - charts/**.yaml
-      - charts/**.json
-      - charts/**.yml
-    paths-ignore:
-      - charts/llm-d-infra/charts/**
+      - 'charts/**'
+      - '!charts/**/charts/**'
+      - '!charts/**/*.md*'
+      - '!charts/**/Chart.lock'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}
