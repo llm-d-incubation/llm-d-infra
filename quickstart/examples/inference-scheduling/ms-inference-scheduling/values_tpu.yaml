@@ -82,44 +82,33 @@ decode:
 prefill:
   create: false
   replicas: 0
+  nodeSelector:
+    cloud.google.com/gke-tpu-topology: "2x4"
+    cloud.google.com/gke-tpu-accelerator: "tpu-v6e-slice"
   monitoring:
     podmonitor:
       enabled: false
-      portName: "metrics"  # prefill vLLM service port (from routing.servicePort)
+      portName: "metrics"  # decode vLLM service port (from routing.proxy.targetPort)
       path: "/metrics"
       interval: "30s"
   containers:
   - name: "vllm"
-    image: "ghcr.io/llm-d/llm-d:v0.2.0"
+    image: "vllm/vllm-tpu:e92694b6fe264a85371317295bca6643508034ef"
     modelCommand: vllmServe
     args:
-      - "--enforce-eager"
-      - "--kv-transfer-config"
-      - '{"kv_connector":"NixlConnector", "kv_role":"kv_both"}'
-    env:
-      - name: CUDA_VISIBLE_DEVICES
-        value: "0"
-      - name: UCX_TLS
-        value: "cuda_ipc,cuda_copy,tcp"
-      - name: VLLM_NIXL_SIDE_CHANNEL_PORT
-        value: "5557"
-      - name: VLLM_NIXL_SIDE_CHANNEL_HOST
-        valueFrom:
-          fieldRef:
-            fieldPath: status.podIP
-      - name: VLLM_LOGGING_LEVEL
-        value: DEBUG
+      - "--tensor-parallel-size=8"
+      - "--max-model-len=4096"
     ports:
       - containerPort: 5557
         protocol: TCP
-      - containerPort: 8000
+      - containerPort: 8200
         name: metrics
         protocol: TCP
     resources:
       limits:
-        nvidia.com/gpu: "1"
+        google.com/tpu: 8
       requests:
-        nvidia.com/gpu: "1"
+        google.com/tpu: 8
     mountModelVolume: true
     volumeMounts:
     - name: metrics-volume
