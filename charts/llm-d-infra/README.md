@@ -110,7 +110,6 @@ Kubernetes: `>= 1.28.0-0`
 | fullnameOverride | String to fully override common.names.fullname | string | `""` |
 | gateway | Gateway configuration | object | See below |
 | gateway.annotations | Additional annotations provided to the Gateway resource | object | `{}` |
-| gateway.destinationRule | see: https://istio.io/latest/docs/reference/config/networking/destination-rule/ | object | `{"enabled":false,"exportTo":[],"host":"localhost","subsets":[],"trafficPolicy":{},"workloadSelector":{}}` |
 | gateway.enabled | Deploy resources related to Gateway | bool | `true` |
 | gateway.fullnameOverride | String to fully override gateway.fullname | string | `""` |
 | gateway.gatewayClassName | Gateway class that determines the backend used Currently supported values: "kgateway", "istio", or "gke-l7-regional-external-managed" | string | `"istio"` |

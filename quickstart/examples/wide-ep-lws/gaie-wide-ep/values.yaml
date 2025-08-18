@@ -7,8 +7,8 @@ inferenceExtension:
     tag: v0.2.1
     pullPolicy: Always
   extProcPort: 9002
-  pluginsConfigFile: "pd-config.yaml"
   logVerbosity: 1
+  pluginsConfigFile: "pd-config.yaml"
   pluginsCustomConfig:
     pd-config.yaml: |
       apiVersion: inference.networking.x-k8s.io/v1alpha1
@@ -18,7 +18,7 @@ inferenceExtension:
       - type: prefill-filter
       - type: decode-filter
       - type: max-score-picker
-      - type: prefix-cache-scorrer
+      - type: prefix-cache-scorer
         parameters:
           hashBlockSize: 5
           maxPrefixBlocksToMatch: 256
@@ -54,9 +54,6 @@ istio:
     enabled: true
     trafficPolicy:
       connectionPool:
-       # These numbers were chosen arbitrarily. Istio's default max concurrent connections are set to 1024, this allows us
-       # to increase the number of concurrent requests we send to lm_eval. Similarly idleTimeout, maxConnection and
-       # connectTimeout were set to uncap long processing of requests and allow eval to proceed unaffected.
         http:
           http1MaxPendingRequests: 256000
           maxRequestsPerConnection: 256000
