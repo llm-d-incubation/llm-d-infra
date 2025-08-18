@@ -31,20 +31,7 @@ permissions:
 jobs:
   setup:
     if: >
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event_name == 'issue_comment' &&
-        github.event.issue.pull_request &&
-        (
-          contains(github.event.comment.body, '/run-e2e-pd') ||
-          contains(github.event.comment.body, '/run-e2e-pd-istio')
-        ) &&
-        (
-          github.event.comment.author_association == 'OWNER' ||
-          github.event.comment.author_association == 'MEMBER' ||
-          github.event.comment.author_association == 'COLLABORATOR'
-        )
-      )
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       instance_id: ${{ steps.launch.outputs.instance_id }}
@@ -60,9 +47,7 @@ jobs:
       DISK_SIZE: "300"
       PR_OR_BRANCH: ${{ github.event.inputs.pr_or_branch || github.event.issue.number }}
       NAMESPACE: ${{ github.event.inputs.namespace }}
-      GATEWAY_TYPE: ${{ github.event.inputs.gateway_type ||
-        (contains(github.event.comment.body || '', '/run-e2e-pd-istio') && 'istio') ||
-        'istio' }}
+      GATEWAY_TYPE: ${{ github.event.inputs.gateway_type || 'istio' }}
 
     steps:
       - name: Checkout
@@ -431,11 +416,7 @@ jobs:
             cd llm-d-infra/quickstart/examples/pd-disaggregation
             echo "Deploying PD-Disaggregation example with slim configuration..."
             helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install | tee ~/pd-disaggregation-deployment.log
-            echo "
-
-            ---
-
-            " >> ~/pd-disaggregation-deployment.log
+            echo "---" >> ~/pd-disaggregation-deployment.log
           EOF
 
       - name: Upload helm get all
@@ -467,6 +448,12 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP <<EOF
             set -euo pipefail
+            echo "=== Deployments ==="
+            kubectl get deployments -n "${NAMESPACE}"
+            echo ""
+            echo "=== Replica Sets ==="
+            kubectl get replicasets -n "${NAMESPACE}"
+            echo ""
             echo "=== Pods ==="
             kubectl get pods -n "${NAMESPACE}"
             echo ""
@@ -476,13 +463,12 @@ jobs:
             echo "=== Helm releases ==="
             helm list -n "${NAMESPACE}" || true
             echo ""
-            echo "=== PD-specific resources ==="
-            echo "Inference Models:"
-            kubectl get inferencemodels -n "${NAMESPACE}" || true
-            echo "Inference Pools:"
+            echo "=== Inference Pools ==="
             kubectl get inferencepools -n "${NAMESPACE}" || true
-            echo "HTTP Routes:"
+            echo ""
+            echo "=== HTTPRoutes ==="
             kubectl get httproutes -n "${NAMESPACE}" || true
+            echo ""
           EOF
 
       - name: Apply Istio DestinationRule

@@ -34,19 +34,7 @@ env:
 jobs:
   setup:
     if: >
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event_name == 'issue_comment' &&
-        github.event.issue.pull_request &&
-        (
-          contains(github.event.comment.body, '/run-e2e-wide-ep')
-        ) &&
-        (
-          github.event.comment.author_association == 'OWNER' ||
-          github.event.comment.author_association == 'MEMBER' ||
-          github.event.comment.author_association == 'COLLABORATOR'
-        )
-      )
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       instance_id: ${{ steps.launch.outputs.instance_id }}
@@ -458,7 +446,7 @@ jobs:
             kubectl get deployments -n "${NAMESPACE}"
             echo ""
             echo "=== Replica Sets ==="
-            kubectl get leaderworkersets -n "${NAMESPACE}"
+            kubectl get replicasets -n "${NAMESPACE}"
             echo ""
             echo "=== Pods ==="
             kubectl get pods -n "${NAMESPACE}"
