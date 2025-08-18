@@ -203,9 +203,6 @@ jobs:
             set -x
             cd llm-d-infra
 
-            echo "Disabling ingress to use istio DestinationRule..."
-            yq e '(.ingress.enabled)=false' -i ${{ env.WIDE_EP_PATH }}/infra-wide-ep/values.yaml
-
             echo "Applying wide-ep slim values transform..."
             .github/scripts/e2e/wide-ep-transform.sh ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 
@@ -419,11 +416,7 @@ jobs:
             cd llm-d-infra/${{ env.WIDE_EP_PATH }}
             echo "Deploying Wide EP example with slim configuration..."
             helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install | tee ~/wide-ep-deployment.log
-            echo "
-
-            ---
-
-            " >> ~/wide-ep-deployment.log
+            echo "---------------------------------------" >> ~/wide-ep-deployment.log
           EOF
 
       - name: Upload helm get all
@@ -455,6 +448,18 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP <<EOF
             set -euo pipefail
+            echo "=== LWS ==="
+            kubectl get leaderworkersets -n "${NAMESPACE}"
+            echo ""
+            echo "=== Stateful Sets ==="
+            kubectl get statefulset -n "${NAMESPACE}"
+            echo ""
+            echo "=== Deployments ==="
+            kubectl get deployments -n "${NAMESPACE}"
+            echo ""
+            echo "=== Replica Sets ==="
+            kubectl get leaderworkersets -n "${NAMESPACE}"
+            echo ""
             echo "=== Pods ==="
             kubectl get pods -n "${NAMESPACE}"
             echo ""
@@ -473,37 +478,6 @@ jobs:
             kubectl get httproutes -n "${NAMESPACE}" || true
           EOF
 
-      - name: Apply Istio DestinationRule
-        if: ${{ env.GATEWAY_TYPE == 'istio' }}
-        run: |
-          set -euo pipefail
-          NS="${NAMESPACE}"
-
-          echo "🔎 Locating *-epp service in namespace $NS …"
-          EPP_NAME=$(ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP \
-              kubectl get svc -n "$NS" -o custom-columns=:metadata.name |
-              tr ' ' '\n' | grep -- '-epp$' | head -n1 || true)
-
-          echo "EPP_NAME = ${EPP_NAME:-<none found>}"
-
-          if [[ -z "$EPP_NAME" ]]; then
-            echo "❌ No Service ending in -epp found; aborting"
-            exit 1
-          fi
-
-          export EPP_NAME
-          TEMPLATE="$GITHUB_WORKSPACE/.github/manifests/istio-tls-destinationrule.yaml"
-          envsubst < "$TEMPLATE" > destinationrule.yaml
-
-          echo "📝 Rendered DestinationRule:"
-          cat destinationrule.yaml
-
-          # Copy and apply on the remote cluster
-          scp -o StrictHostKeyChecking=no -i key.pem destinationrule.yaml \
-              ubuntu@$INSTANCE_IP:/tmp/destinationrule.yaml
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP \
-              "kubectl apply -n \"$NS\" -f /tmp/destinationrule.yaml && rm /tmp/destinationrule.yaml"
-
       - name: Wide EP inference test
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@"$INSTANCE_IP" <<EOF
@@ -519,8 +493,8 @@ jobs:
             echo "🔍 Verifying Wide EP specific functionality..."
 
             # Check that we have both prefill and decode pods
-            PREFILL_PODS=\$(kubectl get pods -n "${NAMESPACE}" -l app.kubernetes.io/component=prefill --no-headers | wc -l)
-            DECODE_PODS=\$(kubectl get pods -n "${NAMESPACE}" -l app.kubernetes.io/component=decode --no-headers | wc -l)
+            PREFILL_PODS=\$(kubectl get pods -n "${NAMESPACE}" -l llm-d.ai/role=prefill --no-headers | wc -l)
+            DECODE_PODS=\$(kubectl get pods -n "${NAMESPACE}" -l llm-d.ai/role=decode --no-headers | wc -l)
 
             echo "Prefill pods: \$PREFILL_PODS"
             echo "Decode pods: \$DECODE_PODS"
