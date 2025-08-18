@@ -170,7 +170,7 @@ jobs:
             set -x
 
             sudo apt-get update -y
-            sudo apt-get install -y git
+            sudo apt-get install -y git yq
 
             # Install yq for YAML processing
             echo "Installing yq..."
@@ -431,6 +431,17 @@ jobs:
             cd llm-d-infra/quickstart/examples/pd-disaggregation
             echo "Deploying PD-Disaggregation example with slim configuration..."
             helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install | tee ~/pd-disaggregation-deployment.log
+            echo "\n\n---\n\n" >> ~/pd-disaggregation-deployment.log
+          EOF
+
+      - name: Upload helm get all
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
+            set -euo pipefail
+            set -x
+            BACKUP_NAMESPACE="llm-d-pd" /bin/sh llm-d-infra/.github/scripts/e2e/helm-get-all.sh \
+              ~/pd-disaggregation-deployment.log \
+              llm-d-infra/quickstart/examples/pd-disaggregation/helmfile.yaml
           EOF
 
       - name: Wait for all pods to be ready

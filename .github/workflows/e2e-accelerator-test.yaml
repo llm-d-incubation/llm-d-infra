@@ -172,7 +172,7 @@ jobs:
             set -x
 
             sudo apt-get update -y
-            sudo apt-get install -y git
+            sudo apt-get install -y git yq
 
             REPO_URL="https://github.com/llm-d-incubation/llm-d-infra.git"
             REPO_DIR=$(basename "$REPO_URL" .git)
@@ -376,6 +376,17 @@ jobs:
             cd llm-d-infra/quickstart/${{ matrix.deployment.example_dir }}
             echo "Deploying ${{ matrix.deployment.name }} example..."
             helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-install | tee ~/${{ matrix.deployment.helm_log_file }}
+            echo "\n\n---\n\n" >> ~/${{ matrix.deployment.helm_log_file }}
+          EOF
+
+      - name: Upload helm get all
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
+            set -euo pipefail
+            set -x
+            BACKUP_NAMESPACE=${{ matrix.deployment.namespace }} /bin/sh llm-d-infra/.github/scripts/e2e/helm-get-all.sh \
+              ~/${{ matrix.deployment.helm_log_file }} \
+              llm-d-infra/quickstart/${{ matrix.deployment.example_dir }}/helmfile.yaml
           EOF
 
       - name: Wait for all pods to be ready
