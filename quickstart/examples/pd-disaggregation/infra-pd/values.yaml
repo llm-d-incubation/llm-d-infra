@@ -19,7 +19,6 @@ gateway:
           maxRequestsPerConnection: 256000
           http2MaxRequests: 256000
           idleTimeout: "900s"
-          maxRequestsPerConnection: 256000
         tcp:
           maxConnections: 256000
           maxConnectionDuration: "1800s"
