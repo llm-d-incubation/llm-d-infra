@@ -35,7 +35,7 @@ patch() {
 
     ## Decode specific changes
     ### Unbound the accelerator type from H200
-    yq e 'del(.decode.acceleratorTypes.labelValues)' -i ${FILE}
+    yq e 'del(.decode.acceleratorTypes)' -i ${FILE}
 
     ### Swap the model name in custom startup script
     decode_args=$(yq '.decode.containers[0].args[0]' ${FILE})
@@ -72,7 +72,7 @@ patch() {
 
     ## Prefill specific changes
     ### Unbound the accelerator type from H200
-    yq e 'del(.prefill.acceleratorTypes.labelValues)' -i ${FILE}
+    yq e 'del(.prefill.acceleratorTypes)' -i ${FILE}
 
     ### Swap the model name in custom startup script
     prefill_args=$(yq '.prefill.containers[0].args[0]' ${FILE})
