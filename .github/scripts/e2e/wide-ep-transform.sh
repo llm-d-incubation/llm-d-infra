@@ -27,7 +27,7 @@ NEW_MODEL_SED_ESCAPED="${NEW_MODEL_ORG}\/${NEW_MODEL_NAME}"
 patch() {
     # Transform ms-wide-ep/value{s.yaml to a scaled-down deployment
     # Need a small MoE model for this example: Qwen1.5-MoE-A2.7B-Chat.
-    # This example will be a 2 by 2 (1 replica, DP of 2 for decode, both using 2 GPUs)
+    # This example will be a 2D - 1P (DP of 2), 2 GPUs for prefill, and 1 GPU each for both Decodes
 
     yq e '.modelArtifacts.uri = "hf://'${NEW_MODEL}'"' -i ${FILE}
     yq e '.modelArtifacts.size = "30Gi"' -i ${FILE}
@@ -53,8 +53,8 @@ patch() {
     ### See above, example is a 2 by 2
     yq e '
     (.decode.containers[0].resources = {}) |
-    (.decode.containers[0].resources.limits = {"nvidia.com/gpu": 2}) |
-    (.decode.containers[0].resources.requests = {"nvidia.com/gpu": 2})
+    (.decode.containers[0].resources.limits = {"nvidia.com/gpu": 1}) |
+    (.decode.containers[0].resources.requests = {"nvidia.com/gpu": 1})
     ' -i ${FILE}
 
     ### Using model from HF rather than host storage, already discussed
