@@ -203,6 +203,9 @@ jobs:
             set -x
             cd llm-d-infra
 
+            echo "Disabling ingress to use istio DestinationRule..."
+            yq e '(.ingress.enabled)=false' -i ${{ env.WIDE_EP_PATH }}/infra-wide-ep/values.yaml
+
             echo "Applying wide-ep slim values transform..."
             .github/scripts/e2e/wide-ep-transform.sh ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
 

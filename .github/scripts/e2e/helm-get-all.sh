@@ -36,8 +36,13 @@ yq -r '.releases[] | [.namespace, .name] | @tsv' ${HELMFILE} \
     fi
   fi
 
-  echo "Logging $ns/$rel..."
+  echo "==============================================================" >> "${LOG_FILE}"
+  echo "             Logging $ns/$rel..." >> "${LOG_FILE}"
+  echo "==============================================================" >> "${LOG_FILE}"
   helm get all -n "$ns" "$rel" >> "${LOG_FILE}" || true
+  echo "==============================================================" >> "${LOG_FILE}"
+  echo "                                                              " >> "${LOG_FILE}"
+  echo "                                                              " >> "${LOG_FILE}"
 done
 
 echo "Wrote logs to ${LOG_FILE}"

@@ -27,3 +27,5 @@ gateway:
       tls:
         mode: SIMPLE
         insecureSkipVerify: true
+ingress:
+  enabled: false

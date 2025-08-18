@@ -334,7 +334,7 @@
                     "title": "clusterRouterBase"
                 },
                 "enabled": {
-                    "default": "true",
+                    "default": "false",
                     "description": "Deploy Ingress",
                     "required": [],
                     "title": "enabled"
