@@ -24,49 +24,15 @@ routing:
     create: true
 
   inferencePool:
-    create: true
+    create: false
     name: ms-wide-ep
 
   httpRoute:
     create: true
 
   epp:
-    create: true
-    image: ghcr.io/llm-d/llm-d-inference-scheduler:v0.2.1
-    debugLevel: 1
-    pluginsConfigFile: "pd-config.yaml"
-    pluginsCustomConfig:
-      pd-config.yaml: |
-        # ALWAYS DO PD IN THIS EXAMPLE (THRESHOLD 0)
-        apiVersion: inference.networking.x-k8s.io/v1alpha1
-        kind: EndpointPickerConfig
-        plugins:
-        - type: prefill-header-handler
-        - type: prefill-filter
-        - type: decode-filter
-        - type: max-score-picker
-        - type: queue-scorer
-          parameters:
-            hashBlockSize: 5
-            maxPrefixBlocksToMatch: 256
-            lruCapacityPerServer: 31250
-        - type: pd-profile-handler
-          parameters:
-            threshold: 0
-            hashBlockSize: 5
-        schedulingProfiles:
-        - name: prefill
-          plugins:
-          - pluginRef: prefill-filter
-          - pluginRef: queue-scorer
-            weight: 1.0
-          - pluginRef: max-score-picker
-        - name: decode
-          plugins:
-          - pluginRef: decode-filter
-          - pluginRef: queue-scorer
-            weight: 1.0
-          - pluginRef: max-score-picker
+    create: false
+
 decode:
   create: true
   replicas: 1
@@ -77,7 +43,7 @@ decode:
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # This must equal the number of nodes rather than the dp_size.
-    data: 2
+    data: 4
     tensor: 1 # these will be derived based performance testing
   monitoring:
     podmonitor:
@@ -204,7 +170,7 @@ decode:
 
 prefill:
   create: true
-  replicas: 1
+  replicas: 0
   acceleratorTypes:
     labelKey: gpu.nvidia.com/model
     labelValues:

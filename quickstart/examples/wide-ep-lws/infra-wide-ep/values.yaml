@@ -1,7 +1,7 @@
 gateway:
   gatewayClassName: istio
   gatewayParameters:
-    logLevel: error
+    logLevel: info
     resources:
       limits:
         cpu: "4"
@@ -11,7 +11,7 @@ gateway:
         memory: 1Gi
   destinationRule:
     enabled: true
-    host: ms-wide-ep-llm-d-modelservice-epp.llm-d-wide-ep.svc.cluster.local
+    host: gaie-wide-ep-epp.llm-d-wide-ep.svc.cluster.local
     trafficPolicy:
       connectionPool:
         http:
