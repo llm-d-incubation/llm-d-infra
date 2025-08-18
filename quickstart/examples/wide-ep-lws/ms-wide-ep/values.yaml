@@ -25,7 +25,7 @@ routing:
 
   inferencePool:
     create: false
-    name: ms-wide-ep
+    name: gaie-wide-ep
 
   httpRoute:
     create: true
