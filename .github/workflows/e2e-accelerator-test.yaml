@@ -172,7 +172,7 @@ jobs:
             set -x
 
             sudo apt-get update -y
-            sudo apt-get install -y git yq
+            sudo apt-get install -y git
 
             REPO_URL="https://github.com/llm-d-incubation/llm-d-infra.git"
             REPO_DIR=$(basename "$REPO_URL" .git)

@@ -170,7 +170,7 @@ jobs:
             set -x
 
             sudo apt-get update -y
-            sudo apt-get install -y git yq
+            sudo apt-get install -y git
 
             # Install yq for YAML processing
             echo "Installing yq..."
