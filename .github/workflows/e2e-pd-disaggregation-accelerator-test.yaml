@@ -431,7 +431,11 @@ jobs:
             cd llm-d-infra/quickstart/examples/pd-disaggregation
             echo "Deploying PD-Disaggregation example with slim configuration..."
             helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install | tee ~/pd-disaggregation-deployment.log
-            echo "\n\n---\n\n" >> ~/pd-disaggregation-deployment.log
+            echo "
+
+            ---
+
+            " >> ~/pd-disaggregation-deployment.log
           EOF
 
       - name: Upload helm get all

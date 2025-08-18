@@ -416,7 +416,11 @@ jobs:
             cd llm-d-infra/${{ env.WIDE_EP_PATH }}
             echo "Deploying Wide EP example with slim configuration..."
             helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install | tee ~/wide-ep-deployment.log
-            echo "\n\n---\n\n" >> ~/wide-ep-deployment.log
+            echo "
+
+            ---
+
+            " >> ~/wide-ep-deployment.log
           EOF
 
       - name: Upload helm get all
