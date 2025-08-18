@@ -1,5 +1,9 @@
 # Well-lit Path: Intelligent Inference Scheduling
 
+## requirements
+
+2 nvidia GPUs of any kind
+
 ## Overview
 
 This example deploys the recommended out of the box [scheduling configuration](https://github.com/llm-d/llm-d-inference-scheduler/blob/main/docs/architecture.md) for most vLLM deployments, reducing tail latency and increasing throughput through load-aware and prefix-cache aware balancing. This can be run on a single GPU that can load [Qwen/Qwen3-0.6B](https://huggingface.co/Qwen/Qwen3-0.6B).
@@ -18,7 +22,8 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
     # From the repo root
     cd quickstart
     export HF_TOKEN=${HFTOKEN}
-    ./llmd-infra-installer.sh --namespace llm-d-inference-scheduling -r infra-inference-scheduling --gateway kgateway --disable-metrics-collection
+    export NAMESPACE=${NAMESPACE:-llm-d-inference-scheduling}
+    ./llmd-infra-installer.sh --namespace ${NAMESPACE} -r infra-inference-scheduling --gateway kgateway --disable-metrics-collection
     ```
 
     **_NOTE:_** The release name `infra-inference-scheduling` is important here, because it matches up with pre-built values files used in this example.
@@ -37,7 +42,7 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 1. Firstly, you should be able to list all helm releases to view the 3 charts got installed into the `llm-d-inference-scheduling` namespace:
 
     ```bash
-    helm list -n llm-d-inference-scheduling
+    helm list -n ${NAMESPACE}
     NAME                          NAMESPACE                     REVISION    UPDATED                                 STATUS      CHART                        APP VERSION
     gaie-inference-scheduling     llm-d-inference-scheduling    1           2025-07-24 10:44:30.543527 -0700 PDT    deployed    inferencepool-v0.5.1         v0.5.1
     infra-inference-scheduling    llm-d-inference-scheduling    1           2025-07-24 10:41:49.452841 -0700 PDT    deployed    llm-d-infra-v1.1.1        v0.2.0
@@ -47,7 +52,7 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 1. Find the gateway service:
 
     ```bash
-    kubectl get services -n llm-d-inference-scheduling
+    kubectl get services -n ${NAMESPACE}
     NAME                                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)             AGE
     gaie-inference-scheduling-epp                  ClusterIP   10.16.0.249   <none>        9002/TCP,9090/TCP   96s
     infra-inference-scheduling-inference-gateway   NodePort    10.16.3.58    <none>        80:33377/TCP        4m19s
@@ -55,10 +60,10 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 
     In this case we have found that our gateway service is called `infra-inference-scheduling-inference-gateway`.
 
-1. `port-forward` the service so we can curl it:
+1. `port-forward` the service to we can curl it:
 
     ```bash
-    kubectl port-forward -n llm-d-inference-scheduling service/infra-inference-scheduling-inference-gateway 8000:80
+    kubectl port-forward -n ${NAMESPACE} service/infra-inference-scheduling-inference-gateway 8000:80
     ```
 
 1. Try curling the `/v1/models` endpoint:
@@ -143,7 +148,7 @@ To remove the deployment:
 helmfile --selector managedBy=helmfile destroy -f helmfile.yaml
 
 # Remove the infrastructure
-helm uninstall infra-inference-scheduling -n llm-d-inference-scheduling
+helm uninstall infra-inference-scheduling -n ${NAMESPACE}
 ```
 
 ## Customization

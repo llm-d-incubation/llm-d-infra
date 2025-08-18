@@ -11,7 +11,7 @@ gateway:
         memory: 1Gi
   destinationRule:
     enabled: true
-    host: gaie-pd-epp.llm-d-pd.svc.cluster.local
+    host: gaie-pd-epp.svc.cluster.local # THIS NEEDS TO BE ADDRESSED UPSTREAM GIE AND MIGRATED THERE
     trafficPolicy:
       connectionPool:
         http:
