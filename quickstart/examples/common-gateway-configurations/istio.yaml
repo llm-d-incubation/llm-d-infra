@@ -1,0 +1,18 @@
+gateway:
+  gatewayClassName: istio
+  destinationRule:
+    enabled: true
+    trafficPolicy:
+      connectionPool:
+        http:
+          http1MaxPendingRequests: 256000
+          maxRequestsPerConnection: 256000
+          http2MaxRequests: 256000
+          idleTimeout: "900s"
+        tcp:
+          maxConnections: 256000
+          maxConnectionDuration: "1800s"
+          connectTimeout: "900s"
+      tls:
+        mode: SIMPLE
+        insecureSkipVerify: true

@@ -1,0 +1,10 @@
+gateway:
+  gatewayParameters:
+    logLevel: error
+    resources:
+      limits:
+        cpu: "4"
+        memory: 4Gi
+      requests:
+        cpu: "1"
+        memory: 1Gi

@@ -1,0 +1,65 @@
+environments:
+  istio: &I
+    values:
+      - ../common-gateway-configurations/istio.yaml
+  kgateway: &KG
+    values:
+      - ../common-gateway-configurations/kgateway.yaml
+  gke: &GKE
+    values:
+      - ../common-gateway-configurations/gke.yaml
+  default:
+    <<: *I
+
+helmfiles:
+  - ../../gateway-control-plane-providers/helmfile.yaml.gotmpl
+
+---
+
+{{- $ns := (env "NAMESPACE") | default "llm-d-inference-scheduler" -}}
+
+# set $ns as namespace for all releases
+namespace: {{ $ns }}
+
+repositories:
+  - name: llm-d-modelservice
+    url: https://llm-d-incubation.github.io/llm-d-modelservice/
+  - name: llm-d-infra
+    url: https://llm-d-incubation.github.io/llm-d-infra/
+
+releases:
+  - name: infra-inference-scheduling
+    chart: llm-d-infra/llm-d-infra
+    version: v1.2.2
+    installed: true
+    labels:
+      type: infrastructure
+      kind: inference-stack
+    values:
+      - {{ .Environment.Values | toYaml | nindent 8  }}
+      - gateway:
+          destinationRule:
+            host: {{ printf "gaie-inference-scheduling-epp.%s.svc.cluster.local" $ns | quote }}
+
+  - name: gaie-inference-scheduling
+    chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
+    version: v0.5.1
+    installed: true
+    needs:
+      - infra-inference-scheduling
+    values:
+      - gaie-inference-scheduling/values.yaml
+    labels:
+      kind: inference-stack
+
+  - name: ms-inference-scheduling
+    chart: llm-d-modelservice/llm-d-modelservice
+    version: v0.2.6
+    installed: true
+    needs:
+      - infra-inference-scheduling
+      - gaie-inference-scheduling
+    values:
+      - ms-inference-scheduling/values.yaml
+    labels:
+      kind: inference-stack
