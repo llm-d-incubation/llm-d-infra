@@ -55,7 +55,7 @@ jobs:
       # g6.12xlarge-4xL4-24GB-GPU
       INSTANCE_TYPE: g6.12xlarge
       AMI_ID: ami-020cba7c55df1f615
-      KEY_NAME: ${{ secrets.SSH_KEY_NAME }}
+      KEY_NAME: ${{ secrets.SSH_KEY_NAME_BOTH }}
       REGION: ${{ secrets.AWS_REGION }}
       HF_TOKEN: ${{secrets.HF_TOKEN}}
       TERMINATION_TIMEOUT: ${{ github.event.inputs.wait_for_termination }}
@@ -99,8 +99,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_ET }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ET }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Launch EC2 instance
@@ -150,7 +150,7 @@ jobs:
 
       - name: Wait for SSH to be ready
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          echo "${{ secrets.SSH_PRIVATE_KEY_BOTH }}" > key.pem
           chmod 600 key.pem
 
           echo "Waiting for SSH on $INSTANCE_IP..."
@@ -311,7 +311,7 @@ jobs:
 
       - name: Wait for SSH to be ready after reboot
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          echo "${{ secrets.SSH_PRIVATE_KEY_BOTH }}" > key.pem
           chmod 600 key.pem
 
           echo "Waiting for SSH on $INSTANCE_IP..."
@@ -376,7 +376,7 @@ jobs:
 
       - name: Setup SSH Key
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          echo "${{ secrets.SSH_PRIVATE_KEY_BOTH }}" > key.pem
           chmod 600 key.pem
 
       - name: Run installer to deploy llm-d infrastructure
@@ -560,8 +560,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_ET }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ET }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Pause before termination (debug window)
