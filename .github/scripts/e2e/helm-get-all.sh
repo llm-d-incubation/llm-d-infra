@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-if [[ $# -ne 2 ]]; then
+if [ $# -ne 2 ]; then
   echo "Usage: $0 path/to/logfile path/to/helmfile.yaml" >&2
   echo "Optional: \`\${BACKUP_NAMESPACE}\` - If namespace not set in the helmfile, this will be selected as the namespace."
   exit 1
