@@ -1,9 +1,6 @@
 name: E2E Accelerator EC2 Test
 
 on:
-  issue_comment:
-    # Runs with a PR comment /run-e2e-precise-and-scheduling or /run-e2e-precise-and-scheduling-istio
-    types: [created]
 #  schedule: # TODO: enable once validated functional
 #    - cron: '0 8 * * *'  # 4AM Eastern (08:00 UTC)
   workflow_dispatch:

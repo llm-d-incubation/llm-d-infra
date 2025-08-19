@@ -1,9 +1,6 @@
 name: E2E Wide EP Test
 
 on:
-  issue_comment:
-    # Runs with a PR comment /run-e2e-wide-ep
-    types: [created]
   workflow_dispatch:
     inputs:
       pr_or_branch:
