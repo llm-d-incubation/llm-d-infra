@@ -2,40 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "properties": {
-    "auth": {
-      "additionalProperties": false,
-      "properties": {
-        "hf_token": {
-          "additionalProperties": false,
-          "properties": {
-            "enabled": {
-              "default": true,
-              "required": [],
-              "title": "enabled",
-              "type": "boolean"
-            },
-            "secretKey": {
-              "default": "HF_TOKEN",
-              "required": [],
-              "title": "secretKey",
-              "type": "string"
-            },
-            "secretName": {
-              "default": "llm-d-hf-token",
-              "required": [],
-              "title": "secretName",
-              "type": "string"
-            }
-          },
-          "required": [],
-          "title": "hf_token",
-          "type": "object"
-        }
-      },
-      "required": [],
-      "title": "auth",
-      "type": "object"
-    },
     "clusterDomain": {
       "default": "cluster.local",
       "description": "Default Kubernetes cluster domain",

@@ -1,7 +1,7 @@
 
 # llm-d-infra Helm Chart
 
-![Version: v1.2.5](https://img.shields.io/badge/Version-v1.2.5-informational?style=flat-square)
+![Version: v1.3.0](https://img.shields.io/badge/Version-v1.3.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
@@ -99,9 +99,6 @@ Kubernetes: `>= 1.28.0-0`
 
 | Key | Description | Type | Default |
 |-----|-------------|------|---------|
-| auth.hf_token.enabled |  | bool | `true` |
-| auth.hf_token.secretKey |  | string | `"HF_TOKEN"` |
-| auth.hf_token.secretName |  | string | `"llm-d-hf-token"` |
 | clusterDomain | Default Kubernetes cluster domain | string | `"cluster.local"` |
 | common | Parameters for bitnami.common dependency | object | `{}` |
 | commonAnnotations | Annotations to add to all deployed objects | object | `{}` |
