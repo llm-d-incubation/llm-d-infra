@@ -405,7 +405,7 @@ jobs:
               --namespace "llm-d-pd" \
               -r infra-pd \
               -f examples/pd-disaggregation/infra-pd/values.yaml \
-              --disable-metrics-collection | tee ~/llmd-pd-installer.log
+              | tee ~/llmd-pd-installer.log
           EOF
 
       - name: Deploy PD-Disaggregation example

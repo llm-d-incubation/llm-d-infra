@@ -350,7 +350,7 @@ jobs:
               --namespace "${{ matrix.deployment.namespace }}" \
               ${{ matrix.deployment.installer_args }} \
               --gateway "$GATEWAY_TYPE" \
-              --disable-metrics-collection | tee ~/${{ matrix.deployment.log_file }}
+              | tee ~/${{ matrix.deployment.log_file }}
           EOF
 
       - name: Deploy example deployment

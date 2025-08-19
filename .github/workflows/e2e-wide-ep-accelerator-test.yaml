@@ -378,7 +378,7 @@ jobs:
                 --namespace "llm-d-wide-ep" \
                 -r infra-wide-ep \
                 -f examples/wide-ep-lws/infra-wide-ep/values.yaml \
-                --disable-metrics-collection | tee ~/llmd-wide-ep-installer.log
+                | tee ~/llmd-wide-ep-installer.log
           EOF
 
       - name: Install LeaderWorkerSet helm chart and wait for controller
