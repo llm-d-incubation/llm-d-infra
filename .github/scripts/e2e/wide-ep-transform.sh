@@ -13,10 +13,10 @@ if [[ $# -ne 1 ]]; then
 fi
 FILE="$1"
 
-: "${OLD_MODEL_ORG:=deepseek-ai}"
-: "${OLD_MODEL_NAME:=DeepSeek-R1-0528}"
-: "${NEW_MODEL_ORG:=Qwen}"
-: "${NEW_MODEL_NAME:=Qwen1.5-MoE-A2.7B-Chat}"
+OLD_MODEL_ORG="deepseek-ai"
+OLD_MODEL_NAME="DeepSeek-R1-0528"
+NEW_MODEL_ORG="Qwen"
+NEW_MODEL_NAME="Qwen1.5-MoE-A2.7B-Chat"
 
 OLD_MODEL="${OLD_MODEL_ORG}/${OLD_MODEL_NAME}"
 OLD_MODEL_SED_ESCAPED="${OLD_MODEL_ORG}\/${OLD_MODEL_NAME}"
@@ -44,7 +44,7 @@ patch() {
     yq e '.decode.containers[0].args[0] = strenv(decode_args_updated)' -i ${FILE}
 
     ### See above, example is a 2 by 2
-    yq e '(.decode.containers[0].env[] | select(.name == "DP_SIZE_LOCAL")).value = "2"' -i ${FILE}
+    yq e '(.decode.containers[0].env[] | select(.name == "DP_SIZE_LOCAL")).value = "1"' -i ${FILE}
 
     ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead
     yq 'del(.decode.containers[0].env[] | select(.name == "HF_HUB_CACHE"))' -i ${FILE}
@@ -80,7 +80,7 @@ patch() {
 
     yq e '.prefill.containers[0].args[0] = strenv(prefill_args_updated)' -i ${FILE}
 
-    ### See above, example is a 2 by 2
+    ### Size 1, DP data local size 2
     yq e '(.prefill.containers[0].env[] | select(.name == "DP_SIZE_LOCAL")).value = "2"' -i ${FILE}
 
     ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead
