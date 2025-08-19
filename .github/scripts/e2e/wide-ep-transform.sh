@@ -27,7 +27,7 @@ NEW_MODEL_SED_ESCAPED="${NEW_MODEL_ORG}\/${NEW_MODEL_NAME}"
 patch() {
     # Transform ms-wide-ep/value{s.yaml to a scaled-down deployment
     # Need a small MoE model for this example: Qwen1.5-MoE-A2.7B-Chat.
-    # This example will be a 2D - 1P (DP of 2), 2 GPUs for prefill, and 1 GPU each for both Decodes
+    # This example will be a 2D - 1P (DP of 2), 1 GPU for prefill (because g6 series doesnt support nvlink or PCIe for p2p), and 1 GPU each for both Decodes
 
     yq e '.modelArtifacts.uri = "hf://'${NEW_MODEL}'"' -i ${FILE}
     yq e '.modelArtifacts.size = "30Gi"' -i ${FILE}
@@ -84,8 +84,8 @@ patch() {
 
     yq e '.prefill.containers[0].args[0] = strenv(prefill_args_updated)' -i ${FILE}
 
-    ### Size 1, DP data local size 2
-    yq e '(.prefill.containers[0].env[] | select(.name == "DP_SIZE_LOCAL")).value = "2"' -i ${FILE}
+    ### Size 1, DP 1
+    yq e '(.prefill.containers[0].env[] | select(.name == "DP_SIZE_LOCAL")).value = "1"' -i ${FILE}
 
     ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead
     yq 'del(.prefill.containers[0].env[] | select(.name == "HF_HUB_CACHE"))' -i ${FILE}
@@ -97,8 +97,8 @@ patch() {
     ### See above, example is a 2 by 2
     yq e '
     (.prefill.containers[0].resources = {}) |
-    (.prefill.containers[0].resources.limits = {"nvidia.com/gpu": 2}) |
-    (.prefill.containers[0].resources.requests = {"nvidia.com/gpu": 2})
+    (.prefill.containers[0].resources.limits = {"nvidia.com/gpu": 1}) |
+    (.prefill.containers[0].resources.requests = {"nvidia.com/gpu": 1})
     ' -i ${FILE}
 
     ### Using model from HF rather than host storage, already discussed
