@@ -93,9 +93,11 @@ The installer needs to be run from the `llm-d-infra/quickstart` directory as a c
 | `-f`, `--values-file PATH`           | Path to Helm values.yaml file (default: values.yaml)          | `./llmd-infra-installer.sh --values-file /path/to/values.yaml`         |
 | `-u`, `--uninstall`                  | Uninstall the llm-d components from the current cluster       | `./llmd-infra-installer.sh --uninstall`                                |
 | `-d`, `--debug`                      | Add debug mode to the helm install                            | `./llmd-infra-installer.sh --debug`                                    |
+| `-i`, `--skip-gateway-provider`      | Skip installing CRDs and the chose gateway control plane, only gateway instance and config | `./llmd-infra-installer.sh --skip-gateway-provider`                    |
+| `-e`, `--only-gateway-provider`      | Only install CRDs and gateway control plane, skip gateway instance and config | `./llmd-infra-installer.sh --only-gateway-provider`                    |
 | `-k`, `--minikube`                   | Deploy on an existing minikube instance with hostPath storage | `./llmd-infra-installer.sh --minikube`                                 |
 | `-g`, `--context`                    | Supply a specific Kubernetes context                          | `./llmd-infra-installer.sh --context`                                  |
-| `-j`, `--gateway`                    | Select gateway type (istio, kgateway) (default: istio)        | `./llm-installer.sh --gateway kgateway`                          |
+| `-j`, `--gateway`                    | Select gateway type (istio, kgateway) (default: istio)        | `./llmd-infra-installer.sh --gateway kgateway`                         |
 | `-r`, `--release`                    | (Helm) Chart release name                                     | `./llmd-infra-installer.sh --release llm-d-infra`                      |
 | `-h`, `--help`                       | Show this help and exit                                       | `./llmd-infra-installer.sh --help`                                     |
 
