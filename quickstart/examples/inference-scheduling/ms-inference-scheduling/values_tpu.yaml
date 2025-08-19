@@ -37,9 +37,10 @@ routing:
 decode:
   create: true
   replicas: 2
-  nodeSelector:
-    cloud.google.com/gke-tpu-topology: "2x4"
-    cloud.google.com/gke-tpu-accelerator: "tpu-v6e-slice"
+  extraConfig:
+    nodeSelector:
+      cloud.google.com/gke-tpu-topology: "2x4"
+      cloud.google.com/gke-tpu-accelerator: "tpu-v6e-slice"
   monitoring:
     podmonitor:
       enabled: false
