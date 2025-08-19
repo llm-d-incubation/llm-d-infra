@@ -13,7 +13,8 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 - It is also assumed you have the Gateway API installed in your cluster, for more information see their [project docs](https://gateway-api.sigs.k8s.io/) or their [github repo](https://github.com/kubernetes-sigs/gateway-api). For your convenience we have provided a 1 liner:
 
 ```bash
-kubectl apply -k https://github.com/llm-d/llm-d-inference-scheduler/deploy/components/crds-gateway-api
+export GATEWAY_API_VERSION="v1.3.0"
+kubectl apply -k https://github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.3.0
 ```
 
 - You also need to install the Gateway-API-Inference-Extension CRDs. To do so you can use:

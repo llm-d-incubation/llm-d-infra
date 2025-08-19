@@ -364,6 +364,18 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY_BOTH }}" > key.pem
           chmod 600 key.pem
 
+      - name: Install chart dependencies (CRDs and Gateway provider)
+        env:
+          GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
+            set -euo pipefail
+            set -x
+            cd llm-d-infra/quickstart/gateway-control-plane-providers
+            ./install-gateway-provider-dependencies.sh
+            helmfile apply -e ${GATEWAY_TYPE}
+          EOF
+
       - name: Run installer to deploy llm-d infrastructure
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "HF_TOKEN=$HF_TOKEN GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'

@@ -111,7 +111,10 @@ jobs:
       - name: Install prerequisites
         if: steps.list-changed.outputs.changed == 'true'
         shell: bash
-        run: ./chart-dependencies/ci-deps.sh
+        run: |
+          cd quickstart/gateway-control-plane-providers
+          ./install-gateway-provider-dependencies.sh
+          helmfile apply
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'

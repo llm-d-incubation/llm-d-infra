@@ -107,8 +107,9 @@ jobs:
         env:
           GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
-          chmod +x chart-dependencies/ci-deps.sh
-          ./chart-dependencies/ci-deps.sh apply "${GATEWAY_TYPE}"
+          cd quickstart/gateway-control-plane-providers
+          ./install-gateway-provider-dependencies.sh
+          helmfile apply -e ${GATEWAY_TYPE}
 
       - name: Create namespace
         run: |

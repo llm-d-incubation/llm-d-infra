@@ -11,9 +11,6 @@ environments:
   default:
     <<: *I
 
-helmfiles:
-  - ../../gateway-control-plane-providers/helmfile.yaml.gotmpl
-
 ---
 
 {{- $ns := (env "NAMESPACE") | default "llm-d-inference-scheduler" -}}
