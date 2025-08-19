@@ -50,6 +50,10 @@ patch() {
     yq 'del(.decode.containers[0].env[] | select(.name == "HF_HUB_CACHE"))' -i ${FILE}
     yq 'del(.decode.containers[0].env[] | select(.name == "HF_HUB_DISABLE_XET"))' -i ${FILE}
 
+
+    ### L40s Dont support DeepEP kernles, use naive PPLX
+    yq e '(.decode.containers[0].env[] | select(.name == "VLLM_ALL2ALL_BACKEND")).value = "pplx"' -i ${FILE}
+
     ### See above, example is a 2 by 2
     yq e '
     (.decode.containers[0].resources = {}) |
@@ -86,6 +90,9 @@ patch() {
     ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead
     yq 'del(.prefill.containers[0].env[] | select(.name == "HF_HUB_CACHE"))' -i ${FILE}
     yq 'del(.prefill.containers[0].env[] | select(.name == "HF_HUB_DISABLE_XET"))' -i ${FILE}
+
+    ### L40s Dont support DeepEP kernles, use naive PPLX
+    yq e '(.prefill.containers[0].env[] | select(.name == "VLLM_ALL2ALL_BACKEND")).value = "pplx"' -i ${FILE}
 
     ### See above, example is a 2 by 2
     yq e '
