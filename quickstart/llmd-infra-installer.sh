@@ -99,8 +99,6 @@ check_cluster_reachability() {
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      -z|--storage-size)               STORAGE_SIZE="$2"; shift 2 ;;
-      -c|--storage-class)              STORAGE_CLASS="$2"; shift 2 ;;
       -n|--namespace)                  NAMESPACE="$2"; shift 2 ;;
       -f|--values-file)                VALUES_FILE="$2"; shift 2 ;;
       -u|--uninstall)                  ACTION="uninstall"; shift ;;
