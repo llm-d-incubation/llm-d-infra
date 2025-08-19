@@ -16,3 +16,25 @@ spec:
         limits:
           cpu: "8"
           memory: "4Gi"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: guidellm
+spec:
+  containers:
+    - name: guidellm
+      image: "ghcr.io/vllm-project/guidellm:pr-233"
+      command: ["/bin/sh", "-c", "sleep infinity"]
+      imagePullPolicy: Always
+      stdin: true
+      tty: true
+      resources:
+        requests:
+          cpu: "32"
+          memory: "128Gi"
+        limits:
+          cpu: "32"
+          memory: "128Gi"
+
+# guidellm benchmark --target=$URL --model=$MODEL --rate-type=concurrent --rate=5000 --max-requests=5000 --processor=$PROCESSOR --data='{"prompt_tokens":5, "output_tokens":500}'
