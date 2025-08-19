@@ -5,6 +5,6 @@ Your release is named `{{ .Release.Name }}`.
 To learn more about the release, try:
 
 ```bash
-$ helm status {{ .Release.Name }}
-$ helm get all {{ .Release.Name }}
+$ helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
+$ helm get all {{ .Release.Name }} -n {{ .Release.Namespace }}
 ```
