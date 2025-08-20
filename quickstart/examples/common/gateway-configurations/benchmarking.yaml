@@ -1,7 +1,14 @@
 gateway:
-  gatewayClassName: istio
+  gatewayParameters:
+    logLevel: error
+    resources:
+      limits:
+        cpu: "4"
+        memory: 4Gi
+      requests:
+        cpu: "1"
+        memory: 1Gi
   destinationRule:
-    enabled: true
     trafficPolicy:
       connectionPool:
         http:
@@ -13,6 +20,3 @@ gateway:
           maxConnections: 256000
           maxConnectionDuration: "1800s"
           connectTimeout: "900s"
-      tls:
-        mode: SIMPLE
-        insecureSkipVerify: true

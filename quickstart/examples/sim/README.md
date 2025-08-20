@@ -4,124 +4,139 @@
 
 This is a simulation example that demonstrates how to deploy using the llm-d-infra system with the `ghcr.io/llm-d/llm-d-inference-sim` image. This example simulates inference responses and can run on minimal resources without requiring actual GPU hardware.
 
-### EPP Image Compatibility
+### Pre-requisites
 
-As documented in the [GIE values file](./gaie-sim/values.yaml#L4-L13), either the upstream EPP GIE image or the midstream `llm-d-inference-scheduler` image will work for EPP.
+- It is assumed that you have the proper tools installed on your local system to use these quickstart. If you do not have these, see [install-deps.sh](../../install-deps.sh).
+
+- Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
+
+**_NOTE:_** Unlike other examples which require models, the simulator stubs the vLLM server and so no `llm-d-hf-token` is needed.
 
 ## Installation
 
-> To adjust the simulation settings or any other modelservice values, simply change the values.yaml file in [ms-llm-d-sim/values.yaml](ms-llm-d-sim/values.yaml)
-
-1. Install the dependencies; see [install-deps.sh](../../install-deps.sh)
-2. Use the quickstart to deploy Gateway CRDs + Gateway provider + Infra chart:
+Use the helmfile to compose and install the stack. The Namespace in which the stack will be deployed will be derived from the `${NAMESPACE}` environment variable. If you have not set this, it will default to `llm-d-sim` in this example.
 
 ```bash
-# From the repo root
-cd quickstart
-export HF_TOKEN=${HFTOKEN}
-./llmd-infra-installer.sh --namespace llm-d-sim -r infra-sim --gateway kgateway
+export NAMESPACE=llm-d-sim # Or any namespace your heart desires
+cd quickstart/examples/sim
+helmfile apply
 ```
 
-**_NOTE:_** The release name `infra-sim` is important here, because it matches up with pre-built values files used in this example.
-3. Use the helmfile to apply the modelservice and GIE charts on top of it.
+**_NOTE:_** This uses Istio as the default provider, see [Gateway Options](./README.md#gateway-options) for installing with a specific provider.
+
+### Gateway options
+
+Currently we support 3 gateway providers as `environments` in helmfile, those are `istio`, `kgateway` and `gke`. To install for that provider, simply pass the `-e <environment_name>` flag to your install as so:
 
 ```bash
-cd examples/sim
-helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
+# for kgateway:
+helmfile apply -e kgateway
+# for GKE:
+helmfile apply -e gke
 ```
-
-**_NOTE:_** This example was built with `kgateway` in mind. If you are deploying Istio as the gateway, e.g. `--gateway istio`, then you will need to apply a `DestinationRule` described in [Temporary Istio Workaround](../../istio-workaround.md).
 
 ## Verify the Installation
 
-1. Firstly, you should be able to list all helm releases to view all charts that should be installed:
+- Firstly, you should be able to list all helm releases to view the 3 charts got installed into your chosen namespace:
 
-   ```console
-   $ helm list -n llm-d-sim --all --debug
-   NAME         NAMESPACE    REVISION     UPDATED                                 STATUS      CHART                       APP VERSION
-   gaie-sim     llm-d-sim    1           2025-07-25 10:39:08.317195 -0700 PDT    deployed    inferencepool-v0.5.1        v0.5.1
-   infra-sim    llm-d-sim    1           2025-07-25 10:38:48.360829 -0700 PDT    deployed    llm-d-infra-v1.1.1          v0.2.0
-   ms-sim       llm-d-sim    1           2025-07-25 10:39:15.127738  -0700 PDT    deployed    llm-d-modelservice-0.2.0    v0.2.0
-   ```
+```bash
+helm list -n ${NAMESPACE}
+NAME      NAMESPACE REVISION  UPDATED                               STATUS    CHART                     APP VERSION
+gaie-sim  llm-d-sim 1         2025-08-20 07:45:52.387286 -0700 PDT  deployed  inferencepool-v0.5.1      v0.5.1
+infra-sim llm-d-sim 1         2025-08-20 07:45:49.269596 -0700 PDT  deployed  llm-d-infra-v1.2.4        v0.2.0
+ms-sim    llm-d-sim 1         2025-08-20 07:45:56.698955 -0700 PDT  deployed  llm-d-modelservice-v0.2.7 v0.2.0
+```
 
-   Note: if you chose to use `istio` as your Gateway provider you would  see those (`istiod` and `istio-base` in the `istio-system` namespace)  instead of the kgateway based ones.
+### Finding your Endpoint
 
-1. Find the gateway service:
+- Find the gateway service:
 
-   ```console
-   $ kubectl get services -n llm-d-sim
-   NAME                          TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)             AGE
-   gaie-sim-epp                  ClusterIP   10.16.2.6     <none>        9002/TCP,9090/TCP   42s
-   infra-sim-inference-gateway   NodePort    10.16.2.157   <none>        80:37479/TCP        64s
-   ```
+```bash
+kubectl get services -n ${NAMESPACE}
+NAME                                TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)                        AGE
+gaie-sim-epp                        ClusterIP      172.30.135.207   <none>                                                                   9002/TCP,9090/TCP              10m
+gaie-sim-ip-207d1d4c                ClusterIP      None             <none>                                                                   54321/TCP                      10m
+infra-sim-inference-gateway-istio   LoadBalancer   172.30.182.184   a14d7f1f16a55447e8aae9e7ab268958-112801509.us-east-1.elb.amazonaws.com   15021:30887/TCP,80:31002/TCP   10m
+```
 
-   In this case we have found that our gateway service is called `infra-sim-inference-gateway`.
+**_NOTE:_** As mentioned above, this example uses Istio, your services will be named differently if you are using another provider.
 
-1. `port-forward` the service so we can curl it:
+If you are using the GKE gateway or have are using the default service type of `LoadBalancer` for you gateway and you are on a cloud platform with loadbalancing, you can use the `External IP` of your gateway service (you should see the same thing under your gateway with `kubectl get gateway`.)
 
-   ```bash
-   kubectl port-forward -n llm-d-sim service/infra-sim-inference-gateway 8000:80
-   ```
+```bash
+export ENDPOINT=$(kubectl get gateway -n ${NAMESPACE} | \
+  grep "infra-sim" | \
+  awk '{print $3}')
+```
+
+**_NOTE:_** Here we are `grep`ing by the name `infra-sim` because that is the release name specified in the [helmfile](./helmfile.yaml.gotmpl#L28), if you change the release name, you will need to insure you have grabbed the `ENDPOINT` for your correct gateway.
+
+If you are not on GKE and or selected the gateway service type of `NodePort`, you will have to port-forward the service and curl `localhost`
+
+```bash
+SERVICE_NAME=$(kubectl get services -n ${NAMESPACE} | grep "infra-sim" | awk '{print $1}' )
+kubectl port-forward -n ${NAMESPACE} service/${SERVICE_NAME} 8000:80
+```
+
+In this example since we are port-forwarding, we know that our endpoint will be localhost:
+
+```bash
+export ENDPOINT="http://localhost:8000"
+```
 
 1. Try curling the `/v1/models` endpoint:
 
-   ```bash
-   curl -s <http://localhost:8000/v1/models> \
-     -H "Content-Type: application/json" | jq
-   ```
-
-   ```json
-   {
-     "data": [
-       {
-         "created": 1752727169,
-         "id": "random",
-         "object": "model",
-         "owned_by": "vllm",
-         "parent": null,
-         "root": "random"
-       },
-       {
-         "created": 1752727169,
-         "id": "",
-         "object": "model",
-         "owned_by": "vllm",
-         "parent": "random",
-         "root": ""
-       }
-     ],
-     "object": "list"
-   }
-   ```
+```bash
+curl -s ${ENDPOINT}/v1/models \
+  -H "Content-Type: application/json" | jq
+{
+  "data": [
+    {
+      "created": 1752727169,
+      "id": "random",
+      "object": "model",
+      "owned_by": "vllm",
+      "parent": null,
+      "root": "random"
+    },
+    {
+      "created": 1752727169,
+      "id": "",
+      "object": "model",
+      "owned_by": "vllm",
+      "parent": "random",
+      "root": ""
+    }
+  ],
+  "object": "list"
+}
+```
 
 1. Try curling the `v1/completions` endpoint:
 
-   ```bash
-   curl -X POST <http://localhost:8000/v1/completions> \
-   -H 'Content-Type: application/json' \
-   -d '{
-         "model": "random",
-         "prompt": "How are you today?"
-         }' | jq
-   ```
-
-   ```json
-   {
-     "choices": [
-       {
-         "finish_reason": "stop",
-         "index": 0,
-         "message": {
-           "content": "Today is a nice sunny day.",
-           "role": "assistant"
-         }
-       }
-     ],
-     "created": 1752727735,
-     "id": "chatcmpl-af42e9e3-dab0-420f-872b-d23353d982da",
-     "model": "random"
-   }
-   ```
+```bash
+curl -X POST ${ENDPOINT}/v1/completions \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "model": "random",
+        "prompt": "How are you today?"
+      }' | jq
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Today is a nice sunny day.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1752727735,
+  "id": "chatcmpl-af42e9e3-dab0-420f-872b-d23353d982da",
+  "model": "random"
+}
+```
 
 ## Cleanup
 

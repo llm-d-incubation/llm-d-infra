@@ -17,7 +17,7 @@ environments:
 
 ---
 
-{{- $ns := (env "NAMESPACE") | default "llm-d-inference-scheduler" -}}
+{{- $ns := (env "NAMESPACE") | default "llm-d-sim" -}}
 
 # set $ns as namespace for all releases
 namespace: {{ $ns }}
@@ -29,7 +29,7 @@ repositories:
     url: https://llm-d-incubation.github.io/llm-d-infra/
 
 releases:
-  - name: infra-inference-scheduling
+  - name: infra-sim
     chart: llm-d-infra/llm-d-infra
     version: v1.2.4
     installed: true
@@ -40,27 +40,29 @@ releases:
       - {{ .Environment.Values | toYaml | nindent 8  }}
       - gateway:
           destinationRule:
-            host: {{ printf "gaie-inference-scheduling-epp.%s.svc.cluster.local" $ns | quote }}
+            host: {{ printf "gaie-sim-epp.%s.svc.cluster.local" $ns | quote }}
 
-  - name: gaie-inference-scheduling
+  - name: gaie-sim
+    namespace: llm-d-sim
     chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
     version: v0.5.1
     installed: true
     needs:
-      - infra-inference-scheduling
+      - infra-sim
     values:
-      - gaie-inference-scheduling/values.yaml
+      - gaie-sim/values.yaml
     labels:
       kind: inference-stack
 
-  - name: ms-inference-scheduling
+  - name: ms-sim
+    namespace: llm-d-sim
     chart: llm-d-modelservice/llm-d-modelservice
     version: v0.2.7
     installed: true
     needs:
-      - infra-inference-scheduling
-      - gaie-inference-scheduling
+      - infra-sim
+      - gaie-sim
     values:
-      - ms-inference-scheduling/values.yaml
+      - ms-sim/values.yaml
     labels:
       kind: inference-stack

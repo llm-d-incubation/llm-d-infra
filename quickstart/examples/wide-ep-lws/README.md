@@ -33,7 +33,7 @@ In this example, we will demonstrate a deployment of `DeepSeek-R1-0528` with:
 
    ```bash
    cd examples/wide-ep-lws
-   helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
+   helmfile --selector managedBy=helmfile apply -f helmfile.yaml
    ```
 
 ## Verifying the installation

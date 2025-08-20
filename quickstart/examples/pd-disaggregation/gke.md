@@ -36,7 +36,7 @@
     --set 'decode.containers[0].resources.requests.rdma/ib=null' \
     --set 'prefill.containers[0].resources.limits.rdma/ib=null' \
     --set 'prefill.containers[0].resources.requests.rdma/ib=null' \
-    apply -f gke.helmfile.yaml --skip-diff-on-install
+    apply -f gke.helmfile.yaml
     ```
 
 ## Verifying the installation

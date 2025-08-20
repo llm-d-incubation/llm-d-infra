@@ -53,7 +53,7 @@ As a result, as you tune your P/D deployments, we suggest focusing on the follow
 
    ```bash
    cd examples/pd-disaggregation
-   helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
+   helmfile --selector managedBy=helmfile apply -f helmfile.yaml
    ```
 
 ## Verifying the installation

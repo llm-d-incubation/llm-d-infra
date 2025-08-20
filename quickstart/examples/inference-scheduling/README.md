@@ -10,26 +10,16 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 
 - It is assumed that you have the proper tools installed on your local system to use these quickstart. If you do not have these, see [install-deps.sh](../../install-deps.sh).
 
-- It is also assumed you have the Gateway API installed in your cluster, for more information see their [project docs](https://gateway-api.sigs.k8s.io/) or their [github repo](https://github.com/kubernetes-sigs/gateway-api). For your convenience we have provided a 1 liner:
+- Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
 
-```bash
-export GATEWAY_API_VERSION="v1.3.0"
-kubectl apply -k https://github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.3.0
-```
-
-- You also need to install the Gateway-API-Inference-Extension CRDs. To do so you can use:
-
-```bash
-kubectl apply -k https://github.com/llm-d/llm-d-inference-scheduler/deploy/components/crds-gie
-```
-
-- You must have the `llm-d-hf-token` secret in the namespace you want to deploy to with key `HF_TOKEN`. This should come as no supprise to our users, however since we have deprecated the `llmd-infra-installer.sh` you will now have to create this manually.
+- You must have the `llm-d-hf-token` secret in the namespace you want to deploy to with key `HF_TOKEN`. You can create one like so:
 
 ```bash
 export NAMESPACE=llm-d-inference-scheduling # Or any namespace your heart desires
 export HF_TOKEN=$(HFTOKEN)
 kubectl create secret generic llm-d-hf-token \
     --from-literal="HF_TOKEN=${HF_TOKEN}" \
+    --namespace "${NAMESPACE}" \
     --dry-run=client -o yaml | kubectl apply -f -
 ```
 
@@ -40,39 +30,25 @@ Use the helmfile to compose and install the stack. The Namespace in which the st
 ```bash
 export NAMESPACE=llm-d-inference-scheduling # Or any namespace your heart desires
 cd quickstart/examples/inference-scheduling
-helmfile apply --skip-diff-on-install
+helmfile apply
 ```
 
 **_NOTE:_** This uses Istio as the default provider, see [Gateway Options](./README.md#gateway-options) for installing with a specific provider.
 
-### Customizing your install
-
-Want to only deploy the inferencing stack (Modelservice + GAIE + Infra charts) and not touch your gateway control plane (Istio, Kgateway, GKE, etc.)? Leverage our selectors built in to the helmfile:
-
-```bash
-helmfile apply --selector kind=inference-stack
-```
-
-Conversely if you just wanted to apply your gateway infrastructure you could do it like so:
-
-```bash
-helmfile apply --selector type=gateway-provider
-```
-
-#### Gateway options
+### Gateway options
 
 Currently we support 3 gateway providers as `environments` in helmfile, those are `istio`, `kgateway` and `gke`. To install for that provider, simply pass the `-e <environment_name>` flag to your install as so:
 
 ```bash
 # for kgateway:
-helmfile apply -e kgateway --skip-diff-on-install
+helmfile apply -e kgateway
 # for GKE:
-helmfile apply -e gke --skip-diff-on-install
+helmfile apply -e gke
 ```
 
 ## Verify the Installation
 
-1. Firstly, you should be able to list all helm releases to view the 3 charts got installed into the `llm-d-inference-scheduling` namespace:
+- Firstly, you should be able to list all helm releases to view the 3 charts got installed into your chosen namespace:
 
 ```bash
 helm list -n ${NAMESPACE}
@@ -82,7 +58,9 @@ infra-inference-scheduling  llm-d-inference-scheduling  1         2025-08-17 17:
 ms-inference-scheduling     llm-d-inference-scheduling  1         2025-08-17 17:09:46.31162 -0700 PDT   deployed  llm-d-modelservice-v0.2.6 v0.2.0
 ```
 
-1. Find the gateway service:
+### Finding your Endpoint
+
+- Find the gateway service:
 
 ```bash
 kubectl get services -n ${NAMESPACE}
@@ -92,18 +70,35 @@ gaie-inference-scheduling-ip-18c12339                ClusterIP      None        
 infra-inference-scheduling-inference-gateway-istio   LoadBalancer   172.30.244.141   aa34f27b0d58840c3b1d9ad77ffbb64a-1258197296.us-east-1.elb.amazonaws.com   15021:30096/TCP,80:32223/TCP   26m
 ```
 
-In this case we have found that our gateway service is called `infra-inference-scheduling-inference-gateway`.
+**_NOTE:_** As mentioned above, this example uses Istio, your services will be named differently if you are using another provider.
 
-1. `port-forward` the service so we can curl it:
+If you are using the GKE gateway or have are using the default service type of `LoadBalancer` for you gateway and you are on a cloud platform with loadbalancing, you can use the `External IP` of your gateway service (you should see the same thing under your gateway with `kubectl get gateway`.)
 
 ```bash
-kubectl port-forward -n ${NAMESPACE} service/infra-inference-scheduling-inference-gateway-istio 8000:80
+export ENDPOINT=$(kubectl get gateway -n ${NAMESPACE} | \
+  grep "infra-inference-scheduling" | \
+  awk '{print $3}')
+```
+
+**_NOTE:_** Here we are `grep`ing by the name `infra-inference-scheduling` because that is the release name specified in the [helmfile](./helmfile.yaml.gotmpl#L28), if you change the release name, you will need to insure you have grabbed the `ENDPOINT` for your correct gateway.
+
+If you are not on GKE and or selected the gateway service type of `NodePort`, you will have to port-forward the service and curl `localhost`
+
+```bash
+SERVICE_NAME=$(kubectl get services -n ${NAMESPACE} | grep "infra-inference-scheduling" | awk '{print $1}' )
+kubectl port-forward -n ${NAMESPACE} service/${SERVICE_NAME} 8000:80
+```
+
+In this example since we are port-forwarding, we know that our endpoint will be localhost:
+
+```bash
+export ENDPOINT="http://localhost:8000"
 ```
 
 1. Try curling the `/v1/models` endpoint:
 
 ```bash
-curl -s http://localhost:8000/v1/models \
+curl -s ${ENDPOINT}/v1/models \
   -H "Content-Type: application/json" | jq
 {
   "data": [
@@ -140,7 +135,7 @@ curl -s http://localhost:8000/v1/models \
 1. Try curling the `v1/completions` endpoint:
 
 ```bash
-curl -s http://localhost:8000/v1/completions \
+curl -s ${ENDPOINT}/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "Qwen/Qwen3-0.6B",
@@ -189,9 +184,6 @@ helm uninstall infra-inference-scheduling -n ${NAMESPACE}
 helm uninstall gaie-inference-scheduling -n ${NAMESPACE}
 helm uninstall ms-inference-scheduling -n ${NAMESPACE}
 ```
-
-> [!IMPORTANT]
-> With the new `v0.3.0` install paradigmn, where we curry helmfiles together, if you do not use the `--selector kind=inference-stack` it will actually uninstall your gateway provider. THIS CAN BREAK OTHER INSTALLS IN YOUR CLUSTER! Be very mindufl of this when spinning down the stack.
 
 ## Customization
 

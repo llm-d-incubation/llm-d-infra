@@ -3,6 +3,7 @@ multinode: false
 
 modelArtifacts:
   uri: "hf://random"
+  name: random
   size: 5Mi
 
 routing:

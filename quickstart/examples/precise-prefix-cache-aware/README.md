@@ -26,7 +26,7 @@ export HF_TOKEN=${HFTOKEN}
 
 ```bash
 cd examples/precise-prefix-cache-aware
-helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
+helmfile --selector managedBy=helmfile apply -f helmfile.yaml
 ```
 
 ## Verify the Installation
