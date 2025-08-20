@@ -8,6 +8,17 @@ eval MODEL URL CONCURRENT LIMIT:
 sweep MODEL OUTFILE URL:
   OUTFILE={{OUTFILE}} MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep.sh
 
+bench_sharegpt MODEL URL:
+  python3 vllm/benchmarks/benchmark_serving.py \
+    --base-url {{URL}} \
+    --model {{MODEL}} \
+    --dataset-name sharegpt \
+    --dataset-path /app/vllm/benchmarks/ShareGPT_V3_unfiltered_cleaned_split.json \
+    --seed $(date +%s) \
+    --percentile-metrics ttft,tpot,itl,e2el \
+    --metric-percentiles 90,95,99 \
+    --ignore-eos
+
 curl MODEL URL:
   curl -X POST {{URL}}/v1/completions \
     -H "Content-Type: application/json" \
