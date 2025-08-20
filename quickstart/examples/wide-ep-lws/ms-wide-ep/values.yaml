@@ -1,12 +1,12 @@
 multinode: true
 
 modelArtifacts:
-  uri: "hf://deepseek-ai/DeepSeek-R1-0528"
+  uri: "hf://Qwen/Qwen3-235B-A22B-Thinking-2507-FP8"
   size: 100Gi
   authSecretName: "llm-d-hf-token"
 
 routing:
-  modelName: deepseek-ai/DeepSeek-R1-0528
+  modelName: Qwen/Qwen3-235B-A22B-Thinking-2507-FP8
   servicePort: 8000
   parentRefs:
     - group: gateway.networking.k8s.io
@@ -67,7 +67,7 @@ decode:
 
           source /opt/vllm/bin/activate
           exec vllm serve \
-            deepseek-ai/DeepSeek-R1-0528 \
+            Qwen/Qwen3-235B-A22B-Thinking-2507-FP8 \
             --port 8200 \
             --disable-log-requests \
             --disable-uvicorn-access-log \
@@ -106,7 +106,7 @@ decode:
         - name: VLLM_USE_DEEP_GEMM
           value: "1"
         - name: VLLM_ALL2ALL_BACKEND
-          value: "deepep_low_latency"
+          value: "pplx"
         - name: NVIDIA_GDRCOPY
           value: "enabled"
         - name: NVSHMEM_DEBUG
