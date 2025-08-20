@@ -37,9 +37,10 @@ Options:
   -i, --skip-gateway-provider       Skip installing CRDs and the chose gateway control plane, only gateway instance and config
   -e, --only-gateway-provider       Only install CRDs and gateway control plane, skip gateway instance and config
   -k, --minikube                    Deploy on an existing minikube instance with hostPath storage
-  -g, --context                     Supply a specific Kubernetes context
-  -j, --gateway                     Select gateway type (istio or kgateway)
-  -r, --release                     (Helm) Chart release name
+  -g, --context CONTEXT             Supply a specific Kubernetes context
+  -j, --gateway TYPE                Select gateway type (istio, kgateway, gke-l7-regional-external-managed)
+  -s, --service-type TYPE           Gateway's service type (LoadBalancer, NodePort)
+  -r, --release NAME                (Helm) Chart release name
   -h, --help                        Show this help and exit
 EOF
 }
@@ -180,6 +181,11 @@ setup_env() {
   fi
 }
 
+validate_flags() {
+  validate_hf_token
+  validate_gateway_flags
+}
+
 validate_hf_token() {
   HF_SECRET_ENABLED=$(yq -r .auth.hf_token.enabled "${VALUES_PATH}")
   if [[ "${HF_SECRET_ENABLED}" == "true" ]]; then
@@ -195,11 +201,46 @@ validate_hf_token() {
   fi
 }
 
-validate_gateway_type() {
-  if [[ "${GATEWAY_TYPE}" != "istio" && "${GATEWAY_TYPE}" != "kgateway" && "${GATEWAY_TYPE}" != "gke-l7-regional-external-managed" ]]; then
-    die "Invalid gateway type: ${GATEWAY_TYPE}. Supported types are: istio, kgateway, gke-l7-regional-external-managed."
+validate_gateway_flags() {
+  # Define supported gateway types
+  local supported_gateway_types=("istio" "kgateway" "gke-l7-regional-external-managed")
+
+  # Define supported service types
+  local supported_service_types=("LoadBalancer" "NodePort")
+
+  # Validate gateway type
+  local gateway_valid=false
+  for type in "${supported_gateway_types[@]}"; do
+    if [[ "${GATEWAY_TYPE}" == "${type}" ]]; then
+      gateway_valid=true
+      break
+    fi
+  done
+
+  if [[ "${gateway_valid}" == "false" ]]; then
+    local gateway_types_str=$(IFS=', '; echo "${supported_gateway_types[*]}")
+    die "Invalid gateway type: ${GATEWAY_TYPE}. Supported types are: ${gateway_types_str}."
   fi
-  log_success "Gateway type validated"
+  log_success "Gateway type validated: ${GATEWAY_TYPE}"
+
+  # Validate service type
+  if [[ -n "${SERVICE_TYPE:-}" ]]; then
+    local service_valid=false
+    for type in "${supported_service_types[@]}"; do
+      if [[ "${SERVICE_TYPE}" == "${type}" ]]; then
+        service_valid=true
+        break
+      fi
+    done
+
+    if [[ "${service_valid}" == "false" ]]; then
+      local service_types_str=$(IFS=', '; echo "${supported_service_types[*]}")
+      die "Invalid service type: ${SERVICE_TYPE}. Supported types are: ${service_types_str}."
+    fi
+    log_success "Gateway Service type validated: ${SERVICE_TYPE}"
+  else
+    log_info "Gateway Service type not specified, using default: NodePort"
+  fi
 }
 
 install() {
@@ -299,8 +340,7 @@ main() {
   check_cluster_reachability
   resolve_values
 
-  validate_hf_token
-  validate_gateway_type
+  validate_flags
 
   if [[ "$ACTION" == "install" ]]; then
     install
