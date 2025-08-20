@@ -26,13 +26,13 @@ releases:
 
   - name: ms-inference-scheduling
     chart: llm-d-modelservice/llm-d-modelservice
-    version: v0.2.0
+    version: v0.2.5
     installed: true
     needs:
       - infra-inference-scheduling
       - gaie-inference-scheduling
     values:
-      - ms-inference-scheduling/values.yaml
+      - ms-inference-scheduling/values_tpu.yaml
     labels:
       managedBy: helmfile
     # NOTE: This is a temporary workaround.
