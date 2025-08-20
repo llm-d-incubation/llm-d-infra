@@ -31,6 +31,8 @@ helmfile apply \
   apply -f gke.helmfile.yaml --skip-diff-on-install
 ```
 
+**_NOTE:_** You can use vLLM on TPU instead by changing ` ms-inference-scheduling/values.yaml` to ` ms-inference-scheduling/values_tpu.yaml`. The TPU example uses `meta-llama/Llama-3.1-70B`.
+
 ## Verify the Installation
 
 1. Firstly, you should be able to list all helm releases to view the 3 charts got installed into the `${NAMESPACE}` namespace:
