@@ -53,7 +53,7 @@ decode:
       interval: "30s"
   containers:
     - name: vllm-worker-decode
-      image: "rgshaw2/vllm-torch-28-0.1"
+      image: "rgshaw2/vllm-torch-28-0.2"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash", "-c"]
@@ -93,7 +93,6 @@ decode:
       env:
         - name: VLLM_MOE_DP_CHUNK_SIZE
           value: "512"
-
         - name: DP_SIZE_LOCAL
           value: "8"
         - name: TRITON_LIBCUDA_PATH
