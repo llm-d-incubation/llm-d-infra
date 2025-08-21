@@ -1,0 +1,63 @@
+environments:
+  istio: &I
+    values:
+      - ../common/gateway-configurations/istio.yaml
+  istioBench: &IB
+    values:
+      - ../common/gateway-configurations/istio.yaml
+      - ../common/gateway-configurations/benchmarking.yaml
+  kgateway: &KG
+    values:
+      - ../common/gateway-configurations/kgateway.yaml
+  gke: &GKE
+    values:
+      - ../common/gateway-configurations/gke.yaml
+  default:
+    <<: *I
+
+---
+
+{{- $ns := (env "NAMESPACE") | default "llm-d-precise" -}}
+
+repositories:
+  - name: llm-d-modelservice
+    url: https://llm-d-incubation.github.io/llm-d-modelservice/
+  - name: llm-d-infra
+    url: https://llm-d-incubation.github.io/llm-d-infra/
+
+releases:
+  - name: infra-kv-events
+    chart: llm-d-infra/llm-d-infra
+    version: v1.2.4
+    installed: true
+    labels:
+      type: infrastructure
+      kind: inference-stack
+    values:
+      - {{ .Environment.Values | toYaml | nindent 8  }}
+      - gateway:
+          destinationRule:
+            host: {{ printf "gaie-kv-events-epp.%s.svc.cluster.local" $ns | quote }}
+
+  - name: gaie-kv-events
+    chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
+    version: v0.5.1
+    installed: true
+    needs:
+      - infra-kv-events
+    values:
+      - gaie-kv-events/values.yaml
+    labels:
+      kind: inference-stack
+
+  - name: ms-kv-events
+    chart: llm-d-modelservice/llm-d-modelservice
+    version: v0.2.7
+    installed: true
+    needs:
+      - infra-kv-events
+      - gaie-kv-events
+    values:
+      - ms-kv-events/values.yaml
+    labels:
+      kind: inference-stack

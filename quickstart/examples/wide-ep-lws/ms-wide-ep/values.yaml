@@ -4,6 +4,7 @@ modelArtifacts:
   uri: "hf://deepseek-ai/DeepSeek-R1-0528"
   size: 100Gi
   authSecretName: "llm-d-hf-token"
+  name: "deepseek-ai/DeepSeek-R1-0528"
 
 routing:
   modelName: deepseek-ai/DeepSeek-R1-0528

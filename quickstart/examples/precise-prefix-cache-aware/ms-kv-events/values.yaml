@@ -4,6 +4,7 @@ modelArtifacts:
   uri: "hf://Qwen/Qwen3-0.6B"
   size: 20Gi
   authSecretName: "llm-d-hf-token"
+  name: "Qwen/Qwen3-0.6B"
 
 routing:
   modelName: Qwen/Qwen3-0.6B

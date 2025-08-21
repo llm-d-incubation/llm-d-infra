@@ -1,0 +1,66 @@
+environments:
+  istio: &I
+    values:
+      - ../common/gateway-configurations/istio.yaml
+  istioBench: &IB
+    values:
+      - ../common/gateway-configurations/istio.yaml
+      - ../common/gateway-configurations/benchmarking.yaml
+  kgateway: &KG
+    values:
+      - ../common/gateway-configurations/kgateway.yaml
+  gke: &GKE
+      values:
+      - ../common/gateway-configurations/gke.yaml
+  default:
+    <<: *IB
+
+---
+
+{{- $ns := (env "NAMESPACE") | default "llm-d-wide-ep" -}}
+
+# set $ns as namespace for all releases
+namespace: {{ $ns }}
+
+repositories:
+  - name: llm-d-modelservice
+    url: https://llm-d-incubation.github.io/llm-d-modelservice/
+  - name: llm-d-infra
+    url: https://llm-d-incubation.github.io/llm-d-infra/
+
+releases:
+  - name: infra-wide-ep
+    chart: llm-d-infra/llm-d-infra
+    version: v1.2.4
+    installed: true
+    labels:
+      type: infrastructure
+      kind: inference-stack
+    values:
+      - gateway:
+        {{ .Environment.Values.gateway | toYaml | nindent 10 }}
+      - gateway:
+          destinationRule:
+            host: {{ printf "ms-wide-ep-llm-d-modelservice-epp.%s.svc.cluster.local" $ns | quote }}
+
+  - name: ms-wide-ep
+    chart: llm-d-modelservice/llm-d-modelservice
+    version: v0.2.7
+    installed: true
+    needs:
+      - infra-wide-ep
+    values:
+      - ms-wide-ep/values.yaml
+    {{- if eq .Environment.Name "gke" }}
+    set:
+      - name: "decode.containers[0].resources.limits.rdma/ib"
+        value: null
+      - name: "decode.containers[0].resources.requests.rdma/ib"
+        value: null
+      - name: "prefill.containers[0].resources.limits.rdma/ib"
+        value: null
+      - name: "prefill.containers[0].resources.requests.rdma/ib"
+        value: null
+    {{- end }}
+    labels:
+      kind: inference-stack

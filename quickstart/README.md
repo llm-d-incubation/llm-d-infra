@@ -60,48 +60,7 @@ In this instruction, the target is vanilla kubernetes and if you look for other 
 
 ## llm-d-infra Installation
 
-Only a single installation of llm-d on a cluster is currently supported.  In the future, multiple model services will be supported.  Until then, [uninstall llm-d](#uninstall) before reinstalling.
-
-The llm-d-infra contains all the helm charts necessary to deploy llm-d-infra. To facilitate the installation of the helm charts, the `llmd-infra-installer.sh` script is provided. This script will populate the necessary manifests in the `manifests` directory.
-After this, it will apply all the manifests in order to bring up the cluster.
-
-The llmd-infra-installer.sh script aims to simplify the installation of llm-d using the llm-d-infra as it's main function.  It scripts as many of the steps as possible to make the installation process more streamlined.  This includes:
-
-- Installing the GAIE infrastructure
-- Creating the namespace with any special configurations
-- Deploying the network stack (istio/kgateway)
-- Creating the pull secret to download the images
-- Deploying the Gateway
-
-It also supports uninstalling the llm-d infrastructure.
-
-Before proceeding with the installation, ensure you have completed the prerequisites and are able to issue `kubectl` or `oc` commands to your cluster by configuring your `~/.kube/config` file or by using the `oc login` command.
-
-### Usage
-
-The installer needs to be run from the `llm-d-infra/quickstart` directory as a cluster admin with CLI access to the cluster.
-
-```bash
-./llmd-infra-installer.sh [OPTIONS]
-```
-
-### Flags
-
-| Flag                                 | Description                                                   | Example                                                          |
-|--------------------------------------|---------------------------------------------------------------|------------------------------------------------------------------|
-| `-n`, `--namespace NAME`             | K8s namespace (default: llm-d)                                | `./llmd-infra-installer.sh --namespace foo`                            |
-| `-f`, `--values-file PATH`           | Path to Helm values.yaml file (default: values.yaml)          | `./llmd-infra-installer.sh --values-file /path/to/values.yaml`         |
-| `-u`, `--uninstall`                  | Uninstall the llm-d components from the current cluster       | `./llmd-infra-installer.sh --uninstall`                                |
-| `-d`, `--debug`                      | Add debug mode to the helm install                            | `./llmd-infra-installer.sh --debug`                                    |
-| `-i`, `--skip-gateway-provider`      | Skip installing CRDs and the chose gateway control plane, only gateway instance and config | `./llmd-infra-installer.sh --skip-gateway-provider`                    |
-| `-e`, `--only-gateway-provider`      | Only install CRDs and gateway control plane, skip gateway instance and config | `./llmd-infra-installer.sh --only-gateway-provider`                    |
-| `-k`, `--minikube`                   | Deploy on an existing minikube instance with hostPath storage | `./llmd-infra-installer.sh --minikube`                                 |
-| `-g`, `--context`                    | Supply a specific Kubernetes context                          | `./llmd-infra-installer.sh --context`                                  |
-| `-j`, `--gateway`                    | Select gateway type (istio, kgateway) (default: istio)        | `./llmd-infra-installer.sh --gateway kgateway`                         |
-| `-r`, `--release`                    | (Helm) Chart release name                                     | `./llmd-infra-installer.sh --release llm-d-infra`                      |
-| `-h`, `--help`                       | Show this help and exit                                       | `./llmd-infra-installer.sh --help`                                     |
-
-***If you follow some [examples](./examples) after this installation, you have to change the namespace name according to the example you'll work on as follows.***
+The llm-d-infra chart contains all the helm charts necessary to deploy llm-d-infra. To facilitate the installation of the helm charts, the `llmd-infra-installer.sh` script is provided. This script will populate the necessary manifests in the `manifests` directory.
 
 - [inference-scheduling](./examples/inference-scheduling): llm-d-inference-scheduling
 - [pd-disaggregation](./examples/pd-disaggregation): llm-d-pd

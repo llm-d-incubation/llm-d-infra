@@ -4,6 +4,7 @@ modelArtifacts:
   uri: "hf://RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic"
   size: 100Gi
   authSecretName: "llm-d-hf-token"
+  name: "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic"
 
 routing:
   modelName: RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic

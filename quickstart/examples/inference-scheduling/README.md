@@ -6,7 +6,7 @@ This example deploys the recommended out of the box [scheduling configuration](h
 
 This profile defaults to the approximate prefix cache aware scorer, which only observes request traffic to predict prefix cache locality. The [precise prefix cache aware routing feature](../precise-prefix-cache-aware) improves hit rate by introspecting the vLLM instances for cache entries and will become the default in a future release.
 
-### Pre-requisites
+## Pre-requisites
 
 - It is assumed that you have the proper tools installed on your local system to use these quickstart. If you do not have these, see [install-deps.sh](../../install-deps.sh).
 
@@ -178,9 +178,8 @@ To remove the deployment:
 # From examples/inference-scheduling
 helmfile --selector kind=inference-stack destroy
 
-# Remove the infrastructure
+# Or uninstall manually
 helm uninstall infra-inference-scheduling -n ${NAMESPACE}
-# Remove the other 2 release coordinated by helmfile
 helm uninstall gaie-inference-scheduling -n ${NAMESPACE}
 helm uninstall ms-inference-scheduling -n ${NAMESPACE}
 ```
