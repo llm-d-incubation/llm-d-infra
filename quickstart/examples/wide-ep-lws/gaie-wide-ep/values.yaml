@@ -1,0 +1,30 @@
+inferenceExtension:
+  replicas: 1
+  image:
+    name: llm-d-inference-scheduler
+    hub: ghcr.io/llm-d
+    tag: v0.2.1
+    pullPolicy: Always
+  extProcPort: 9002
+  pluginsConfigFile: "plugins-v2.yaml"
+  logVerbosity: 4
+  pluginsCustomConfig:
+    plugins-v2.yaml: |
+      apiVersion: inference.networking.x-k8s.io/v1alpha1
+      kind: EndpointPickerConfig
+      plugins:
+      - type: random-picker
+        parameters:
+          maxNumOfEndpoints: 1
+      - type: single-profile-handler
+      schedulingProfiles:
+      - name: default
+        plugins:
+        - pluginRef: random-picker
+inferencePool:
+  targetPortNumber: 8000
+  modelServerType: vllm
+  modelServers:
+    matchLabels:
+      llm-d.ai/inferenceServing: "true"
+      # llm-d.ai/model: ms-simple-llm-d-modelservice
