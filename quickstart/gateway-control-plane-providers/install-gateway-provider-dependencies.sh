@@ -15,8 +15,14 @@ fi
 # Logging functions and ASCII colour helpers.
 COLOR_RESET=$'\e[0m'
 COLOR_GREEN=$'\e[32m'
+COLOR_RED=$'\e[31m'
+
 log_success() {
   echo "${COLOR_GREEN}✅ $*${COLOR_RESET}"
+}
+
+log_error() {
+  echo "${COLOR_RED}❌ $*${COLOR_RESET}" >&2
 }
 
 ## Populate manifests
@@ -26,7 +32,7 @@ if [[ "$MODE" == "apply" ]]; then
 elif [[ "$MODE" == "delete" ]]
     LOG_ACTION_NAME="Deleting"
 else
-    echo "Unrecognized Mode: ${MODE}, only supports \`apply\` or \`delete\`."
+    log_error "Unrecognized Mode: ${MODE}, only supports \`apply\` or \`delete\`."
     exit 1
 fi
 

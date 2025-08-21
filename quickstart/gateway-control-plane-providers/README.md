@@ -33,16 +33,18 @@ This section will cover what Gateway Control Plane providers are supported. Curr
 
 - `kgateway`
 - `istio`
-- `gke`
+- `gke` *
 
-Its important to note that here we are simply destinguishing the gateway providers with regard to information for installing the control plane. This is important because while the GKE provider supports two separate gatewayClassNames (`gke-17-externally-managed` and `gke-17-rilb`) those are configurations of the individual gateway and not the control plane as a whole.
+> [!IMPORTANT]
+> While LLM-D supports GKE Gateways, it comes setup out of the box on GKE, and so no action is required to deploy the control plane. If you are using GKE you may skip this document.
 
 ## Installation
 
 To Install the gateway control plane and corresponding CRDs you can use:
 
 ```bash
-helmfile apply -e <your_gateway_choice> # options: [`istio`, `kgateway`, `gke`]
+helmfile apply -f <your_gateway_choice>.helmfile.yaml # options: [`istio`, `kgateway`]
+# ex: helmfile apply -f istio.helmfile.yaml
 ```
 
 ### Targeted install
@@ -51,13 +53,9 @@ If the CRDs already exist in your cluster and you do not wish to re-apply them, 
 
 ```bash
 # Spin up
-helmfile apply -e <your_gateway_choice> --selector kind=gateway-control-plane
+helmfile apply -f <your_gateway_choice> --selector kind=gateway-control-plane
 # Tear down
-helmfile destroy -e <your_gateway_choice> --selector kind=gateway-control-plane
+helmfile destroy -f <your_gateway_choice> --selector kind=gateway-control-plane
 ```
 
-If you wish to bump versions or customize your installs, check out our values files for [istio](./istio.yaml), [kgateway](./kgateway.yaml), and [gke](./gke.yaml) respectively.
-
-### GKE Specific
-
-If you are using GKE you should have your gateway control plane configured out of the box so you can skip the contents of this directory entirely.
+If you wish to bump versions or customize your installs, check out our helmfiles for [istio](./istio.helmfile.yaml), and [kgateway](./kgateway.helmfile.yaml) respectively.
