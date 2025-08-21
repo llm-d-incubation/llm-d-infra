@@ -53,7 +53,7 @@ decode:
       interval: "30s"
   containers:
     - name: vllm-worker-decode
-      image: "rgshaw2/vllm-torch-28-0.2"
+      image: "ghcr.io/llm-d/llm-d:v0.2.0"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash", "-c"]
@@ -79,12 +79,12 @@ decode:
             --data-parallel-address ${LWS_LEADER_ADDRESS} \
             --data-parallel-rpc-port 5555 \
             --data-parallel-start-rank $START_RANK \
-            --trust-remote-code \
-            --enable-eplb \
-            --num-redundant-experts 32 \
-            --eplb-window-size 1000 \
-            --eplb-step-interval 3000 \
-            --eplb-log-balancedness
+            --trust-remote-code
+            # --enable-eplb \
+            # --num-redundant-experts 32 \
+            # --eplb-window-size 1000 \
+            # --eplb-step-interval 3000 \
+            # --eplb-log-balancedness
 
       ports:
         - containerPort: 8200
@@ -133,6 +133,8 @@ decode:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+        - name: HF_HUB_OFFLINE
+          value: "1"
       resources:
         limits:
           memory: 512Gi
