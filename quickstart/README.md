@@ -98,6 +98,7 @@ The installer needs to be run from the `llm-d-infra/quickstart` directory as a c
 | `-k`, `--minikube`                   | Deploy on an existing minikube instance with hostPath storage | `./llmd-infra-installer.sh --minikube`                                 |
 | `-g`, `--context`                    | Supply a specific Kubernetes context                          | `./llmd-infra-installer.sh --context`                                  |
 | `-j`, `--gateway`                    | Select gateway type (istio, kgateway) (default: istio)        | `./llmd-infra-installer.sh --gateway kgateway`                         |
+| `-s`, `--service-type`               | Specify the type of Service (defauly: NodePort)               | `./llmd-infra-installer.sh --service-type LoadBalancer`                |
 | `-r`, `--release`                    | (Helm) Chart release name                                     | `./llmd-infra-installer.sh --release llm-d-infra`                      |
 | `-h`, `--help`                       | Show this help and exit                                       | `./llmd-infra-installer.sh --help`                                     |
 

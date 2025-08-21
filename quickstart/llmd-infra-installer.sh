@@ -39,6 +39,7 @@ Options:
   -k, --minikube                    Deploy on an existing minikube instance with hostPath storage
   -g, --context                     Supply a specific Kubernetes context
   -j, --gateway                     Select gateway type (istio or kgateway)
+  -s, --service-type.               Specify the type of Service (defauly: NodePort)
   -r, --release                     (Helm) Chart release name
   -h, --help                        Show this help and exit
 EOF
