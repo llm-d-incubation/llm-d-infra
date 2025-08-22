@@ -4,3 +4,4 @@ validate-maintainers: false
 remote: origin
 helm-extra-args: --timeout 500s
 lint-conf: lintconf.yaml
+chart-yaml-schema: chart_schema.yaml
