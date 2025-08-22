@@ -223,9 +223,7 @@ jobs:
             wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
             sudo dpkg -i cuda-keyring_1.1-1_all.deb
             sudo apt-get update
-            sudo apt-get -y install cuda-toolkit-12-8
-
-            sudo apt-get install -y nvidia-open nvtop nload
+            sudo apt-get -y install cuda-toolkit-12-8 nvidia-open nvtop nload
           EOF
 
       - name: Reboot the aws instance
@@ -334,7 +332,7 @@ jobs:
             set -x
             cd llm-d-infra/quickstart/gateway-control-plane-providers
             ./install-gateway-provider-dependencies.sh
-            helmfile apply -e ${GATEWAY_TYPE}
+            helmfile apply -f ${GATEWAY_TYPE}.helmfile.yaml
           EOF
 
       - name: Run installer to deploy llm-d infrastructure

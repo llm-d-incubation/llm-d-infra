@@ -56,6 +56,9 @@ jobs:
           echo "PR_OR_BRANCH=${PR_OR_BRANCH:-main}" >> "$GITHUB_ENV"
           if [[ "$PR_OR_BRANCH" =~ ^[0-9]+$ ]]; then
             echo "is_pr=true" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.event_name }}" = "pull_request" ]]; then
+            echo "PR_OR_BRANCH=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+            echo "is_pr=true" >> "$GITHUB_OUTPUT"
           else
             echo "is_pr=false" >> "$GITHUB_OUTPUT"
           fi
@@ -108,7 +111,7 @@ jobs:
         run: |
           cd quickstart/gateway-control-plane-providers
           ./install-gateway-provider-dependencies.sh
-          helmfile apply -e ${GATEWAY_TYPE}
+          helmfile apply -f ${GATEWAY_TYPE}.helmfile.yaml
 
       - name: Create namespace
         run: |
@@ -118,11 +121,8 @@ jobs:
         env:
           GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
-          cd quickstart
-          ./llmd-infra-installer.sh \
-            --namespace "${{ env.NAMESPACE }}" \
-            --gateway "${GATEWAY_TYPE}" \
-            --release infra-sim
+          cd quickstart/examples/sim
+          helmfile apply -e ${GATEWAY_TYPE}
 
       - name: Wait for infrastructure pods to be ready
         run: |
@@ -133,9 +133,11 @@ jobs:
             --timeout=300s || true
 
       - name: Deploy simulation services with helmfile
+        env:
+          GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
           cd quickstart/examples/sim
-          helmfile --selector managedBy=helmfile apply
+          helmfile apply -e ${GATEWAY_TYPE}
 
       - name: Wait for all simulation pods to be ready
         run: |
@@ -148,30 +150,6 @@ jobs:
 
           echo "✅ All pods are ready."
           kubectl get pods -n "${{ env.NAMESPACE }}"
-
-      - name: Apply Istio DestinationRule for EPP
-        if: ${{ env.GATEWAY_TYPE == 'istio' }}
-        run: |
-          echo "🔎 Applying Istio DestinationRule for EPP service..."
-          EPP_NAME=$(kubectl get svc -n "${{ env.NAMESPACE }}" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep -- "-epp" | head -n1)
-          if [[ -z "$EPP_NAME" ]]; then
-            echo "❌ Could not find EPP service"
-            exit 1
-          fi
-          echo "✅ Found EPP service: $EPP_NAME"
-
-          cat <<EOF | kubectl apply -n "${{ env.NAMESPACE }}" -f -
-          apiVersion: networking.istio.io/v1
-          kind: DestinationRule
-          metadata:
-            name: ${EPP_NAME}-insecure-tls
-          spec:
-            host: ${EPP_NAME}
-            trafficPolicy:
-              tls:
-                mode: SIMPLE
-                insecureSkipVerify: true
-          EOF
 
       - name: Show deployment status
         run: |
@@ -264,8 +242,9 @@ jobs:
 
       - name: Validate Uninstall
         if: always()
+        env:
+          GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
           echo "🧹 Validating Cleanup…"
           cd quickstart/examples/sim
-          helmfile --selector managedBy=helmfile destroy
-          helm uninstall infra-sim -n "${NAMESPACE}"
+          helmfile destroy -e ${GATEWAY_TYPE}
