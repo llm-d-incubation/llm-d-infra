@@ -37,7 +37,7 @@ Following prerequisite are required for the installer to work.
 You can use the installer script that installs all the required dependencies.
 
 ```bash
-./install-deps.sh
+./dependencies/install-deps.sh
 ```
 
 ### Required credentials and configuration

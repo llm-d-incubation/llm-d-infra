@@ -8,8 +8,8 @@ set -e
 set -o pipefail
 
 if [ -z "$(command -v kubectl)" ]; then
-    echo "This script depends on \`kubectl\`. Please install it."
-    exit 1
+  echo "This script depends on \`kubectl\`. Please install it."
+  exit 1
 fi
 
 # Logging functions and ASCII colour helpers.
@@ -28,12 +28,12 @@ log_error() {
 ## Populate manifests
 MODE=${1:-apply} # allowed values "apply" or "delete"
 if [[ "$MODE" == "apply" ]]; then
-    LOG_ACTION_NAME="Installing"
-elif [[ "$MODE" == "delete" ]]
-    LOG_ACTION_NAME="Deleting"
+  LOG_ACTION_NAME="Installing"
+elif [[ "$MODE" == "delete" ]]; then
+  LOG_ACTION_NAME="Deleting"
 else
-    log_error "Unrecognized Mode: ${MODE}, only supports \`apply\` or \`delete\`."
-    exit 1
+  log_error "Unrecognized Mode: ${MODE}, only supports \`apply\` or \`delete\`."
+  exit 1
 fi
 
 GATEWAY_API_CRD_REVISION=${GATEWAY_API_CRD_REVISION:-"v1.3.0"}

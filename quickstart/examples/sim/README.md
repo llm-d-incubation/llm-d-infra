@@ -6,7 +6,7 @@ This is a simulation example that demonstrates how to deploy using the llm-d-inf
 
 ### Pre-requisites
 
-- It is assumed that you have the proper tools installed on your local system to use these quickstart. If you do not have these, see [install-deps.sh](../../install-deps.sh).
+- It is assumed that you have the proper tools installed on your local system to use these quickstart. If you do not have these, see [install-deps.sh](../../dependencies/install-deps.sh).
 
 - Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
 

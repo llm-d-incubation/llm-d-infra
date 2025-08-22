@@ -240,7 +240,7 @@ jobs:
             set -euo pipefail
             set -x
             cd llm-d-infra/quickstart
-            ./install-deps.sh | tee ~/install-deps.log
+            ./dependencies/install-deps.sh | tee ~/install-deps.log
           EOF
 
       - name: Setup container runtime

@@ -100,8 +100,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd quickstart
-          chmod +x install-deps.sh
-          ./install-deps.sh
+          ./dependencies/install-deps.sh
 
       - name: Install chart dependencies (CRDs and Gateway provider)
         env:
