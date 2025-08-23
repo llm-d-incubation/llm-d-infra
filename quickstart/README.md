@@ -8,51 +8,11 @@ This guide will walk you through the steps to install and deploy llm-d on a Kube
 
 ## Client Configuration
 
-### Get the code
-
-Clone the llm-d-infra repository.
-
-```bash
-git clone https://github.com/llm-d-incubation/llm-d-infra.git
-```
-
-Navigate to the quickstart directory
-
-```bash
-cd llm-d-infra/quickstart
-```
-
-### Required tools
-
-Following prerequisite are required for the installer to work.
-
-- [yq (mikefarah) – installation](https://github.com/mikefarah/yq?tab=readme-ov-file#install)
-- [jq – download & install guide](https://stedolan.github.io/jq/download/)
-- [git – installation guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- [Helm – quick-start install](https://helm.sh/docs/intro/install/)
-- [Helmfile - installation](https://github.com/helmfile/helmfile?tab=readme-ov-file#installation)
-- [Kustomize – official install docs](https://kubectl.docs.kubernetes.io/installation/kustomize/)
-- [kubectl – install & setup](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-
-You can use the installer script that installs all the required dependencies.
-
-```bash
-./dependencies/install-deps.sh
-```
-
-### Required credentials and configuration
-
-- [llm-d-infra GitHub repo – clone here](https://github.com/llm-d-incubation/llm-d-infra.git)
+You will need to install some dependencies (like helm, yq, git, etc.) and have a HuggingFace token for most of the examples. We have documented those requirements and instructions on this in the [dependencies directory](./dependencies/).
 
 ### Target Platforms
 
-Since the llm-d-infra is based on helm charts, llm-d can be deployed on a variety of Kubernetes platforms. As more platforms are supported, the installer will be updated to support them.
-
-In this instruction, the target is vanilla kubernetes and if you look for other platform's instructions, you could find them from following links.
-
-- [Minikube](docs/infra-providers/minikube/README-minikube.md)
-- [OpenShift](docs/infra-providers/openshift/README-openshift.md)
-- [OpenShift on AWS (ROSA)](docs/infra-providers/openshift-aws/openshift-aws.md)
+Since the llm-d-infra is based on helm charts, llm-d can be deployed on a variety of Kubernetes platforms. Requirements, workarounds, and any other documentation relevant to these platforms will live in the [infra-providers directory](./docs/infra-providers/).
 
 ## llm-d-infra Installation
 

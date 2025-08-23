@@ -298,6 +298,10 @@ jobs:
             example_dir: examples/precise-prefix-cache-aware
             log_file: llmd-precise-installer.log
             helm_log_file: precise-prefix-deployment.log
+            release_names:
+              - infra-kv-events
+              - gaie-kv-events
+              - ms-kv-events
 
           - name: inference-scheduling
             namespace: llm-d-inference-scheduling
@@ -305,6 +309,10 @@ jobs:
             example_dir: examples/inference-scheduling
             log_file: llmd-inference-installer.log
             helm_log_file: inference-scheduling-deployment.log
+            release_names:
+              - infra-inference-scheduling
+              - gaie-inference-scheduling
+              - ms-inference-scheduling
 
     env:
       INSTANCE_IP: ${{ needs.setup.outputs.instance_ip }}
@@ -335,39 +343,16 @@ jobs:
             helmfile apply -f ${GATEWAY_TYPE}.helmfile.yaml
           EOF
 
-      - name: Run installer to deploy llm-d infrastructure
-        run: |
-          # This script now includes a file lock to serialize this step since the kgateway CRD install currently fails
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "HF_TOKEN=$HF_TOKEN GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
-          set -euo pipefail
-          LOCK_DIR="/tmp/installer.lock"
-          echo "Attempting to acquire lock: ${LOCK_DIR}"
-          # Loop until the lock directory can be created
-          while ! mkdir "${LOCK_DIR}" 2>/dev/null; do
-             echo "Lock is held by another process. Waiting 10 seconds..."
-             sleep 10
-          done
-          echo "Lock acquired."
-          # Ensure the lock is released when the script exits
-          trap 'echo "Releasing lock..."; rmdir "$LOCK_DIR" 2>/dev/null || true' exit
-          set -x
-          cd llm-d-infra/quickstart
-          echo "Deploying llm-d infrastructure into namespace: ${{ matrix.deployment.namespace }} ..."
-          ./llmd-infra-installer.sh \
-              --namespace "${{ matrix.deployment.namespace }}" \
-              ${{ matrix.deployment.installer_args }} \
-              --gateway "$GATEWAY_TYPE" \
-              | tee ~/${{ matrix.deployment.log_file }}
-          EOF
-
       - name: Deploy example deployment
+        env:
+          GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
             set -euo pipefail
             set -x
             cd llm-d-infra/quickstart/${{ matrix.deployment.example_dir }}
             echo "Deploying ${{ matrix.deployment.name }} example..."
-            helmfile --selector managedBy=helmfile apply helmfile.yaml --skip-diff-on-install | tee ~/${{ matrix.deployment.helm_log_file }}
+            helmfile apply -e ${GATEWAY_TYPE} | tee ~/${{ matrix.deployment.helm_log_file }}
             echo "---------------------------------------" >> ~/${{ matrix.deployment.helm_log_file }}
           EOF
 
@@ -376,9 +361,12 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
             set -euo pipefail
             set -x
-            BACKUP_NAMESPACE=${{ matrix.deployment.namespace }} /bin/sh llm-d-infra/.github/scripts/e2e/helm-get-all.sh \
-              ~/${{ matrix.deployment.helm_log_file }} \
-              llm-d-infra/quickstart/${{ matrix.deployment.example_dir }}/helmfile.yaml
+            for release_name in ${{ join(matrix.deployment.release_names, ' ') }}; do
+              ./bin/sh llm-d-infra/.github/scripts/e2e/helm-get-all.sh \
+                ~/${{ matrix.deployment.helm_log_file }} \
+                "$release_name" \
+                "${{ matrix.deployment.namespace}}"
+            done
           EOF
 
       - name: Wait for all pods to be ready

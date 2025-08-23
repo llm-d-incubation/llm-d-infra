@@ -216,7 +216,7 @@ jobs:
           echo "🧪 Testing /v1/models…"
           response=$(curl --silent --fail http://localhost:8000/v1/models)
           echo "Response: $response"
-          echo "$response" | jq -e '.data' > /dev/null
+          echo "$response" | yq -p=json -e '.data' > /dev/null
           echo "✅ /v1/models passed"
 
       - name: Test /v1/chat/completions endpoint
@@ -227,7 +227,7 @@ jobs:
                    -H "x-model-name: random" \
                    -d '{ "model":"random","messages":[{ "role":"user","content":"How are you?" }] }')
           echo "Response: $response"
-          echo "$response" | jq -e '.choices[0].message.content' > /dev/null
+          echo "$response" | yq -p=json -e '.choices[0].message.content' > /dev/null
           echo "✅ /v1/chat/completions passed"
 
       - name: Test /v1/completions endpoint
@@ -237,7 +237,7 @@ jobs:
                    -H "Content-Type: application/json" \
                    -d '{ "model":"random","prompt":"Cats or Dogs?" }')
           echo "Response: $response"
-          echo "$response" | jq -e '.choices[0].text' > /dev/null
+          echo "$response" | yq -p=json -e '.choices[0].text' > /dev/null
           echo "✅ /v1/completions passed"
 
       - name: Validate Uninstall
