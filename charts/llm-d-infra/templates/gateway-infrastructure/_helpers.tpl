@@ -15,9 +15,5 @@ Create a default fully qualified app name for inferenceGateway.
 Define the template for ingress host
 */}}
 {{- define "gateway.ingressHost" -}}
-  {{- if .Values.ingress.host -}}
-    {{- include "common.tplvalues.render" ( dict "value" .Values.ingress.host "context" $ ) }}
-  {{- else }}
-    {{- include "gateway.fullname" . }}.{{ default "localhost" .Values.ingress.clusterRouterBase }}
-  {{- end}}
+{{- include "common.tplvalues.render" ( dict "value" .Values.ingress.host "context" $ ) }}
 {{- end}}

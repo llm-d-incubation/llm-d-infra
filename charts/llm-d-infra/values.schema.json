@@ -266,11 +266,19 @@
                     "required": [],
                     "title": "nameOverride"
                 },
-                "serviceType": {
-                    "default": "LoadBalancer",
-                    "description": "Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: [\"LoadBalancer\", \"NodePort\"]",
+                "service": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "type": {
+                            "default": "LoadBalancer",
+                            "description": "Gateway's service type. Ingress is only available if the service type is set to LoadBalancer. Accepted values: [\"LoadBalancer\", \"ClusterIP\", \"NodePort\"]",
+                            "required": [],
+                            "title": "type"
+                        }
+                    },
                     "required": [],
-                    "title": "serviceType"
+                    "title": "service",
+                    "type": "object"
                 }
             },
             "required": [],
@@ -293,15 +301,9 @@
                     "required": [],
                     "title": "annotations"
                 },
-                "clusterRouterBase": {
-                    "default": "",
-                    "description": "used as part of the host derivation if not specified from OCP cluster domain (don't edit)",
-                    "required": [],
-                    "title": "clusterRouterBase"
-                },
                 "enabled": {
                     "default": "false",
-                    "description": "Deploy Ingress",
+                    "description": "Deploy Ingress (service type must also be ClusterIP)",
                     "required": [],
                     "title": "enabled"
                 },
@@ -338,7 +340,7 @@
                 },
                 "host": {
                     "default": "",
-                    "description": "Hostname to be used to expose the NodePort service to the inferencing gateway",
+                    "description": "Hostname to be used to expose the ClusterIP service to the inferencing gateway",
                     "required": [],
                     "title": "host"
                 },
@@ -353,6 +355,14 @@
                     "description": "Path to be used to expose the full route to access the inferencing gateway",
                     "required": [],
                     "title": "path"
+                },
+                "rules": {
+                    "items": {
+                        "required": []
+                    },
+                    "required": [],
+                    "title": "rules",
+                    "type": "array"
                 },
                 "tls": {
                     "additionalProperties": false,

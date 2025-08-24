@@ -163,14 +163,18 @@ gateway:
         namespaces:
           from: All
 
-  # -- Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: ["LoadBalancer", "NodePort"]
-  serviceType: LoadBalancer
+  service:
+    # -- Gateway's service type. Ingress is only available if the service type is set to LoadBalancer. Accepted values: ["LoadBalancer", "ClusterIP", "NodePort"]
+    type: LoadBalancer
+    # -- ports - an array of ports with 2 options, port and nodePort (both integers). If using istio, you may pass a full service portSpec here including name, etc.
+    # ports:
+    #   - port: 80
 
 # -- Ingress configuration
 # @default -- See below
 ingress:
 
-  # -- Deploy Ingress
+  # -- Deploy Ingress (service type must also be ClusterIP)
   enabled: false
 
   # -- Name of the IngressClass cluster resource which defines which controller will implement the resource (e.g nginx)
@@ -182,7 +186,7 @@ ingress:
   # -- Additional annotations for the Ingress resource
   annotations: {}
 
-  # -- Hostname to be used to expose the NodePort service to the inferencing gateway
+  # -- Hostname to be used to expose the ClusterIP service to the inferencing gateway
   host: ""
 
   # -- List of additional hostnames to be covered with this ingress record (e.g. a CNAME)
@@ -219,5 +223,4 @@ ingress:
   #     secretName: llm-d-env -->
   extraTls: []
 
-  # -- used as part of the host derivation if not specified from OCP cluster domain (don't edit)
-  clusterRouterBase: ""
+  rules: []

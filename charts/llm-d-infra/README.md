@@ -115,14 +115,13 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.labels | Additional labels provided to the Gateway resource | object | `{}` |
 | gateway.listeners | Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled | list | `[{"allowedRoutes":{"namespaces":{"from":"All"}},"name":"default","path":"/","port":80,"protocol":"HTTP"}]` |
 | gateway.nameOverride | String to partially override gateway.fullname | string | `""` |
-| gateway.serviceType | Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: ["LoadBalancer", "NodePort"] | string | `"LoadBalancer"` |
+| gateway.service.type | Gateway's service type. Ingress is only available if the service type is set to LoadBalancer. Accepted values: ["LoadBalancer", "ClusterIP", "NodePort"] | string | `"LoadBalancer"` |
 | ingress | Ingress configuration | object | See below |
 | ingress.annotations | Additional annotations for the Ingress resource | object | `{}` |
-| ingress.clusterRouterBase | used as part of the host derivation if not specified from OCP cluster domain (don't edit) | string | `""` |
-| ingress.enabled | Deploy Ingress | bool | `false` |
+| ingress.enabled | Deploy Ingress (service type must also be ClusterIP) | bool | `false` |
 | ingress.extraHosts | List of additional hostnames to be covered with this ingress record (e.g. a CNAME) <!-- E.g. extraHosts:   - name: llm-d.env.example.com     path: / (Optional)     pathType: Prefix (Optional)     port: 7007 (Optional) --> | list | `[]` |
 | ingress.extraTls | The TLS configuration for additional hostnames to be covered with this ingress record. <br /> Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls <!-- E.g. extraTls:   - hosts:     - llm-d.env.example.com     secretName: llm-d-env --> | list | `[]` |
-| ingress.host | Hostname to be used to expose the NodePort service to the inferencing gateway | string | `""` |
+| ingress.host | Hostname to be used to expose the ClusterIP service to the inferencing gateway | string | `""` |
 | ingress.ingressClassName | Name of the IngressClass cluster resource which defines which controller will implement the resource (e.g nginx) | string | `""` |
 | ingress.path | Path to be used to expose the full route to access the inferencing gateway | string | `"/"` |
 | ingress.tls | Ingress TLS parameters | object | `{"enabled":false,"secretName":""}` |

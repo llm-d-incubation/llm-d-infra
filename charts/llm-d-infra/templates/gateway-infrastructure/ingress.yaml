@@ -1,4 +1,4 @@
-{{- if and .Values.gateway.enabled .Values.ingress.enabled (eq .Values.gateway.serviceType "NodePort") }}
+{{- if and .Values.gateway.enabled .Values.ingress.enabled (eq .Values.gateway.service.type "ClusterIP") }}
 {{- $gatewayFullname := include "gateway.fullname" . }}
 {{- $host := include "gateway.ingressHost" . }}
 apiVersion: networking.k8s.io/v1
@@ -19,43 +19,50 @@ metadata:
     {{- include "common.tplvalues.render" ( dict "value" .Values.ingress.annotations "context" $) | nindent 4 }}
     {{- end }}
 spec:
-  {{- if $.Values.ingress.ingressClassName }}
-  ingressClassName: {{ $.Values.ingress.ingressClassName }}
+  {{- with .Values.ingress.ingressClassName }}
+  ingressClassName: {{ . }}
   {{- end }}
+
   {{- if or .Values.ingress.tls.enabled .Values.ingress.extraTls }}
   tls:
     {{- if .Values.ingress.tls.enabled }}
     - hosts:
-      - {{ $host }}
+        - {{ $host }}
       secretName: {{ include "common.tplvalues.render" ( dict "value" .Values.ingress.tls.secretName "context" $ ) }}
     {{- end }}
     {{- if .Values.ingress.extraTls }}
     {{- include "common.tplvalues.render" ( dict "value" .Values.ingress.extraTls "context" $ ) | nindent 4 }}
     {{- end }}
   {{- end }}
+
   rules:
-    {{- range .Values.gateway.listeners }}
-    - host: {{ $host }}
-      http:
+    - http:
         paths:
+        {{- range .Values.gateway.listeners }}
           - path: {{ .path }}
-            pathType: Prefix
+            pathType: {{ .pathType | default "Prefix" }}
             backend:
               service:
                 name: {{ $gatewayFullname }}
                 port:
                   number: {{ .port }}
-    {{- end }}
+        {{- end }}
+      {{- if $host }}
+      host: {{ $host }}
+      {{- end}}
+
     {{- range .Values.ingress.extraHosts }}
-    - host: {{ .name | quote }}
-      http:
+    - http:
         paths:
-          - path: {{ default $.Values.ingress.path .path }}
+          - path: {{ default $.Values.ingress.path .path | default "/" }}
             pathType: {{ default "Prefix" .pathType }}
             backend:
               service:
-                name: {{ include "common.names.fullname" $ }}
+                name: {{ $gatewayFullname }}
                 port:
-                  number: {{ default $.Values.service.ports.backend .port }}
+                  number: {{ default (index $.Values.gateway.listeners 0).port .port }}
+      {{- if .name }}
+      host: {{ .name | quote }}
+      {{- end }}
     {{- end }}
 {{- end }}
