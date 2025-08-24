@@ -27,9 +27,20 @@ jobs:
     name: Test Latest Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Checkout PR HEAD (handles forks)
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
         with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref:        ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Checkout tag ref
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
           fetch-depth: 0
           persist-credentials: true
 
@@ -115,7 +126,7 @@ jobs:
           cd quickstart
           ./dependencies/install-deps.sh
           ./gateway-control-plane-providers/install-gateway-provider-dependencies.sh
-          helmfile apply -f istio.helmfile.yaml
+          helmfile apply -f gateway-control-plane-providers/istio.helmfile.yaml
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
