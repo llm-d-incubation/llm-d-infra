@@ -18,6 +18,7 @@ environments:
 ---
 
 {{- $ns := (env "NAMESPACE") | default "llm-d-wide-ep" -}}
+{{- $rn := (env "RELEASE_NAME_POSTFIX") | default "wide-ep" -}}
 
 # set $ns as namespace for all releases
 namespace: {{ $ns }}
@@ -29,7 +30,7 @@ repositories:
     url: https://llm-d-incubation.github.io/llm-d-infra/
 
 releases:
-  - name: infra-wide-ep
+  - name: {{ printf "infra-%s" $rn | quote }}
     chart: llm-d-infra/llm-d-infra
     version: v1.2.4
     installed: true
@@ -43,14 +44,21 @@ releases:
           destinationRule:
             host: {{ printf "ms-wide-ep-llm-d-modelservice-epp.%s.svc.cluster.local" $ns | quote }}
 
-  - name: ms-wide-ep
+  - name: {{ printf "ms-%s" $rn | quote }}
     chart: llm-d-modelservice/llm-d-modelservice
     version: v0.2.7
     installed: true
     needs:
-      - infra-wide-ep
+      - {{ printf "infra-%s" $rn | quote }}
     values:
       - ms-wide-ep/values.yaml
+    {{- if or (eq .Environment.Name "istioBench") (eq .Environment.Name "default") }}
+      - routing:
+          proxy:
+            debugLevel: {{ .Environment.Values.routing.proxy.debugLevel }}
+          epp:
+            debugLevel: {{ .Environment.Values.routing.epp.debugLevel }}
+    {{- end }}
     {{- if eq .Environment.Name "gke" }}
     set:
       - name: "decode.containers[0].resources.limits.rdma/ib"

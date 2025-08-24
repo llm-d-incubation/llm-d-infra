@@ -101,7 +101,6 @@ decode:
   - name: torch-compile-cache
     emptyDir: {}
 
-# The prefill replica is disabled via 'create: false' since pd is not
-# enabled for this configuration. Advanced P/D examples will follow later.
+# PD disabled in this example
 prefill:
   create: false

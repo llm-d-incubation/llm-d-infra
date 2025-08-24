@@ -2,10 +2,6 @@ environments:
   istio: &I
     values:
       - ../common/gateway-configurations/istio.yaml
-  istioBench: &IB
-    values:
-      - ../common/gateway-configurations/istio.yaml
-      - ../common/gateway-configurations/benchmarking.yaml
   kgateway: &KG
     values:
       - ../common/gateway-configurations/kgateway.yaml
@@ -18,6 +14,7 @@ environments:
 ---
 
 {{- $ns := (env "NAMESPACE") | default "llm-d-precise" -}}
+{{- $rn := (env "RELEASE_NAME_POSTFIX") | default "kv-events" -}}
 
 repositories:
   - name: llm-d-modelservice
@@ -26,7 +23,7 @@ repositories:
     url: https://llm-d-incubation.github.io/llm-d-infra/
 
 releases:
-  - name: infra-kv-events
+  - name: {{ printf "infra-%s" $rn | quote }}
     chart: llm-d-infra/llm-d-infra
     version: v1.2.4
     installed: true
@@ -39,24 +36,27 @@ releases:
           destinationRule:
             host: {{ printf "gaie-kv-events-epp.%s.svc.cluster.local" $ns | quote }}
 
-  - name: gaie-kv-events
+  - name: {{ printf "gaie-%s" $rn | quote }}
     chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
     version: v0.5.1
     installed: true
     needs:
-      - infra-kv-events
+      - {{ printf "infra-%s" $rn | quote }}
     values:
       - gaie-kv-events/values.yaml
+    {{- if eq .Environment.Name "gke" }}
+      - provider: {{ .Environment.Values.provider }}
+    {{- end }}
     labels:
       kind: inference-stack
 
-  - name: ms-kv-events
+  - name: {{ printf "ms-%s" $rn | quote }}
     chart: llm-d-modelservice/llm-d-modelservice
     version: v0.2.7
     installed: true
     needs:
-      - infra-kv-events
-      - gaie-kv-events
+      - {{ printf "infra-%s" $rn | quote }}
+      - {{ printf "gaie-%s" $rn | quote }}
     values:
       - ms-kv-events/values.yaml
     labels:

@@ -17,7 +17,6 @@ routing:
   proxy:
     image: "ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0"
     secure: false
-    debugLevel: 1
     connector: nixlv2
 
   inferenceModel:
@@ -34,7 +33,6 @@ routing:
   epp:
     create: true
     image: ghcr.io/llm-d/llm-d-inference-scheduler:v0.2.1
-    debugLevel: 1
     pluginsConfigFile: "pd-config.yaml"
     pluginsCustomConfig:
       pd-config.yaml: |

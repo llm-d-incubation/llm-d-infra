@@ -24,11 +24,11 @@ First we need to choose what strategy were going to use to expose / interact wit
 
 **_NOTE:_** If you’re unsure which to use—start with port-forward as its the most reliable and easiest. For anything shareable, use Ingress/Route. Use LoadBalancer if your provider supports it and you just need raw L4 access.
 
-**_NOTE:_** It should also be noted that you can use other platform specific networking options such as Openshift Routes. However this is obviously platform dependent and can also cause externalities. When benchmarking the `pd-dissagregation` example with OCP routes we noticed that Openshift Networking was enforcing timeouts on gateway requests, which, under heavy load affected our results. If you wish to use a platform dependent option with a benchmarking setup ensure to check your platform docs.
+**_NOTE:_** It should also be noted that you can use other platform specific networking options such as Openshift Routes. However this is obviously platform dependent and can also cause externalities. When benchmarking the `pd-dissaggregation` example with OCP routes we noticed that Openshift Networking was enforcing timeouts on gateway requests, which, under heavy load affected our results. If you wish to use a platform dependent option with a benchmarking setup ensure to check your platform docs.
 
 Each of these paths should export the `${ENDPOINT}` environment variable which we can send requests to.
 
-### Port-forward to Localhost 
+### Port-forward to Localhost
 
 Given a `$NAMESPACE` you can grab your gateway service name with the following.
 
@@ -71,7 +71,7 @@ If you are using the GKE gateway or have are using the default service type of `
 export ENDPOINT=$(kubectl get gateway --no-headers -n ${NAMESPACE} -o jsonpath='{.items[].status.addresses[0].value}')
 ```
 
-**_NOTE:_** This command assumes you have one gateway in your given `${NAMESPACE}`, if you have multiple, it will just grab one. Therefor, in the case you do have multiple gateways, you should find the correct gateway and target that specifically:
+**_NOTE:_** This command assumes you have one gateway in your given `${NAMESPACE}`, if you have multiple, it will just grab one. Therefore, in the case you do have multiple gateways, you should find the correct gateway and target that specifically:
 
 ```bash
 kubectl get gateway -n ${NAMESPACE}
@@ -85,15 +85,33 @@ export ENDPOINT=$(kubectl get gateway ${GATEWAY_NAME} --no-headers -n ${NAMESPAC
 
 ### Using an ingress
 
-> [!REQUIREMENT]
-> This requires that the release of the `llm-d-infra` chart must have `.ingress.enabled` set to `true`, and the `.ingress.host` to be set to a valid address you own the DNS records for.
+> [!REQUIREMENTS]
+> This requires that the release of the `llm-d-infra` chart must have `.ingress.enabled` set to `true`, and the `.gateway.service.type` to `ClusterIP`.
+> This requires some load-balancer configuration for your cluster / ingress-controller. This could be either cloud-provider integration or something like metalLB.
 
+This is the most environment dependent of all the options, and can be tricky to set up. For more information on this see [our gateway customization docs](../docs/customizing-your-gateway.md#using-an-ingress). You should be able to get your endpoint from you ingress with the following:
+
+```bash
+export ENDPOINT=$(kubectl get ingress --no-headers -o jsonpath='{.items[].status.loadBalancer.ingress[0].ip}')
+```
+
+**_NOTE:_** This command assumes you have one ingress in your given `${NAMESPACE}`, if you have multiple, it will just grab one. Therefore, in the case you do have multiple gateways, you should find the correct gateway and target that specifically:
+
+```bash
+kubectl get ingress -n ${NAMESPACE}
+NAME                                           CLASS     HOSTS   ADDRESS         PORTS   AGE
+infra-inference-scheduling-inference-gateway   traefik   *       166.19.16.120   80      21m
+infra-sim-inference-gateway                    traefik   *       166.19.16.132   80      7m
+
+INGRESS_NAME=infra-inference-scheduling-inference-gateway
+export ENDPOINT=$(kubectl get ingress ${GATEWAY_NAME} --no-headers -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+```
 
 ## Sending the Requests
 
-In this example since we are port-forwarding, we know that our endpoint will be localhost:
+### /v1/models endpoint
 
-
+The first path we can hit is `/v1/models`. This endpoint is only dependent on a vllm server being up and running in your inferecepool, so even if you are doing a wide case and only 1 decode or prefill instance is up, you should be able to get a response (this depends on configurations used by EPP as well). This is generally the safest request to make because the models per each quickstart path vary, but hit `/v1/models` does not depend on the model name.
 
 1. Try curling the `/v1/models` endpoint:
 
@@ -123,7 +141,9 @@ curl -s ${ENDPOINT}/v1/models \
 }
 ```
 
-1. Try curling the `v1/completions` endpoint:
+### /v1/completions
+
+Now lets try hitting the `/v1/completions` endpoint (this is model dependent, ensure your model matches what the server returns for the `v1/models` curl).
 
 ```bash
 curl -X POST ${ENDPOINT}/v1/completions \
@@ -148,3 +168,112 @@ curl -X POST ${ENDPOINT}/v1/completions \
   "model": "random"
 }
 ```
+
+Some other useful tricks you can with `/v1/completions` would be to control the `max_tokens` and pass a `seed`.
+
+`max_tokens` is helpful because it will limit the size of tokens the server returns, and so by setting it to `1` you can mimic a test for TTFT. You can do so with the following:
+
+```bash
+
+curl -s http://${ENDPOINT}/v1/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "deepseek-ai/DeepSeek-R1-0528",
+    "prompt": "Hi, how are you?",
+    "max_tokens": "1"
+  }' | jq
+```
+
+`seed` is helpful because it allows each request to be treated as unique to the inference server. It should be noted that this will not affect anything to do with prefix caching, or anything at the `inference-scheduler` level, so requests will still be routed to the same locations, but it should not cache anything at the vllm server level. We frequently construct
+
+```bash
+curl -s http://${ENDPOINT}/v1/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "deepseek-ai/DeepSeek-R1-0528",
+    "prompt": "Hi, how are you?",
+    "seed": "'$(date +%M%H%M%S)'"
+  }' | jq
+```
+
+For more information options to set for the `/v1/completions` endpoint, see the [openAI API server /v1/completions docs](https://platform.openai.com/docs/api-reference/completions/create)
+
+### /v1/chat/completions (coming soon)
+
+While `/v1/completions` is a legacy API, it is still supported for now. We are in the process of converting over to `/v1/chat/completions`, and this work is being tracked in a few places.
+
+The [initial implementation for the kv-cache-manager package](https://github.com/llm-d/llm-d-kv-cache-manager/issues/10) landed as part of the v0.2 sprint.
+
+[Support within the `llm-d-inference-scheduler` image](https://github.com/llm-d/llm-d-inference-scheduler/issues/83) is in progress and part of the v0.3 roadmap, and further support to the upstream `epp` image is in progress and being [tracked here](https://github.com/kubernetes-sigs/gateway-api-inference-extension/issues/827).
+
+## Following logs for requests
+
+We recommend the `stern` tool for following requests because it will allow you to follow multiple pod logs at once. This is particularly useful in the context of llm-d because most deployments have multiple `decode` pods. For more information on this see our docs on [optional tools](../dependencies/README.md#optional-tools).
+
+To grab all decode pods in a namespace we can do the following:
+
+```bash
+DECODE_PODS=$(kubectl get pods --no-headers -n ${NAMESPACE} -l "llm-d.ai/role=decode" -o custom-columns=":metadata.name")
+```
+
+Then you can view those logs together using stern:
+
+```bash
+stern "$(echo "$DECODE_PODS" | paste -sd'|' -)"
+```
+
+Just with `kubectl logs` you can specify the container name following your pod names to only grab logs from specific containers (`stern` by default will print logs for all containers in a pod). You can do so as follows:
+
+```bash
+stern "$(echo "$DECODE_PODS" | paste -sd'|' -)" -c routing-proxy # for routing sidecar logs
+stern "$(echo "$DECODE_PODS" | paste -sd'|' -)" -c vllm # for vllm logs
+```
+
+For grabbing the prefill pods you can re-use our same command from earlier just swap the role label:
+
+```bash
+PREFILL_PODS=$(kubectl get pods --no-headers -n ${NAMESPACE} -l "llm-d.ai/role=prefill" -o custom-columns=":metadata.name")
+```
+
+Typically this won't be as necessary because prefill does better with lower parallelism, and currently all of our quickstarts use 1 prefill instance.
+
+### `grep`ing out noise from logs
+
+We have some helpful `grep -v` commands that can help you remove noise from your `vllm` and `routing-proxy` containers.
+
+#### `routing-proxy` container noise
+
+The moment the vllm container comes online from a k8s perspective (when its `status` becomes ready), the sidecar will start trying to connect to and communicate with it. However, after the `vllm` pod spins up, the vllm API server still needs to start up to be able to respond to requests. For the duration of this delta you will get some ugly logs in the sidecar that should look like the following:
+
+```log
+ms-inference-scheduling-llm-d-modelservice-decode-8ff7fd5bjvpbm routing-proxy E0824 16:49:51.115884       1 proxy.go:268] "waiting for vLLM to be ready" err="dial tcp [::1]:8200: connect: connection refused" logger="proxy server"
+...
+```
+
+To avoid this, consider adding the following to your log command
+
+```bash
+stern ... | grep -v "waiting for vLLM to be ready"
+```
+
+#### `vllm` container noise
+
+The `vllm` container will log any hits on its metrics endpoint, which should be getting continuously polled, you can grep them out with the following:
+
+```bash
+stern ... | grep -v "GET /metrics HTTP/1.1"
+```
+
+In some cases you might also want to ignore vllm's usage information which it will log every so often, so that you can isolate logs on a per-request basis. An example usage log from vllm might look like:
+
+```log
+ms-inference-scheduling-llm-d-modelservice-decode-8ff7fd5bxf7lt vllm DEBUG 08-24 18:09:51 [loggers.py:122] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 0 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 0.0%
+```
+
+To target all of these usage logs you could just grep out their shared prefix:
+
+```bash
+stern ... | grep -v "Avg prompt throughput"
+```
+
+However you can also customize this `grep -v` command to include the 0 values so as to view usage metrics only once the server has started receiving traffic. You can also chain multiple terms together to `grep` out using the `\|` delimiter, ex: `grep -v "do not show a in logs\|also do not show b in logs"`.

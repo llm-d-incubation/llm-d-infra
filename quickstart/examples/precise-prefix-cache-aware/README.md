@@ -26,120 +26,73 @@ helmfile apply
 
 ### Gateway options
 
-Currently we support 3 gateway providers as `environments` in helmfile, those are `istio`, `kgateway` and `gke`. To install for that provider, simply pass the `-e <environment_name>` flag to your install as so:
+To see specify your gateway choice you can use the `-e <gateway option>` flag, ex:
 
 ```bash
-# for kgateway:
 helmfile apply -e kgateway
-# for GKE:
-helmfile apply -e gke
 ```
+
+To see what gateway options are supported refer to our [gateway control plane docs](../../gateway-control-plane-providers/README.md#supported-providers). Gateway configurations per provider are tracked in the [gateway-configurations directory](../common/gateway-configurations/).
+
+You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
 
 ## Verify the Installation
 
-1. Firstly, you should be able to list all helm releases in the `llm-d-precise` ns to view all 3 charts that should be installed:
+- Firstly, you should be able to list all helm releases to view the 3 charts got installed into your chosen namespace:
 
 ```bash
 helm list -n ${NAMESPACE}
 NAME            NAMESPACE     REVISION  UPDATED                               STATUS    CHART                     APP VERSION
-gaie-kv-events  llm-d-precise 2         2025-08-21 09:28:54.750853 -0700 PDT  deployed  inferencepool-v0.5.1      v0.5.1
-infra-kv-events llm-d-precise 2         2025-08-21 09:31:42.076935 -0700 PDT  deployed  llm-d-infra-v1.2.4        v0.2.0
-ms-kv-events    llm-d-precise 1         2025-08-21 09:24:05.957874 -0700 PDT  deployed  llm-d-modelservice-v0.2.7 v0.2.0
+gaie-kv-events  llm-d-precise 1         2025-08-24 12:05:31.484748 -0700 PDT  deployed  inferencepool-v0.5.1      v0.5.1
+infra-kv-events llm-d-precise 1         2025-08-24 12:05:27.485812 -0700 PDT  deployed  llm-d-infra-v1.3.0        v0.3.0
+ms-kv-events    llm-d-precise 1         2025-08-24 12:05:37.660439 -0700 PDT  deployed  llm-d-modelservice-v0.2.7 v0.2.0
 ```
 
-Note: if you chose to use `istio` as your Gateway provider you would see those (`istiod` and `istio-base` in the `istio-system` namespace) instead of the kgateway based ones.
-
-- Find the gateway service:
+- Out of the box with this example you should have the following resources:
 
 ```bash
-kubectl get services -n ${NAMESPACE}
-NAME                                      TYPE           CLUSTER-IP       EXTERNAL-IP                                                               PORT(S)                        AGE
-gaie-kv-events-epp                        ClusterIP      172.30.82.88     <none>                                                                    9002/TCP,9090/TCP,5557/TCP     9m54s
-gaie-kv-events-ip-805c964d                ClusterIP      None             <none>                                                                    54321/TCP                      9m49s
-infra-kv-events-inference-gateway-istio   LoadBalancer   172.30.168.117   aea17eb0f86a54359809595228bbfd69-1351462786.us-east-1.elb.amazonaws.com   15021:30834/TCP,80:30770/TCP   9m58s
+kubectl get all -n ${NAMESPACE}
+NAME                                                          READY   STATUS    RESTARTS   AGE
+pod/gaie-kv-events-epp-687b78968b-wvswh                       1/1     Running   0          80s
+pod/infra-kv-events-inference-gateway-istio-949d87f84-zvsp2   1/1     Running   0          85s
+pod/ms-kv-events-llm-d-modelservice-decode-b874d48d9-bgm5r    2/2     Running   0          75s
+pod/ms-kv-events-llm-d-modelservice-decode-b874d48d9-ph64c    2/2     Running   0          75s
+
+NAME                                              TYPE           CLUSTER-IP   EXTERNAL-IP   PORT(S)                        AGE
+service/gaie-kv-events-epp                        ClusterIP      10.16.2.44   <none>        9002/TCP,9090/TCP,5557/TCP     81s
+service/gaie-kv-events-ip-805c964d                ClusterIP      None         <none>        54321/TCP                      75s
+service/infra-kv-events-inference-gateway-istio   LoadBalancer   10.16.1.30   10.16.4.2     15021:32033/TCP,80:39332/TCP   86s
+
+NAME                                                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/gaie-kv-events-epp                        1/1     1            1           81s
+deployment.apps/infra-kv-events-inference-gateway-istio   1/1     1            1           86s
+deployment.apps/ms-kv-events-llm-d-modelservice-decode    2/2     2            2           76s
+
+NAME                                                                DESIRED   CURRENT   READY   AGE
+replicaset.apps/gaie-kv-events-epp-687b78968b                       1         1         1       81s
+replicaset.apps/infra-kv-events-inference-gateway-istio-949d87f84   1         1         1       86s
+replicaset.apps/ms-kv-events-llm-d-modelservice-decode-b874d48d9    2         2         2       76s
 ```
 
-In this case we have found that our gateway service is called `infra-inference-scheduling-inference-gateway-istio`.
+**_NOTE:_** This assumes no other quickstart deployments in your given `${NAMESPACE}` and you have not changed the default release names via the `${RELEASE_NAME}` environment variable.
 
-1. `port-forward` the service so we can curl it:
+## Testing this "well lit path"
 
-```bash
-kubectl -n llm-d-precise port-forward service/infra-kv-events-inference-gateway-istio 8000:80
-```
+We have docs on getting started sending inference requests [available here](../../docs/getting-started-inferencing.md) that are general to all examples. However, this example has unique instructions to interact with it which will be provided here:
 
-1. Try curling the `/v1/models` endpoint:
+1. First, you will need to send a basic inference request to your gateway. For in depth documentation on how to do this, please see the link above, but a command will be provided to work out of the box with default settings:
 
 ```bash
-curl -s http://localhost:8000/v1/models \
-  -H "Content-Type: application/json" | jq
-{
-  "data": [
-    {
-      "created": 1755794609,
-      "id": "Qwen/Qwen3-0.6B",
-      "max_model_len": 40960,
-      "object": "model",
-      "owned_by": "vllm",
-      "parent": null,
-      "permission": [
-        {
-          "allow_create_engine": false,
-          "allow_fine_tuning": false,
-          "allow_logprobs": true,
-          "allow_sampling": true,
-          "allow_search_indices": false,
-          "allow_view": true,
-          "created": 1755794609,
-          "group": null,
-          "id": "modelperm-d60a62ec11034c1e8d88580f6656d686",
-          "is_blocking": false,
-          "object": "model_permission",
-          "organization": "*"
-        }
-      ],
-      "root": "Qwen/Qwen3-0.6B"
-    }
-  ],
-  "object": "list"
-}
-```
 
-1. Curl the `v1/completions` endpoint once:
+kubectl port-forward -n ${NAMESPACE} service/infra-kv-events-inference-gateway-istio 8000:80
 
-```bash
-export LONG_TEXT_200_WORDS="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." && \
 curl -s http://localhost:8000/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "Qwen/Qwen3-0.6B",
-    "prompt": "'"$LONG_TEXT_200_WORDS"'",
-    "max_tokens": 50
+    "prompt": "Hello, how are you?",
+    "max_tokens": 1
   }' | jq
-{
-  "choices": [
-    {
-      "finish_reason": "length",
-      "index": 0,
-      "logprobs": null,
-      "prompt_logprobs": null,
-      "stop_reason": null,
-      "text": " Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor"
-    }
-  ],
-  "created": 1755794629,
-  "id": "cmpl-ba363b6b-3462-444b-afb3-2e5935b278f8",
-  "kv_transfer_params": null,
-  "model": "Qwen/Qwen3-0.6B",
-  "object": "text_completion",
-  "service_tier": null,
-  "system_fingerprint": null,
-  "usage": {
-    "completion_tokens": 50,
-    "prompt_tokens": 192,
-    "prompt_tokens_details": null,
-    "total_tokens": 242
-  }
-}
 ```
 
 1. Check the inference-scheduler's prefix-cache-scorer's scores with the following command:
@@ -151,7 +104,7 @@ kubectl logs -l inferencepool=gaie-kv-events-epp -n ${NAMESPACE} --tail 100 | gr
 You should see output similar to:
 
 ```bash
-2025-08-21T16:43:49Z  LEVEL(-4) prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:125 Got pod scores  {"x-request-id": "ba363b6b-3462-444b-afb3-2e5935b278f8", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
+2025-08-24T19:19:16Z  LEVEL(-4) prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:125 Got pod scores  {"x-request-id": "28b10175-d1f3-45c4-b970-a13dfc6811e3", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
 ```
 
 1. Repeat steps 5 and 6 to see the prefix-cache-scorer in action
@@ -159,9 +112,11 @@ You should see output similar to:
 You should see output similar to:
 
 ```log
-2025-07-18T22:00:24Z    LEVEL(-4)       prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:133     Got pod scores  {"x-request-id": "0e08703d-30c0-4624-a7b3-31e94dc99bc8", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
-2025-07-18T22:00:46Z    LEVEL(-4)       prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:133     Got pod scores  {"x-request-id": "8d0b587d-058f-4d2e-a062-a859a565d37a", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": {"${POD_IP}":2}}
+2025-08-24T19:41:23Z  LEVEL(-4) prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:125 Got pod scores  {"x-request-id": "4d3b41fe-e95e-4628-b6f9-c7b5b20ea69f", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
+2025-08-24T19:41:46Z  LEVEL(-4) prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:125 Got pod scores  {"x-request-id": "6db977c6-96aa-482d-ab89-ad0e114d71d5", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
 ```
+
+**_NOTE:_** These logs will only appear for unique requests, so if you don't see repeated instances of these logs make sure to redo them in a unique way.
 
 Notice that the second time we called the `/v1/completions` endpoint, the prefix-cache-scorer was able to return a score for the pod,
 indicating that it had cached the KV-blocks from the first call.
@@ -198,8 +153,10 @@ helm uninstall gaie-kv-events -n ${NAMESPACE}
 helm uninstall ms-kv-events -n ${NAMESPACE}
 ```
 
+**_NOTE:_** If you set the `$RELEASE_NAME_POSTFIX` environment variable, your release names will be different from the command above: `infra-$RELEASE_NAME_POSTFIX`, `gaie-$RELEASE_NAME_POSTFIX` and `ms-$RELEASE_NAME_POSTFIX`.
+
+**_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the quickstart, even if you use a non-default option.
+
 ## Customization
 
-- **Change model**: Edit `ms-kv-events/values.yaml` and update the `modelArtifacts.uri`, `modelArtifacts.name` and `routing.modelName`
-- **Adjust resources**: Modify the GPU/CPU/memory requests in the container specifications
-- **Scale workers**: Change the `replicas` count for decode/prefill deployments
+For information on customizing an installation of a quickstart path and tips to build your own, see [our docs](../../docs/customizing-a-quickstart-inference-stack.md)

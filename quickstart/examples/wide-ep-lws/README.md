@@ -12,6 +12,10 @@ In this example, we will demonstrate a deployment of `DeepSeek-R1-0528` with:
 - 1 DP=8 Prefill Workers
 - 2 DP=4 Decode Workers
 
+## Hardware Requirements
+
+This example out of the box requires 16 Nvidia H200 GPUs, and Inifiniband RDMA. It requires 1024 Gi of memory across and 128 Gi of ephemeral storage all 3 pods (512 Gi memory and 64 Gi storage for both Decode pods together and 512 Gi memory and 64 Gi storage for the prefill pod).
+
 ## Pre-requisites
 
 - It is assumed that you have the proper tools installed on your local system to use these quickstart. To see what those tools are and minimum versions, check [our docs](../../dependencies/README.md#required-tools), and to install them, see our [install-deps.sh](../../dependencies/install-deps.sh) script.
@@ -25,7 +29,7 @@ In this example, we will demonstrate a deployment of `DeepSeek-R1-0528` with:
 Use the helmfile to compose and install the stack. The Namespace in which the stack will be deployed will be derived from the `${NAMESPACE}` environment variable. If you have not set this, it will default to `llm-d-wide-ep` in this example.
 
 ```bash
-export NAMESPACE=llm-d-wide-ep # Or any namespace your heart desires
+export NAMESPACE=llm-d-wide-ep # or any other namespace
 cd quickstart/examples/wide-ep-lws
 helmfile apply
 ```
@@ -34,166 +38,74 @@ helmfile apply
 
 ### Gateway options
 
-Currently we support 3 gateway providers as `environments` in helmfile, those are `istio`, `kgateway` and `gke`. To install for that provider, simply pass the `-e <environment_name>` flag to your install as so:
+To see specify your gateway choice you can use the `-e <gateway option>` flag, ex:
 
 ```bash
-# for kgateway:
 helmfile apply -e kgateway
-# for GKE:
-helmfile apply -e gke
 ```
+
+To see what gateway options are supported refer to our [gateway control plane docs](../../gateway-control-plane-providers/README.md#supported-providers). Gateway configurations per provider are tracked in the [gateway-configurations directory](../common/gateway-configurations/).
+
+You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
 
 ## Verifying the installation
 
-1. First you should be able to see that both of your release of infra and modelservice charts went smoothly:
+- Firstly, you should be able to list all helm releases to view both of the 2 charts got installed into your chosen namespace:
 
 ```bash
 helm list -n ${NAMESPACE}
-NAME          NAMESPACE     REVISION  UPDATED                               STATUS    CHART                     APP VERSION
-infra-wide-ep llm-d-wide-ep 1         2025-08-21 12:50:44.051441 -0700 PDT  deployed  llm-d-infra-v1.2.4        v0.2.0
-ms-wide-ep    llm-d-wide-ep 1         2025-08-21 12:50:48.398507 -0700 PDT  deployed  llm-d-modelservice-v0.2.7 v0.2.0
+NAME            NAMESPACE       REVISION    UPDATED                                 STATUS      CHART                       APP VERSION
+infra-wide-ep   llm-d-wide-ep   1           2025-08-24 13:14:53.355639 -0700 PDT    deployed    llm-d-infra-v1.3.0          v0.3.0
+ms-wide-ep      llm-d-wide-ep   1           2025-08-24 13:14:57.614439 -0700 PDT    deployed    llm-d-modelservice-v0.2.7   v0.2.0
 ```
 
-1. You should all the pods you expect to (2 decodes, 1 prefill, 1 gateway pod, 1 EPP pod):
+- Out of the box with this example you should have the following resources:
 
 ```bash
-kubectl get pods -n ${NAMESPACE}
-NAME                                                     READY   STATUS    RESTARTS   AGE
-infra-wide-ep-inference-gateway-istio-7f469d88b6-kbsn4   1/1     Running   0          6m17s
-ms-wide-ep-llm-d-modelservice-decode-0                   2/2     Running   0          6m10s
-ms-wide-ep-llm-d-modelservice-decode-0-1                 2/2     Running   0          6m10s
-ms-wide-ep-llm-d-modelservice-epp-84588669cd-s4z7c       1/1     Running   0          6m11s
-ms-wide-ep-llm-d-modelservice-prefill-0                  1/1     Running   0          6m10s
+kubectl get all -n ${NAMESPACE}
+NAME                                                         READY   STATUS    RESTARTS   AGE
+pod/infra-wide-ep-inference-gateway-istio-74d5c66c86-h5mfn   1/1     Running   0          2m22s
+pod/ms-wide-ep-llm-d-modelservice-decode-0                   2/2     Running   0          2m13s
+pod/ms-wide-ep-llm-d-modelservice-decode-0-1                 2/2     Running   0          2m13s
+pod/ms-wide-ep-llm-d-modelservice-epp-55bb9857cf-4pj6r       1/1     Running   0          2m14s
+pod/ms-wide-ep-llm-d-modelservice-prefill-0                  1/1     Running   0          2m13s
+
+NAME                                            TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)                        AGE
+service/infra-wide-ep-inference-gateway-istio   LoadBalancer   10.16.1.34    10.16.4.2     15021:30312/TCP,80:33662/TCP   2m22s
+service/ms-wide-ep-ip-1e480070                  ClusterIP      None          <none>        54321/TCP                      2d4h
+service/ms-wide-ep-llm-d-modelservice-decode    ClusterIP      None          <none>        <none>                         2m13s
+service/ms-wide-ep-llm-d-modelservice-epp       ClusterIP      10.16.1.137   <none>        9002/TCP                       2d4h
+service/ms-wide-ep-llm-d-modelservice-prefill   ClusterIP      None          <none>        <none>                         2m13s
+
+NAME                                                    READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/infra-wide-ep-inference-gateway-istio   1/1     1            1           2m22s
+deployment.apps/ms-wide-ep-llm-d-modelservice-epp       1/1     1            1           2m14s
+
+NAME                                                               DESIRED   CURRENT   READY   AGE
+replicaset.apps/infra-wide-ep-inference-gateway-istio-74d5c66c86   1         1         1       2m22s
+replicaset.apps/ms-wide-ep-llm-d-modelservice-epp-55bb9857cf       1         1         1       2m14s
+
+NAME                                                      READY   AGE
+statefulset.apps/ms-wide-ep-llm-d-modelservice-decode     1/1     2m13s
+statefulset.apps/ms-wide-ep-llm-d-modelservice-decode-0   1/1     2m13s
+statefulset.apps/ms-wide-ep-llm-d-modelservice-prefill    1/1     2m13s
 ```
 
-1. You should be able to do inferencing requests. The first thing we need to check is that all our vLLM servers have started which can take some time. We recommend using `stern` to grep the decode logs together and wait for the messaging saying that the vLLM API server is spun up:
+**_NOTE:_** This assumes no other quickstart deployments in your given `${NAMESPACE}` and you have not changed the default release names via the `${RELEASE_NAME}` environment variable.
 
-```bash
-DECODE_PODS=$(kubectl get pods -n ${NAMESPACE} -l "llm-d.ai/role=decode" --no-headers | awk '{print $1}' | tail -n 2)
-stern "$(echo "$DECODE_PODS" | paste -sd'|' -)" -c vllm | grep -v "Avg prompt throughput"
-```
+## Using the stack
 
-Eventually you should see log lines indicating vLLM is ready to start accepting requests:
+For instructions on getting started making inference requests see [our docs](../../docs/getting-started-inferencing.md)
 
-```log
-ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO 07-25 13:57:57 [api_server.py:1818] Starting vLLM API server 0 on http://0.0.0.0:8200
-ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO 07-25 13:57:57 [launcher.py:29] Available routes are:
-ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO 07-25 13:57:57 [launcher.py:37] Route: /openapi.json, Methods: GET, HEAD
-ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO 07-25 13:57:57 [launcher.py:37] Route: /docs, Methods: GET, HEAD
-...
-ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO:     Started server process [1]
-ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO:     Waiting for application startup.
-ms-pd-llm-d-modelservice-decode-9666b4775-z8k46 vllm INFO:     Application startup complete.
-```
+**_NOTE:_** This example particularly benefits from utilizing stern as described in the [getting-started-inferencing docs](../../docs/getting-started-inferencing.md#following-logs-for-requests), because while we only have 3 inferencing pods, it has 16 vllm servers or ranks.
 
-We also should make sure that prefill has come up:
-
-```bash
-PREFILL_POD=$(kubectl get pods -n ${NAMESPACE} -l "llm-d.ai/inferenceServing=true,llm-d.ai/role=prefill" | tail -n 1 | awk '{print}')
-kubectl logs pod/${PREFILL_POD} | grep -v "Avg prompt throughput"
-```
-
-Again look for the same server startup message, but instead of 2 aggregated into a single log stream with decode, you should only see 1 set of startup logs for prefill (hence the lack of `stern` here):
-
-```log
-INFO 07-25 18:46:12 [api_server.py:1818] Starting vLLM API server 0 on http://0.0.0.0:8000
-INFO 07-25 18:46:12 [launcher.py:29] Available routes are:
-INFO 07-25 18:46:12 [launcher.py:37] Route: /openapi.json, Methods: GET, HEAD
-INFO 07-25 18:46:12 [launcher.py:37] Route: /docs, Methods: GET, HEAD
-...
-INFO:     Started server process [1]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-```
-
-After this, we can port-forward your gateway service in one terminal:
-
-```bash
-kubectl port-forward -n ${NAMESPACE} service/infra-wide-ep-inference-gateway-istio 8000:80
-```
-
-And then you should be able to curl your gateway service:
-
-```bash
-curl -s http://localhost:8000/v1/models \
-  -H "Content-Type: application/json" | jq
-{
-  "data": [
-    {
-      "created": 1753469354,
-      "id": "deepseek-ai/DeepSeek-R1-0528",
-      "max_model_len": 163840,
-      "object": "model",
-      "owned_by": "vllm",
-      "parent": null,
-      "permission": [
-        {
-          "allow_create_engine": false,
-          "allow_fine_tuning": false,
-          "allow_logprobs": true,
-          "allow_sampling": true,
-          "allow_search_indices": false,
-          "allow_view": true,
-          "created": 1753469354,
-          "group": null,
-          "id": "modelperm-7e5c28aac82549b09291f748cf209bf4",
-          "is_blocking": false,
-          "object": "model_permission",
-          "organization": "*"
-        }
-      ],
-      "root": "deepseek-ai/DeepSeek-R1-0528"
-    }
-  ],
-  "object": "list"
-}
-```
-
-Finally, we should be able to perform inference with curl:
-
-```bash
-curl -s http://localhost:8000/v1/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "deepseek-ai/DeepSeek-R1-0528",
-    "prompt": "I will start this from the first set of prompts and see where this gets routed. Were going to start by significantly jacking up the tokens so that we can ensure that this request gets routed properly with regard to PD. I also verified that all the gateway assets seem to be properly configured and as far as I can tell, there are no mismatches between assets. Everything seems set, lets hope that this works right now!",
-    "max_tokens": 100,
-    "ignore_eos": "true",
-    "seed": "'$(date +%M%H%M%S)'"
-  }' | jq
-{
-  "choices": [
-    {
-      "finish_reason": "length",
-      "index": 0,
-      "logprobs": null,
-      "prompt_logprobs": null,
-      "stop_reason": null,
-      "text": " I'm going to use the following tokens to ensure that we get a proper response: \n\nToken: 250\nTemperature: 0.7\nMax Length: 500\nTop P: 1.0\nFrequency Penalty: 0.0\nPresence Penalty: 0.0\nStop Sequence: None\n\nNow, we are going to use the following prompt:\n\n\"Write a comprehensive and detailed tutorial on how to write a prompt that would be used with an AI like"
-    }
-  ],
-  "created": 1753469430,
-  "id": "cmpl-882f51e0-c2df-4284-a9a4-557b44ed00b9",
-  "kv_transfer_params": null,
-  "model": "deepseek-ai/DeepSeek-R1-0528",
-  "object": "text_completion",
-  "service_tier": null,
-  "system_fingerprint": null,
-  "usage": {
-    "completion_tokens": 100,
-    "prompt_tokens": 86,
-    "prompt_tokens_details": null,
-    "total_tokens": 186
-  }
-}
-```
+**_NOTE:_** Compared to the other examples, this one takes anywhere between 7-10 minutes for the vllm API servers to startup so this might take longer before you can interact with this example.
 
 ## Cleanup
 
 To remove the deployment:
 
 ```bash
-# Remove the model services
 # From examples/wide-ep-lws
 helmfile destroy
 
@@ -202,8 +114,10 @@ helm uninstall ms-wide-ep -n ${NAMESPACE}
 helm uninstall infra-wide-ep -n ${NAMESPACE}
 ```
 
+**_NOTE:_** If you set the `$RELEASE_NAME_POSTFIX` environment variable, your release names will be different from the command above: `infra-$RELEASE_NAME_POSTFIX`, `gaie-$RELEASE_NAME_POSTFIX` and `ms-$RELEASE_NAME_POSTFIX`.
+
+**_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the quickstart, even if you use a non-default option.
+
 ## Customization
 
-- **Change model**: Edit `ms-wide-ep/values.yaml` and update the `modelArtifacts.uri`, `modelArtifacts.name` and `routing.modelName`
-- **Adjust resources**: Modify the GPU/CPU/memory requests in the container specifications
-- **Scale workers**: Change the `replicas` count for decode/prefill deployments
+For information on customizing an installation of a quickstart path and tips to build your own, see [our docs](../../docs/customizing-a-quickstart-inference-stack.md)

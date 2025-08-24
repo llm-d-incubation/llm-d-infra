@@ -26,14 +26,15 @@ helmfile apply
 
 ### Gateway options
 
-Currently we support 3 gateway providers as `environments` in helmfile, those are `istio`, `kgateway` and `gke`. To install for that provider, simply pass the `-e <environment_name>` flag to your install as so:
+To see specify your gateway choice you can use the `-e <gateway option>` flag, ex:
 
 ```bash
-# for kgateway:
 helmfile apply -e kgateway
-# for GKE:
-helmfile apply -e gke
 ```
+
+To see what gateway options are supported refer to our [gateway control plane docs](../../gateway-control-plane-providers/README.md#supported-providers). Gateway configurations per provider are tracked in the [gateway-configurations directory](../common/gateway-configurations/).
+
+You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
 
 ## Verify the Installation
 
@@ -41,119 +42,66 @@ helmfile apply -e gke
 
 ```bash
 helm list -n ${NAMESPACE}
-NAME      NAMESPACE REVISION  UPDATED                               STATUS    CHART                     APP VERSION
-gaie-sim  llm-d-sim 1         2025-08-20 07:45:52.387286 -0700 PDT  deployed  inferencepool-v0.5.1      v0.5.1
-infra-sim llm-d-sim 1         2025-08-20 07:45:49.269596 -0700 PDT  deployed  llm-d-infra-v1.2.4        v0.2.0
-ms-sim    llm-d-sim 1         2025-08-20 07:45:56.698955 -0700 PDT  deployed  llm-d-modelservice-v0.2.7 v0.2.0
+NAME        NAMESPACE   REVISION   UPDATED                               STATUS     CHART                       APP VERSION
+gaie-sim    llm-d-sim   1          2025-08-24 11:44:26.88254 -0700 PDT   deployed   inferencepool-v0.5.1        v0.5.1
+infra-sim   llm-d-sim   1          2025-08-24 11:44:23.11688 -0700 PDT   deployed   llm-d-infra-v1.3.0          v0.3.0
+ms-sim      llm-d-sim   1          2025-08-24 11:44:32.17112 -0700 PDT   deployed   llm-d-modelservice-v0.2.7   v0.2.0
 ```
 
-### Finding your Endpoint
-
-- Find the gateway service:
+- Out of the box with this example you should have the following resources:
 
 ```bash
-kubectl get services -n ${NAMESPACE}
-NAME                                TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)                        AGE
-gaie-sim-epp                        ClusterIP      172.30.135.207   <none>                                                                   9002/TCP,9090/TCP              10m
-gaie-sim-ip-207d1d4c                ClusterIP      None             <none>                                                                   54321/TCP                      10m
-infra-sim-inference-gateway-istio   LoadBalancer   172.30.182.184   a14d7f1f16a55447e8aae9e7ab268958-112801509.us-east-1.elb.amazonaws.com   15021:30887/TCP,80:31002/TCP   10m
+kubectl get all -n ${NAMESPACE}
+NAME                                                     READY   STATUS    RESTARTS   AGE
+pod/gaie-sim-epp-694bdbd44c-4sh92                        1/1     Running   0          7m14s
+pod/infra-sim-inference-gateway-istio-68d59c4778-n6n5l   1/1     Running   0          7m19s
+pod/ms-sim-llm-d-modelservice-decode-674774f45d-hhlxl    2/2     Running   0          7m10s
+pod/ms-sim-llm-d-modelservice-decode-674774f45d-p5lsx    2/2     Running   0          7m10s
+pod/ms-sim-llm-d-modelservice-decode-674774f45d-zpp84    2/2     Running   0          7m10s
+pod/ms-sim-llm-d-modelservice-prefill-76c86dd9f8-pvbzm   1/1     Running   0          7m10s
+
+NAME                                        TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)                        AGE
+service/gaie-sim-epp                        ClusterIP      10.16.0.143   <none>        9002/TCP,9090/TCP              7m14s
+service/gaie-sim-ip-207d1d4c                ClusterIP      None          <none>        54321/TCP                      7m14s
+service/infra-sim-inference-gateway-istio   LoadBalancer   10.16.1.112   10.16.4.2     15021:33302/TCP,80:31413/TCP   7m19s
+
+NAME                                                READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/gaie-sim-epp                        1/1     1            1           7m14s
+deployment.apps/infra-sim-inference-gateway-istio   1/1     1            1           7m19s
+deployment.apps/ms-sim-llm-d-modelservice-decode    3/3     3            3           7m10s
+deployment.apps/ms-sim-llm-d-modelservice-prefill   1/1     1            1           7m10s
+
+NAME                                                           DESIRED   CURRENT   READY   AGE
+replicaset.apps/gaie-sim-epp-694bdbd44c                        1         1         1       7m15s
+replicaset.apps/infra-sim-inference-gateway-istio-68d59c4778   1         1         1       7m20s
+replicaset.apps/ms-sim-llm-d-modelservice-decode-674774f45d    3         3         3       7m11s
+replicaset.apps/ms-sim-llm-d-modelservice-prefill-76c86dd9f8   1         1         1       7m11s
 ```
 
-**_NOTE:_** As mentioned above, this example uses Istio, your services will be named differently if you are using another provider.
+**_NOTE:_** This assumes no other quickstart deployments in your given `${NAMESPACE}`.
 
-If you are using the GKE gateway or have are using the default service type of `LoadBalancer` for you gateway and you are on a cloud platform with loadbalancing, you can use the `External IP` of your gateway service (you should see the same thing under your gateway with `kubectl get gateway`.)
+## Using the stack
 
-```bash
-export ENDPOINT=$(kubectl get gateway -n ${NAMESPACE} | \
-  grep "infra-sim" | \
-  awk '{print $3}')
-```
-
-**_NOTE:_** Here we are `grep`ing by the name `infra-sim` because that is the release name specified in the [helmfile](./helmfile.yaml.gotmpl#L28), if you change the release name, you will need to insure you have grabbed the `ENDPOINT` for your correct gateway.
-
-If you are not on GKE and or selected the gateway service type of `NodePort`, you will have to port-forward the service and curl `localhost`
-
-```bash
-SERVICE_NAME=$(kubectl get services -n ${NAMESPACE} | grep "infra-sim" | awk '{print $1}' )
-kubectl port-forward -n ${NAMESPACE} service/${SERVICE_NAME} 8000:80
-```
-
-In this example since we are port-forwarding, we know that our endpoint will be localhost:
-
-```bash
-export ENDPOINT="http://localhost:8000"
-```
-
-1. Try curling the `/v1/models` endpoint:
-
-```bash
-curl -s ${ENDPOINT}/v1/models \
-  -H "Content-Type: application/json" | jq
-{
-  "data": [
-    {
-      "created": 1752727169,
-      "id": "random",
-      "object": "model",
-      "owned_by": "vllm",
-      "parent": null,
-      "root": "random"
-    },
-    {
-      "created": 1752727169,
-      "id": "",
-      "object": "model",
-      "owned_by": "vllm",
-      "parent": "random",
-      "root": ""
-    }
-  ],
-  "object": "list"
-}
-```
-
-1. Try curling the `v1/completions` endpoint:
-
-```bash
-curl -X POST ${ENDPOINT}/v1/completions \
-  -H 'Content-Type: application/json' \
-  -d '{
-        "model": "random",
-        "prompt": "How are you today?"
-      }' | jq
-{
-  "choices": [
-    {
-      "finish_reason": "stop",
-      "index": 0,
-      "message": {
-        "content": "Today is a nice sunny day.",
-        "role": "assistant"
-      }
-    }
-  ],
-  "created": 1752727735,
-  "id": "chatcmpl-af42e9e3-dab0-420f-872b-d23353d982da",
-  "model": "random"
-}
-```
+For instructions on getting started making inference requests see [our docs](../../docs/getting-started-inferencing.md)
 
 ## Cleanup
 
 To remove the deployment:
 
 ```bash
-# Remove the model services
 # From examples/sim
-helmfile --selector managedBy=helmfile destroy -f helmfile.yaml
+helmfile destroy
 
-# Remove the infrastructure
-helm uninstall infra-sim -n llm-d-sim
+# Or uninstall manually
+helm uninstall infra-sim -n ${NAMESPACE}
+helm uninstall gaie-sim -n ${NAMESPACE}
+helm uninstall ms-sim -n ${NAMESPACE}
 ```
+
+**_NOTE:_** If you set the `$RELEASE_NAME_POSTFIX` environment variable, your release names will be different from the command above: `infra-$RELEASE_NAME_POSTFIX`, `gaie-$RELEASE_NAME_POSTFIX` and `ms-$RELEASE_NAME_POSTFIX`.
+
+**_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the quickstart, even if you use a non-default option.
 
 ## Customization
 
-- **Change simulation behavior**: Edit `ms-sim/values.yaml` and update the simulation parameters
-- **Adjust resources**: Modify the CPU/memory requests in the container specifications (no GPU required for simulation)
-- **Scale workers**: Change the `replicas` count for decode/prefill deployments
-- **Different model simulation**: Update `routing.modelName` to simulate different model names
+For information on customizing an installation of a quickstart path and tips to build your own, see [our docs](../../docs/customizing-a-quickstart-inference-stack.md)

@@ -6,6 +6,10 @@ This example deploys the recommended out of the box [scheduling configuration](h
 
 This profile defaults to the approximate prefix cache aware scorer, which only observes request traffic to predict prefix cache locality. The [precise prefix cache aware routing feature](../precise-prefix-cache-aware) improves hit rate by introspecting the vLLM instances for cache entries and will become the default in a future release.
 
+## Hardware Requirements
+
+This example out of the box requires 2 Nvidia GPUs of any kind (support determined by the inferencing image used).
+
 ## Pre-requisites
 
 - It is assumed that you have the proper tools installed on your local system to use these quickstart. To see what those tools are and minimum versions, check [our docs](../../dependencies/README.md#required-tools), and to install them, see our [install-deps.sh](../../dependencies/install-deps.sh) script.
@@ -19,7 +23,7 @@ This profile defaults to the approximate prefix cache aware scorer, which only o
 Use the helmfile to compose and install the stack. The Namespace in which the stack will be deployed will be derived from the `${NAMESPACE}` environment variable. If you have not set this, it will default to `llm-d-inference-scheduling` in this example.
 
 ```bash
-export NAMESPACE=llm-d-inference-scheduling # Or any namespace your heart desires
+export NAMESPACE=llm-d-inference-scheduling # or any other namespace
 cd quickstart/examples/inference-scheduling
 helmfile apply
 ```
@@ -28,14 +32,15 @@ helmfile apply
 
 ### Gateway options
 
-Currently we support 3 gateway providers as `environments` in helmfile, those are `istio`, `kgateway` and `gke`. To install for that provider, simply pass the `-e <environment_name>` flag to your install as so:
+To see specify your gateway choice you can use the `-e <gateway option>` flag, ex:
 
 ```bash
-# for kgateway:
 helmfile apply -e kgateway
-# for GKE:
-helmfile apply -e gke
 ```
+
+To see what gateway options are supported refer to our [gateway control plane docs](../../gateway-control-plane-providers/README.md#supported-providers). Gateway configurations per provider are tracked in the [gateway-configurations directory](../common/gateway-configurations/).
+
+You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
 
 ## Verify the Installation
 
@@ -43,131 +48,51 @@ helmfile apply -e gke
 
 ```bash
 helm list -n ${NAMESPACE}
-NAME                        NAMESPACE                   REVISION  UPDATED                               STATUS    CHART                     APP VERSION
-gaie-inference-scheduling   llm-d-inference-scheduling  1         2025-08-17 17:09:42.037517 -0700 PDT  deployed  inferencepool-v0.5.1      v0.5.1
-infra-inference-scheduling  llm-d-inference-scheduling  1         2025-08-17 17:09:38.041567 -0700 PDT  deployed  llm-d-infra-v1.2.2        v0.2.0
-ms-inference-scheduling     llm-d-inference-scheduling  1         2025-08-17 17:09:46.31162 -0700 PDT   deployed  llm-d-modelservice-v0.2.6 v0.2.0
+NAME                        NAMESPACE                 REVISION  UPDATED                               STATUS    CHART                     APP VERSION
+gaie-inference-scheduling   llm-d-inference-scheduler 1         2025-08-24 11:24:53.231918 -0700 PDT  deployed  inferencepool-v0.5.1      v0.5.1
+infra-inference-scheduling  llm-d-inference-scheduler 1         2025-08-24 11:24:49.551591 -0700 PDT  deployed  llm-d-infra-v1.3.0        v0.3.0
+ms-inference-scheduling     llm-d-inference-scheduler 1         2025-08-24 11:24:58.360173 -0700 PDT  deployed  llm-d-modelservice-v0.2.7 v0.2.0
 ```
 
-### Finding your Endpoint
-
-- Find the gateway service:
+- Out of the box with this example you should have the following resources:
 
 ```bash
-kubectl get services -n ${NAMESPACE}
-NAME                                                 TYPE           CLUSTER-IP       EXTERNAL-IP                                                               PORT(S)                        AGE
-gaie-inference-scheduling-epp                        ClusterIP      172.30.135.125   <none>                                                                    9002/TCP,9090/TCP              27m
-gaie-inference-scheduling-ip-18c12339                ClusterIP      None             <none>                                                                    54321/TCP                      27m
-infra-inference-scheduling-inference-gateway-istio   LoadBalancer   172.30.244.141   aa34f27b0d58840c3b1d9ad77ffbb64a-1258197296.us-east-1.elb.amazonaws.com   15021:30096/TCP,80:32223/TCP   26m
+kubectl get all -n ${NAMESPACE}
+NAME                                                                  READY   STATUS    RESTARTS   AGE
+pod/gaie-inference-scheduling-epp-f8fbd9897-cxfvn                     1/1     Running   0          3m59s
+pod/infra-inference-scheduling-inference-gateway-istio-6787675b9swc   1/1     Running   0          4m3s
+pod/ms-inference-scheduling-llm-d-modelservice-decode-8ff7fd5b58lw9   2/2     Running   0          3m55s
+pod/ms-inference-scheduling-llm-d-modelservice-decode-8ff7fd5bt5f9s   2/2     Running   0          3m55s
+
+NAME                                                         TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)                        AGE
+service/gaie-inference-scheduling-epp                        ClusterIP      10.16.3.151   <none>        9002/TCP,9090/TCP              3m59s
+service/gaie-inference-scheduling-ip-18c12339                ClusterIP      None          <none>        54321/TCP                      3m59s
+service/infra-inference-scheduling-inference-gateway-istio   LoadBalancer   10.16.1.195   10.16.4.2     15021:30274/TCP,80:32814/TCP   4m3s
+
+NAME                                                                 READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/gaie-inference-scheduling-epp                        1/1     1            1           4m
+deployment.apps/infra-inference-scheduling-inference-gateway-istio   1/1     1            1           4m4s
+deployment.apps/ms-inference-scheduling-llm-d-modelservice-decode    2/2     2            2           3m56s
+
+NAME                                                                           DESIRED   CURRENT   READY   AGE
+replicaset.apps/gaie-inference-scheduling-epp-f8fbd9897                        1         1         1       4m
+replicaset.apps/infra-inference-scheduling-inference-gateway-istio-678767549   1         1         1       4m4s
+replicaset.apps/ms-inference-scheduling-llm-d-modelservice-decode-8ff7fd5b8    2         2         2       3m56s
 ```
 
-**_NOTE:_** As mentioned above, this example uses Istio, your services will be named differently if you are using another provider.
+**_NOTE:_** This assumes no other quickstart deployments in your given `${NAMESPACE}` and you have not changed the default release names via the `${RELEASE_NAME}` environment variable.
 
-If you are using the GKE gateway or have are using the default service type of `LoadBalancer` for you gateway and you are on a cloud platform with loadbalancing, you can use the `External IP` of your gateway service (you should see the same thing under your gateway with `kubectl get gateway`.)
+## Using the stack
 
-```bash
-export ENDPOINT=$(kubectl get gateway -n ${NAMESPACE} | \
-  grep "infra-inference-scheduling" | \
-  awk '{print $3}')
-```
-
-**_NOTE:_** Here we are `grep`ing by the name `infra-inference-scheduling` because that is the release name specified in the [helmfile](./helmfile.yaml.gotmpl#L28), if you change the release name, you will need to insure you have grabbed the `ENDPOINT` for your correct gateway.
-
-If you are not on GKE and or selected the gateway service type of `NodePort`, you will have to port-forward the service and curl `localhost`
-
-```bash
-SERVICE_NAME=$(kubectl get services -n ${NAMESPACE} | grep "infra-inference-scheduling" | awk '{print $1}' )
-kubectl port-forward -n ${NAMESPACE} service/${SERVICE_NAME} 8000:80
-```
-
-In this example since we are port-forwarding, we know that our endpoint will be localhost:
-
-```bash
-export ENDPOINT="http://localhost:8000"
-```
-
-1. Try curling the `/v1/models` endpoint:
-
-```bash
-curl -s ${ENDPOINT}/v1/models \
-  -H "Content-Type: application/json" | jq
-{
-  "data": [
-    {
-      "created": 1755478424,
-      "id": "Qwen/Qwen3-0.6B",
-      "max_model_len": 40960,
-      "object": "model",
-      "owned_by": "vllm",
-      "parent": null,
-      "permission": [
-        {
-          "allow_create_engine": false,
-          "allow_fine_tuning": false,
-          "allow_logprobs": true,
-          "allow_sampling": true,
-          "allow_search_indices": false,
-          "allow_view": true,
-          "created": 1755478424,
-          "group": null,
-          "id": "modelperm-0da9ea7786454927b90c0914b281fedd",
-          "is_blocking": false,
-          "object": "model_permission",
-          "organization": "*"
-        }
-      ],
-      "root": "Qwen/Qwen3-0.6B"
-    }
-  ],
-  "object": "list"
-}
-```
-
-1. Try curling the `v1/completions` endpoint:
-
-```bash
-curl -s ${ENDPOINT}/v1/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "Qwen/Qwen3-0.6B",
-    "prompt": "How are you today?",
-    "max_tokens": 50
-  }' | jq
-{
-  "choices": [
-    {
-      "finish_reason": "length",
-      "index": 0,
-      "logprobs": null,
-      "prompt_logprobs": null,
-      "stop_reason": null,
-      "text": " I'm sorry, I can't respond to questions about your questions. It's a bit of a dilemma. I'm sorry for the confusion.\n\nBut I can help you with anything you need. Please let me know what you need help with. For"
-    }
-  ],
-  "created": 1755478447,
-  "id": "cmpl-b7c76172-ca13-4b8e-bf81-f3e4bebdb115",
-  "kv_transfer_params": null,
-  "model": "Qwen/Qwen3-0.6B",
-  "object": "text_completion",
-  "service_tier": null,
-  "system_fingerprint": null,
-  "usage": {
-    "completion_tokens": 50,
-    "prompt_tokens": 5,
-    "prompt_tokens_details": null,
-    "total_tokens": 55
-  }
-}
-```
+For instructions on getting started making inference requests see [our docs](../../docs/getting-started-inferencing.md)
 
 ## Cleanup
 
 To remove the deployment:
 
 ```bash
-# Remove the model services
 # From examples/inference-scheduling
-helmfile --selector kind=inference-stack destroy
+helmfile destroy
 
 # Or uninstall manually
 helm uninstall infra-inference-scheduling -n ${NAMESPACE}
@@ -175,8 +100,10 @@ helm uninstall gaie-inference-scheduling -n ${NAMESPACE}
 helm uninstall ms-inference-scheduling -n ${NAMESPACE}
 ```
 
+**_NOTE:_** If you set the `$RELEASE_NAME_POSTFIX` environment variable, your release names will be different from the command above: `infra-$RELEASE_NAME_POSTFIX`, `gaie-$RELEASE_NAME_POSTFIX` and `ms-$RELEASE_NAME_POSTFIX`.
+
+**_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the quickstart, even if you use a non-default option.
+
 ## Customization
 
-- **Change model**: Edit `ms-inference-scheduling/values.yaml` and update the `modelArtifacts.uri` and `routing.modelName`
-- **Adjust resources**: Modify the GPU/CPU/memory requests in the container specifications
-- **Scale workers**: Change the `replicas` count for decode/prefill deployments
+For information on customizing an installation of a quickstart path and tips to build your own, see [our docs](../../docs/customizing-a-quickstart-inference-stack.md)

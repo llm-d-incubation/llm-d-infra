@@ -10,6 +10,15 @@ Create a default fully qualified app name for inferenceGateway.
   {{- end -}}
 {{- end -}}
 
+{{/* Grab the gateway service name */}}
+{{- define "gateway.serviceName" -}}
+  {{- if eq .Values.gateway.gatewayClassName  "istio" -}}
+    {{ include "gateway.fullname" . }}-istio
+  {{- else }}
+    {{ include "gateway.fullname" . }}
+  {{- end -}}
+{{- end -}}
+
 
 {{/*
 Define the template for ingress host

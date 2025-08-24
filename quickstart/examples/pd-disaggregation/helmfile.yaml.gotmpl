@@ -18,6 +18,7 @@ environments:
 ---
 
 {{- $ns := (env "NAMESPACE") | default "llm-d-pd" -}}
+{{- $rn := (env "RELEASE_NAME_POSTFIX") | default "pd" -}}
 
 # set $ns as namespace for all releases
 namespace: {{ $ns }}
@@ -29,7 +30,7 @@ repositories:
     url: https://llm-d-incubation.github.io/llm-d-infra/
 
 releases:
-  - name: infra-pd
+  - name: {{ printf "infra-%s" $rn | quote }}
     chart: llm-d-infra/llm-d-infra
     version: v1.2.4
     installed: true
@@ -43,30 +44,40 @@ releases:
           destinationRule:
             host: {{ printf "gaie-pd-epp.%s.svc.cluster.local" $ns | quote }}
 
-  - name: gaie-pd
+  - name: {{ printf "gaie-%s" $rn | quote }}
     chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
     version: v0.5.1
     installed: true
     needs:
-      - infra-pd
+      - {{ printf "infra-%s" $rn | quote }}
     values:
       - gaie-pd/values.yaml
     {{- if eq .Environment.Name "gke" }}
-      - provider:
-          name: gke
+      - provider: {{ .Environment.Values.provider }}
     {{- end }}
+    {{- if or (eq .Environment.Name "istioBench") (eq .Environment.Name "default") }}
+      - inferenceExtension:
+          logVerbosity: {{ .Environment.Values.inferenceExtension.logVerbosity }}
+    {{- end}}
     labels:
       kind: inference-stack
 
-  - name: ms-pd
+  - name: {{ printf "ms-%s" $rn | quote }}
     chart: llm-d-modelservice/llm-d-modelservice
     version: v0.2.7
     installed: true
     needs:
-      - infra-pd
-      - gaie-pd
+      - {{ printf "infra-%s" $rn | quote }}
+      - {{ printf "gaie-%s" $rn | quote }}
     values:
       - ms-pd/values.yaml
+    {{- if or (eq .Environment.Name "istioBench") (eq .Environment.Name "default") }}
+      - routing:
+          proxy:
+            debugLevel: {{ .Environment.Values.routing.proxy.debugLevel }}
+          epp:
+            debugLevel: {{ .Environment.Values.routing.epp.debugLevel }}
+    {{- end }}
     {{- if eq .Environment.Name "gke" }}
     set:
       - name: "decode.containers[0].resources.limits.rdma/ib"
