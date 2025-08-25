@@ -225,11 +225,6 @@ jobs:
             cat ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
             echo "---"
             echo ""
-            echo "infra-wide-ep/values.yaml:"
-            echo "---"
-            cat ${{ env.WIDE_EP_PATH }}/infra-wide-ep/values.yaml
-            echo "---"
-            echo ""
             echo "=== End of values files output ==="
           EOF
 
@@ -368,26 +363,12 @@ jobs:
         env:
           GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
             set -euo pipefail
             set -x
             cd llm-d-infra/quickstart/gateway-control-plane-providers
             ./install-gateway-provider-dependencies.sh
-            helmfile apply -e ${GATEWAY_TYPE}
-          EOF
-
-      - name: Run installer to deploy llm-d infrastructure
-        run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "HF_TOKEN=$HF_TOKEN GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
-            set -euo pipefail
-            set -x
-            cd llm-d-infra/quickstart
-            echo "Deploying llm-d infrastructure for Wide EP into namespace: llm-d-wide-ep ..."
-            ./llmd-infra-installer.sh \
-                --namespace "llm-d-wide-ep" \
-                -r infra-wide-ep \
-                -f examples/wide-ep-lws/infra-wide-ep/values.yaml \
-                | tee ~/llmd-wide-ep-installer.log
+            helmfile apply -f ${GATEWAY_TYPE}.helmfile.yaml
           EOF
 
       - name: Install LeaderWorkerSet helm chart and wait for controller
@@ -407,23 +388,38 @@ jobs:
 
       - name: Deploy Wide EP example
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "GATEWAY_TYPE=$GATEWAY_TYPE bash -s" << EOF
             set -euo pipefail
             set -x
             cd llm-d-infra/${{ env.WIDE_EP_PATH }}
             echo "Deploying Wide EP example with slim configuration..."
-            helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install | tee ~/wide-ep-deployment.log
+            helmfile apply -e ${GATEWAY_TYPE} \
+              --set gateway.service.type=NodePort \
+              --skip-schema-validation | tee ~/wide-ep-deployment.log
             echo "---------------------------------------" >> ~/wide-ep-deployment.log
+          EOF
+
+      - name: Add HuggingFace secret to cluster
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "HF_TOKEN=$HF_TOKEN NAMESPACE=$NAMESPACE bash -s" <<'EOF'
+            set -euo pipefail
+            set -x
+            export HF_TOKEN_NAME=${HF_TOKEN_NAME:-llm-d-hf-token}
+            echo "Adding HuggingFace token as a secret named $HF_TOKEN_NAME in namespace $NAMESPACE..."
+            kubectl create secret generic ${HF_TOKEN_NAME} \
+              --from-literal="HF_TOKEN=${HF_TOKEN}" \
+               --namespace "${NAMESPACE}" \
+               --dry-run=client -o yaml | kubectl apply -f -
           EOF
 
       - name: Upload helm get all
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "NAMESPACE=$NAMESPACE bash -s" << EOF
             set -euo pipefail
             set -x
-            BACKUP_NAMESPACE="llm-d-wide-ep" /bin/sh llm-d-infra/.github/scripts/e2e/helm-get-all.sh \
+            /bin/sh llm-d-infra/.github/scripts/e2e/helm-get-all.sh \
               ~/wide-ep-deployment.log \
-              llm-d-infra/${{ env.WIDE_EP_PATH }}/helmfile.yaml
+              ms-wide-ep "$NAMESPACE"
           EOF
 
       - name: Wait for all pods to be ready
@@ -518,7 +514,6 @@ jobs:
             echo "Fetching ${NAMESPACE} pods descriptions..."
             kubectl get pods -n "${NAMESPACE}" --no-headers -o custom-columns=":metadata.name" \
             | xargs -I{} sh -c 'kubectl describe pod -n "${NAMESPACE}" {} > "{}-describe.log" 2>&1'
-            mv ~/llmd-wide-ep-installer.log . || true
             mv ~/wide-ep-deployment.log . || true
             mv ~/install-deps.log . || true
             cd ..
