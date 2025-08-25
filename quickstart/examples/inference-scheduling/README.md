@@ -20,10 +20,10 @@ This example out of the box requires 2 Nvidia GPUs of any kind (support determin
 
 ## Installation
 
-Use the helmfile to compose and install the stack. The Namespace in which the stack will be deployed will be derived from the `${NAMESPACE}` environment variable. If you have not set this, it will default to `llm-d-inference-scheduling` in this example.
+Use the helmfile to compose and install the stack. The Namespace in which the stack will be deployed will be derived from the `${NAMESPACE}` environment variable. If you have not set this, it will default to `llm-d-inference-scheduler` in this example.
 
 ```bash
-export NAMESPACE=llm-d-inference-scheduling # or any other namespace
+export NAMESPACE=llm-d-inference-scheduler # or any other namespace
 cd quickstart/examples/inference-scheduling
 helmfile apply
 ```

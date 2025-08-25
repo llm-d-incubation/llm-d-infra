@@ -16,6 +16,9 @@ environments:
 {{- $ns := (env "NAMESPACE") | default "llm-d-precise" -}}
 {{- $rn := (env "RELEASE_NAME_POSTFIX") | default "kv-events" -}}
 
+# set $ns as namespace for all releases
+namespace: {{ $ns }}
+
 repositories:
   - name: llm-d-modelservice
     url: https://llm-d-incubation.github.io/llm-d-modelservice/

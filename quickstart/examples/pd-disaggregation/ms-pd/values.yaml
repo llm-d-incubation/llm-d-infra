@@ -12,7 +12,7 @@ routing:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: infra-pd-inference-gateway
+      name: infra-pd-inference-gateway # release dependent move to helmfile set
 
   proxy:
     image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
