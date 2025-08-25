@@ -80,6 +80,9 @@ patch() {
 
     ### Swap the model name in custom startup script
     prefill_args=$(yq '.prefill.containers[0].args[0]' ${FILE})
+
+    ### Get rid of parallel hybrid lb flag since there is only one prefill
+    prefill_args=$(echo "${prefill_args}" | sed '/--data-parallel-hybrid-lb/d')
     export prefill_args_updated=$(echo "${prefill_args}" | sed 's/'${OLD_MODEL_SED_ESCAPED}'/'${NEW_MODEL_SED_ESCAPED}'/g') # THIS NEEDS TO USE ARGS ABOVE
 
     yq e '.prefill.containers[0].args[0] = strenv(prefill_args_updated)' -i ${FILE}
