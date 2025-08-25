@@ -17,11 +17,8 @@ environments:
 
 ---
 
-{{- $ns := (env "NAMESPACE") | default "llm-d-wide-ep" -}}
+{{- $ns := .Namespace | default "llm-d-wide-ep" }}
 {{- $rn := (env "RELEASE_NAME_POSTFIX") | default "wide-ep" -}}
-
-# set $ns as namespace for all releases
-namespace: {{ $ns }}
 
 repositories:
   - name: llm-d-modelservice
@@ -31,8 +28,9 @@ repositories:
 
 releases:
   - name: {{ printf "infra-%s" $rn | quote }}
+    namespace: {{ $ns }}
     chart: llm-d-infra/llm-d-infra
-    version: v1.2.4
+    version: v1.3.0
     installed: true
     labels:
       type: infrastructure
@@ -46,6 +44,7 @@ releases:
 
   - name: {{ printf "ms-%s" $rn | quote }}
     chart: llm-d-modelservice/llm-d-modelservice
+    namespace: {{ $ns }}
     version: v0.2.7
     installed: true
     needs:
@@ -59,8 +58,13 @@ releases:
           epp:
             debugLevel: {{ .Environment.Values.routing.epp.debugLevel }}
     {{- end }}
-    {{- if eq .Environment.Name "gke" }}
     set:
+    # apply release name derived values
+      - name: "inferencePool.name"
+        value: {{ printf "ms-%s" $rn | quote }}
+      - name: "routing.parentRefs[0].name"
+        value: {{ printf "infra-%s-inference-gateway" $rn | quote }}
+    {{- if eq .Environment.Name "gke" }}
       - name: "decode.containers[0].resources.limits.rdma/ib"
         value: null
       - name: "decode.containers[0].resources.requests.rdma/ib"

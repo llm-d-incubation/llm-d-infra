@@ -12,7 +12,7 @@ routing:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: infra-kv-events-inference-gateway
+      # name: infra-kv-events-inference-gateway # set in helmfile
 
   proxy:
     image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
@@ -24,7 +24,7 @@ routing:
 
   inferencePool:
     create: false
-    name: gaie-kv-events
+    # name: gaie-kv-events # set in helmfile
 
   httpRoute:
     create: true

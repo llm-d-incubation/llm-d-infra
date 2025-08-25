@@ -13,7 +13,7 @@ environments:
 
 ---
 
-{{- $ns := (env "NAMESPACE") | default "llm-d-precise" -}}
+{{- $ns := .Namespace | default "llm-d-precise" -}}
 {{- $rn := (env "RELEASE_NAME_POSTFIX") | default "kv-events" -}}
 
 # set $ns as namespace for all releases
@@ -27,8 +27,9 @@ repositories:
 
 releases:
   - name: {{ printf "infra-%s" $rn | quote }}
+    namespace: {{ $ns }}
     chart: llm-d-infra/llm-d-infra
-    version: v1.2.4
+    version: v1.3.0
     installed: true
     labels:
       type: infrastructure
@@ -40,6 +41,7 @@ releases:
             host: {{ printf "gaie-kv-events-epp.%s.svc.cluster.local" $ns | quote }}
 
   - name: {{ printf "gaie-%s" $rn | quote }}
+    namespace: {{ $ns }}
     chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
     version: v0.5.1
     installed: true
@@ -54,6 +56,7 @@ releases:
       kind: inference-stack
 
   - name: {{ printf "ms-%s" $rn | quote }}
+    namespace: {{ $ns }}
     chart: llm-d-modelservice/llm-d-modelservice
     version: v0.2.7
     installed: true
@@ -62,5 +65,11 @@ releases:
       - {{ printf "gaie-%s" $rn | quote }}
     values:
       - ms-kv-events/values.yaml
+    set:
+    # apply release name derived values
+      - name: "inferencePool.name"
+        value: {{ printf "gaie-%s" $rn | quote }}
+      - name: "routing.parentRefs[0].name"
+        value: {{ printf "infra-%s-inference-gateway" $rn | quote }}
     labels:
       kind: inference-stack

@@ -17,7 +17,7 @@ environments:
 
 ---
 
-{{- $ns := (env "NAMESPACE") | default "llm-d-pd" -}}
+{{- $ns := .Namespace | default "llm-d-pd" -}}
 {{- $rn := (env "RELEASE_NAME_POSTFIX") | default "pd" -}}
 
 # set $ns as namespace for all releases
@@ -31,8 +31,9 @@ repositories:
 
 releases:
   - name: {{ printf "infra-%s" $rn | quote }}
+    namespace: {{ $ns }}
     chart: llm-d-infra/llm-d-infra
-    version: v1.2.4
+    version: v1.3.0
     installed: true
     labels:
       type: infrastructure
@@ -45,6 +46,7 @@ releases:
             host: {{ printf "gaie-pd-epp.%s.svc.cluster.local" $ns | quote }}
 
   - name: {{ printf "gaie-%s" $rn | quote }}
+    namespace: {{ $ns }}
     chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
     version: v0.5.1
     installed: true
@@ -63,6 +65,7 @@ releases:
       kind: inference-stack
 
   - name: {{ printf "ms-%s" $rn | quote }}
+    namespace: {{ $ns }}
     chart: llm-d-modelservice/llm-d-modelservice
     version: v0.2.7
     installed: true
@@ -78,8 +81,13 @@ releases:
           epp:
             debugLevel: {{ .Environment.Values.routing.epp.debugLevel }}
     {{- end }}
-    {{- if eq .Environment.Name "gke" }}
     set:
+    # apply release name derived values
+      - name: "inferencePool.name"
+        value: {{ printf "gaie-%s" $rn | quote }}
+      - name: "routing.parentRefs[0].name"
+        value: {{ printf "infra-%s-inference-gateway" $rn | quote }}
+    {{- if eq .Environment.Name "gke" }}
       - name: "decode.containers[0].resources.limits.rdma/ib"
         value: null
       - name: "decode.containers[0].resources.requests.rdma/ib"

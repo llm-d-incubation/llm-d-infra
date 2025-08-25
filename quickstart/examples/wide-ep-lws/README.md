@@ -31,8 +31,10 @@ Use the helmfile to compose and install the stack. The Namespace in which the st
 ```bash
 export NAMESPACE=llm-d-wide-ep # or any other namespace
 cd quickstart/examples/wide-ep-lws
-helmfile apply
+helmfile apply -n ${NAMESPACE}
 ```
+
+**_NOTE:_** You can set the `$RELEASE_NAME_POSTFIX` env variable to change the release names. This is how we support concurrent installs.
 
 **_NOTE:_** This uses Istio as the default provider, see [Gateway Options](./README.md#gateway-options) for installing with a specific provider.
 
@@ -41,7 +43,7 @@ helmfile apply
 To see specify your gateway choice you can use the `-e <gateway option>` flag, ex:
 
 ```bash
-helmfile apply -e kgateway
+helmfile apply -e kgateway -n ${NAMESPACe}
 ```
 
 To see what gateway options are supported refer to our [gateway control plane docs](../../gateway-control-plane-providers/README.md#supported-providers). Gateway configurations per provider are tracked in the [gateway-configurations directory](../common/gateway-configurations/).
@@ -107,7 +109,7 @@ To remove the deployment:
 
 ```bash
 # From examples/wide-ep-lws
-helmfile destroy
+helmfile destroy -n ${NAMESPACE}
 
 # Or uninstall them manually
 helm uninstall ms-wide-ep -n ${NAMESPACE}

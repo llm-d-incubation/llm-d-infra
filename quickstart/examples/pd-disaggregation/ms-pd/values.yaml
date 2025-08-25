@@ -12,7 +12,7 @@ routing:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: infra-pd-inference-gateway # release dependent move to helmfile set
+      # name: infra-pd-inference-gateway # set in helmfile
 
   proxy:
     image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
@@ -25,7 +25,7 @@ routing:
 
   inferencePool:
     create: false
-    name: gaie-pd
+    # name: gaie-pd # set in helmfile
 
   httpRoute:
     create: true

@@ -19,8 +19,10 @@ Use the helmfile to compose and install the stack. The Namespace in which the st
 ```bash
 export NAMESPACE=llm-d-precise # Or any namespace your heart desires
 cd quickstart/examples/precise-prefix-cache-aware
-helmfile apply
+helmfile apply -n ${NAMESPACE}
 ```
+
+**_NOTE:_** You can set the `$RELEASE_NAME_POSTFIX` env variable to change the release names. This is how we support concurrent installs.
 
 **_NOTE:_** This uses Istio as the default provider, see [Gateway Options](./README.md#gateway-options) for installing with a specific provider.
 
@@ -29,7 +31,7 @@ helmfile apply
 To see specify your gateway choice you can use the `-e <gateway option>` flag, ex:
 
 ```bash
-helmfile apply -e kgateway
+helmfile apply -e kgateway -n ${NAMESPACE}
 ```
 
 To see what gateway options are supported refer to our [gateway control plane docs](../../gateway-control-plane-providers/README.md#supported-providers). Gateway configurations per provider are tracked in the [gateway-configurations directory](../common/gateway-configurations/).
@@ -145,7 +147,7 @@ To remove the deployment:
 ```bash
 # Remove the model services
 # From examples/precise-prefix-cache-aware
-helmfile destroy
+helmfile destroy -n ${NAMESPACE}
 
 # Or uninstall manually
 helm uninstall infra-kv-events -n ${NAMESPACE}
@@ -155,7 +157,7 @@ helm uninstall ms-kv-events -n ${NAMESPACE}
 
 **_NOTE:_** If you set the `$RELEASE_NAME_POSTFIX` environment variable, your release names will be different from the command above: `infra-$RELEASE_NAME_POSTFIX`, `gaie-$RELEASE_NAME_POSTFIX` and `ms-$RELEASE_NAME_POSTFIX`.
 
-**_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the quickstart, even if you use a non-default option.
+**_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the quickstart, even if you use a non-default option. You do, however, have to set the `-n ${NAMESPACE}` otherwise it may not cleanup the releases in the proper namespace.
 
 ## Customization
 
