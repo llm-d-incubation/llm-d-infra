@@ -23,11 +23,11 @@ EXAMPLES:
 
 TOOLS INSTALLED:
   Basic tools:
-    - git, jq, curl, tar (system packages)
+    - git, curl, tar (system packages)
     - yq (YAML processor)
     - kubectl (Kubernetes CLI)
     - helm (Helm package manager)
-    - helm diff plugin
+    - helm diff plugin (optional but highly recommended)
     - helmfile (Helm deployment tool)
 
   Development tools (with --dev):

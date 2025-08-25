@@ -21,7 +21,11 @@ Following prerequisite are required for the installer to work.
 
 ### Optional Tools
 
-- [stern - installation](https://github.com/stern/stern?tab=readme-ov-file#installation)
+| Binary             | Recommended Version      | Download / Installation Instructions                                                             |
+| ------------------ | ------------------------ | ------------------------------------------------------------------------------------------------ |
+| `stern`            | 1.30+                    | [stern - installation](https://github.com/stern/stern?tab=readme-ov-file#installation)           |
+| `helm diff` plugin | v3.10.0+                 | [helm diff installation docs](https://github.com/databus23/helm-diff?tab=readme-ov-file#install) |
+| ------------------ | ------------------------ | ------------------------------------------------------------------------------------------------ |
 
 ## HuggingFace Token
 
@@ -35,7 +39,6 @@ Once you have a token value you create the k8s secret to hold it:
 export HF_TOKEN=...
 export HF_TOKEN_NAME=${HF_TOKEN_NAME:-llm-d-hf-token}
 export NAMESPACE=...
-export HF_TOKEN=$(HFTOKEN)
 kubectl create secret generic ${HF_TOKEN_NAME} \
     --from-literal="HF_TOKEN=${HF_TOKEN}" \
     --namespace "${NAMESPACE}" \
