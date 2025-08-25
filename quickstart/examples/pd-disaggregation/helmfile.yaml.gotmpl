@@ -83,7 +83,7 @@ releases:
     {{- end }}
     set:
     # apply release name derived values
-      - name: "inferencePool.name"
+      - name: "routing.inferencePool.name"
         value: {{ printf "gaie-%s" $rn | quote }}
       - name: "routing.parentRefs[0].name"
         value: {{ printf "infra-%s-inference-gateway" $rn | quote }}

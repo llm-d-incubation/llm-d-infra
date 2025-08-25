@@ -43,8 +43,8 @@ releases:
             host: {{ printf "ms-wide-ep-llm-d-modelservice-epp.%s.svc.cluster.local" $ns | quote }}
 
   - name: {{ printf "ms-%s" $rn | quote }}
-    chart: llm-d-modelservice/llm-d-modelservice
     namespace: {{ $ns }}
+    chart: llm-d-modelservice/llm-d-modelservice
     version: v0.2.7
     installed: true
     needs:
@@ -60,7 +60,7 @@ releases:
     {{- end }}
     set:
     # apply release name derived values
-      - name: "inferencePool.name"
+      - name: "routing.inferencePool.name"
         value: {{ printf "ms-%s" $rn | quote }}
       - name: "routing.parentRefs[0].name"
         value: {{ printf "infra-%s-inference-gateway" $rn | quote }}
