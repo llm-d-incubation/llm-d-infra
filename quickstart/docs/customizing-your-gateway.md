@@ -19,8 +19,20 @@ ingress:
 
 ## Gateway Considerations for Benchmarking
 
+In our experience there are a few gotchas we encountered when attempting to benchmark for competitive numbers, this document is meant to capture those gateway related challenges we encountered and workarounds we derived.
+
 ### Increasing Envoy Pod Resources
+
+To remove the chance that the envoy pod can be a bottle neck, we thought it might be a good idea to increase its resource.  You can see how to set this from our [benchmarking values file](../examples/common/gateway-configurations/benchmarking.yaml#L5-11).
+
+This option gets exposed from the `llm-d-infra` chart by either a [gatewayParameters manifest](../../charts/llm-d-infra/templates/gateway-infrastructure/gatewayparameters.yaml) if you are using Kgateway, or a [configmap](../../charts/llm-d-infra/templates/gateway-infrastructure/configmap.yaml) if you are using Istio.
 
 ### Increasing Max Connections and Timeout (Istio only)
 
+Currently we only have a workaround for increasing max connections and timeout for Istio, we would like to expand this to other providers in the future. This is provided via the Istio destination rule, you can see a values configuration for this in our [benchmarking values file](../examples/common/gateway-configurations/benchmarking.yaml#L12-23).
+
+This gets exposed by the [`DestinationRule` template](../../charts/llm-d-infra/templates/gateway-infrastructure/destinationrule.yaml) in the `llm-d-infra` charts, but we hope this manifest will make its way upstream to the GAIE charts.
+
 ### Changing log levels
+
+In an effort to reduce the workload of the envoy gateway container, we have dropped the logs to level error, only showing us critical issues. Again this is visible in the [benchmarking values file](../examples/common/gateway-configurations/benchmarking.yaml#L4).
