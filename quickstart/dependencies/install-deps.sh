@@ -23,13 +23,12 @@ EXAMPLES:
 
 TOOLS INSTALLED:
   Basic tools:
-    - git, jq, curl, tar (system packages)
+    - git, curl, tar (system packages)
     - yq (YAML processor)
     - kubectl (Kubernetes CLI)
     - helm (Helm package manager)
-    - helm diff plugin
+    - helm diff plugin (optional but highly recommended)
     - helmfile (Helm deployment tool)
-    - kustomize (Kubernetes configuration tool)
 
   Development tools (with --dev):
     - chart-testing (Helm chart testing tool)
@@ -102,7 +101,7 @@ install_pkg() {
 ########################################
 #  Base utilities
 ########################################
-for pkg in git jq curl tar; do
+for pkg in git curl tar; do
   if ! command -v "$pkg" &> /dev/null; then
     install_pkg "$pkg"
   fi
@@ -176,21 +175,6 @@ if ! command -v helmfile &> /dev/null; then
   sudo mv /tmp/helmfile /usr/local/bin/helmfile
   sudo chmod +x /usr/local/bin/helmfile
   rm /tmp/helmfile.tar.gz
-fi
-
-########################################
-#  kustomize
-########################################
-if ! command -v kustomize &> /dev/null; then
-  echo "Installing Kustomize..."
-  KUSTOMIZE_TAG=$(curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest | jq -r '.tag_name')
-  VERSION_NUM=${KUSTOMIZE_TAG#kustomize/}
-  ARCHIVE="kustomize_${VERSION_NUM}_${OS}_${ARCH}.tar.gz"
-  curl -sLo kustomize.tar.gz \
-    "https://github.com/kubernetes-sigs/kustomize/releases/download/${KUSTOMIZE_TAG}/${ARCHIVE}"
-  tar -xzf kustomize.tar.gz
-  sudo mv kustomize /usr/local/bin/
-  rm kustomize.tar.gz
 fi
 
 ########################################

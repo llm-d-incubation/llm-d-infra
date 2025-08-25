@@ -35,7 +35,10 @@ spec:
       resources: {{ .Values.gateway.gatewayParameters.resources | toYaml | nindent 8 }}
       {{- end}}
     service:
-      type: {{ .Values.gateway.serviceType | default "NodePort" | quote }}
+      type: {{ .Values.gateway.service.type | default "ClusterIP" | quote }}
+      {{- if .Values.gateway.service.ports }}
+      ports: {{ .Values.gateway.service.ports | toYaml | nindent 8 }}
+      {{- end }}
       extraLabels:
         gateway: custom
     podTemplate:

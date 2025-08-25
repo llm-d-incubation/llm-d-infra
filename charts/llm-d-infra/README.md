@@ -1,7 +1,7 @@
 
 # llm-d-infra Helm Chart
 
-![Version: v1.2.5](https://img.shields.io/badge/Version-v1.2.5-informational?style=flat-square)
+![Version: v1.3.0](https://img.shields.io/badge/Version-v1.3.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
@@ -40,7 +40,7 @@ sudo mv kubectl /usr/local/bin/
 
 - Kubernetes 1.30+ (OpenShift 4.17+)
 - Helm 3.10+ or [latest release](https://github.com/helm/helm/releases)
-- [Gateway API](https://gateway-api.sigs.k8s.io/guides/) (see for [examples](https://github.com/llm-d-incubation/llm-d-infra/blob/main/chart-dependencies/ci-deps.sh#L22) we use in our CI)
+- [Gateway API v1.3.0](https://gateway-api.sigs.k8s.io/guides/) or [latest release](https://github.com/kubernetes-sigs/gateway-api/releases)
 - [kGateway](https://kgateway.dev/) (or [Istio](http://istio.io/)) installed in the cluster (see for [examples](https://github.com/llm-d-incubation/llm-d-infra/blob/main/chart-dependencies/kgateway/install.sh) we use in our CI)
 
 ## Usage
@@ -99,9 +99,6 @@ Kubernetes: `>= 1.28.0-0`
 
 | Key | Description | Type | Default |
 |-----|-------------|------|---------|
-| auth.hf_token.enabled |  | bool | `true` |
-| auth.hf_token.secretKey |  | string | `"HF_TOKEN"` |
-| auth.hf_token.secretName |  | string | `"llm-d-hf-token"` |
 | clusterDomain | Default Kubernetes cluster domain | string | `"cluster.local"` |
 | common | Parameters for bitnami.common dependency | object | `{}` |
 | commonAnnotations | Annotations to add to all deployed objects | object | `{}` |
@@ -118,14 +115,13 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.labels | Additional labels provided to the Gateway resource | object | `{}` |
 | gateway.listeners | Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled | list | `[{"allowedRoutes":{"namespaces":{"from":"All"}},"name":"default","path":"/","port":80,"protocol":"HTTP"}]` |
 | gateway.nameOverride | String to partially override gateway.fullname | string | `""` |
-| gateway.serviceType | Gateway's service type. Ingress is only available if the service type is set to NodePort. Accepted values: ["LoadBalancer", "NodePort"] | string | `"LoadBalancer"` |
+| gateway.service.type | Gateway's service type. Ingress is only available if the service type is set to LoadBalancer. Accepted values: ["LoadBalancer", "ClusterIP", "NodePort"] | string | `"LoadBalancer"` |
 | ingress | Ingress configuration | object | See below |
 | ingress.annotations | Additional annotations for the Ingress resource | object | `{}` |
-| ingress.clusterRouterBase | used as part of the host derivation if not specified from OCP cluster domain (don't edit) | string | `""` |
-| ingress.enabled | Deploy Ingress | bool | `false` |
+| ingress.enabled | Deploy Ingress (service type must also be ClusterIP) | bool | `false` |
 | ingress.extraHosts | List of additional hostnames to be covered with this ingress record (e.g. a CNAME) <!-- E.g. extraHosts:   - name: llm-d.env.example.com     path: / (Optional)     pathType: Prefix (Optional)     port: 7007 (Optional) --> | list | `[]` |
 | ingress.extraTls | The TLS configuration for additional hostnames to be covered with this ingress record. <br /> Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls <!-- E.g. extraTls:   - hosts:     - llm-d.env.example.com     secretName: llm-d-env --> | list | `[]` |
-| ingress.host | Hostname to be used to expose the NodePort service to the inferencing gateway | string | `""` |
+| ingress.host | Hostname to be used to expose the ClusterIP service to the inferencing gateway | string | `""` |
 | ingress.ingressClassName | Name of the IngressClass cluster resource which defines which controller will implement the resource (e.g nginx) | string | `""` |
 | ingress.path | Path to be used to expose the full route to access the inferencing gateway | string | `"/"` |
 | ingress.tls | Ingress TLS parameters | object | `{"enabled":false,"secretName":""}` |

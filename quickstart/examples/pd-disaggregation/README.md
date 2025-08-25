@@ -30,149 +30,94 @@ As a result, as you tune your P/D deployments, we suggest focusing on the follow
 - **Heterogeneous Parallelism**: deploy P workers with less parallelism and more replicas and D workers with more parallelism and fewer replicas
 - **xPyD Ratios**: tuning the ratio of P workers to D workers to ensure balance for your ISL|OSL ratio
 
+## Hardware Requirements
+
+This quickstart expects 8 Nvidia GPUs of any kind, and infiniband.
+
+## Pre-requisites
+
+- It is assumed that you have the proper tools installed on your local system to use these quickstart. To see what those tools are and minimum versions, check [our docs](../../dependencies/README.md#required-tools), and to install them, see our [install-deps.sh](../../dependencies/install-deps.sh) script.
+
+- You must have the secret containing a HuggingFace Token in the namespace you want to deploy to with key `HF_TOKEN` (see [instructions](../../dependencies/README.md#huggingface-token)).
+
+- Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
+
 ## Installation
 
-1. Install your local dependencies (from `/llm-d-infra/quickstart`)
-
-   ```bash
-   ./install-deps.sh
-   ```
-
-1. Use the quickstart to deploy Gateway CRDS + Gateway provider + Infra chart (from `/llm-d-infra/quickstart`). This example only works out of the box with `Istio` as a provider, but with changes its possible to run this with `kgateway`.
-
-   ```bash
-   # ran from root of repo
-   cd quickstart
-   export HF_TOKEN=${HFTOKEN}
-   ./llmd-infra-installer.sh --namespace llm-d-pd -r infra-pd -f examples/pd-disaggregation/infra-pd/values.yaml
-   ```
-
-   **_NOTE:_** The release name `infra-pd` is important here, because it matches up with pre-built values files used in this example.
-
-1. Use the helmfile to apply the modelservice and GIE charts on top of it
-
-   ```bash
-   cd examples/pd-disaggregation
-   helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
-   ```
-
-## Verifying the installation
-
-1. First, let's check that all three charts were deployed successfully to our `llm-d-pd` namespace:
+Use the helmfile to compose and install the stack. The Namespace in which the stack will be deployed will be derived from the `${NAMESPACE}` environment variable. If you have not set this, it will default to `llm-d-pd` in this example.
 
 ```bash
-$ helm list -n llm-d-pd
-NAME        NAMESPACE    REVISION    UPDATED                                 STATUS      CHART                       APP VERSION
-gaie-pd     llm-d-pd     1           2025-07-25 11:27:47.419598 -0700 PDT    deployed    inferencepool-v0.5.1        v0.5.1
-infra-pd    llm-d-pd     1           2025-07-25 11:27:18.453254 -0700 PDT    deployed    llm-d-infra-v1.1.1          v0.2.0
-ms-pd       llm-d-pd     1           2025-07-25 11:27:53.138175 -0700 PDT    deployed    llm-d-modelservice-0.2.0    v0.2.0
+export NAMESPACE=llm-d-pd # Or any namespace your heart desires
+cd quickstart/examples/pd-disaggregation
+helmfile apply
 ```
 
-1. Next, let's check the pod health of our 4 prefill replicas and 1 decode replica:
+**_NOTE:_** This uses Istio as the default provider, see [Gateway Options](./README.md#gateway-options) for installing with a specific provider.
+
+### Gateway options
+
+To see specify your gateway choice you can use the `-e <gateway option>` flag, ex:
 
 ```bash
-$ kubectl get pods -n llm-d-pd
-NAME                                                READY   STATUS    RESTARTS   AGE
-gaie-pd-epp-69888bdd8d-6pnbk                        1/1     Running   0          54s
-infra-pd-inference-gateway-istio-776797b79f-6clvr   1/1     Running   0          2m9s
-ms-pd-llm-d-modelservice-decode-65f7f65cf6-2fh62    2/2     Running   0          50s
-ms-pd-llm-d-modelservice-prefill-549598dd6c-6f757   1/1     Running   0          49s
-ms-pd-llm-d-modelservice-prefill-549598dd6c-6n4bc   1/1     Running   0          49s
-ms-pd-llm-d-modelservice-prefill-549598dd6c-ft89l   1/1     Running   0          49s
-ms-pd-llm-d-modelservice-prefill-549598dd6c-pbjzx   1/1     Running   0          49s
+helmfile apply -e kgateway
 ```
 
-1. Find the gateway service:
+To see what gateway options are supported refer to our [gateway control plane docs](../../gateway-control-plane-providers/README.md#supported-providers). Gateway configurations per provider are tracked in the [gateway-configurations directory](../common/gateway-configurations/).
+
+You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
+
+#### GKE specific workarounds
+
+While this example out of the box requires Infiniband RDMA, GKE does not support this. Therefore we patch out these values in [the helmfile](./helmfile.yaml.gotmpl#L73-80).
+
+## Verify the Installation
+
+- Firstly, you should be able to list all helm releases to view the 3 charts got installed into your chosen namespace:
 
 ```bash
-$ kubectl get services -n llm-d-pd
-NAME                               TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                        AGE
-gaie-pd-epp                        ClusterIP   10.16.0.161   <none>        9002/TCP,9090/TCP              6m6s
-gaie-pd-ip-bb618139                ClusterIP   None          <none>        54321/TCP                      6m1s
-infra-pd-inference-gateway-istio   NodePort    10.16.0.146   <none>        15021:34743/TCP,80:30212/TCP   6m36s
+helm list -n ${NAMESPACE}
+NAME        NAMESPACE   REVISION    UPDATED                                 STATUS      CHART                       APP VERSION
+gaie-pd     llm-d-pd    1           2025-08-24 12:54:51.231537 -0700 PDT    deployed    inferencepool-v0.5.1        v0.5.1
+infra-pd    llm-d-pd    1           2025-08-24 12:54:46.983361 -0700 PDT    deployed    llm-d-infra-v1.2.4          v0.2.0
+ms-pd       llm-d-pd    1           2025-08-24 12:54:56.736873 -0700 PDT    deployed    llm-d-modelservice-v0.2.7   v0.2.0
 ```
 
-In this case we have found that our gateway service is called `infra-pd-inference-gateway-istio`.
-
-1. `port-forward` the service so we can curl it:
+- Out of the box with this example you should have the following resources:
 
 ```bash
-kubectl port-forward -n llm-d-pd service/infra-pd-inference-gateway-istio 8000:80
+kubectl get all -n ${NAMESPACE}
+NAME                                                    READY   STATUS    RESTARTS   AGE
+pod/gaie-pd-epp-54444ddc66-qv6ds                        1/1     Running   0          2m35s
+pod/infra-pd-inference-gateway-istio-56d66db57f-zwtzn   1/1     Running   0          2m41s
+pod/ms-pd-llm-d-modelservice-decode-84bf6d5bdd-jzfjn    2/2     Running   0          2m30s
+pod/ms-pd-llm-d-modelservice-prefill-86f6fb7cdc-8kfb8   1/1     Running   0          2m30s
+pod/ms-pd-llm-d-modelservice-prefill-86f6fb7cdc-g6wmp   1/1     Running   0          2m30s
+pod/ms-pd-llm-d-modelservice-prefill-86f6fb7cdc-jx2w2   1/1     Running   0          2m30s
+pod/ms-pd-llm-d-modelservice-prefill-86f6fb7cdc-vzcb8   1/1     Running   0          2m30s
+
+NAME                                       TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)                        AGE
+service/gaie-pd-epp                        ClusterIP      10.16.0.255   <none>        9002/TCP,9090/TCP              2m35s
+service/gaie-pd-ip-bb618139                ClusterIP      None          <none>        54321/TCP                      2m35s
+service/infra-pd-inference-gateway-istio   LoadBalancer   10.16.3.74    10.16.4.3     15021:31707/TCP,80:34096/TCP   2m41s
+
+NAME                                               READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/gaie-pd-epp                        1/1     1            1           2m36s
+deployment.apps/infra-pd-inference-gateway-istio   1/1     1            1           2m42s
+deployment.apps/ms-pd-llm-d-modelservice-decode    1/1     1            1           2m31s
+deployment.apps/ms-pd-llm-d-modelservice-prefill   4/4     4            4           2m31s
+
+NAME                                                          DESIRED   CURRENT   READY   AGE
+replicaset.apps/gaie-pd-epp-54444ddc66                        1         1         1       2m36s
+replicaset.apps/infra-pd-inference-gateway-istio-56d66db57f   1         1         1       2m42s
+replicaset.apps/ms-pd-llm-d-modelservice-decode-84bf6d5bdd    1         1         1       2m31s
+replicaset.apps/ms-pd-llm-d-modelservice-prefill-86f6fb7cdc   4         4         4       2m31s
 ```
 
-1. Try curling the `/v1/models` endpoint:
+**_NOTE:_** This assumes no other quickstart deployments in your given `${NAMESPACE}` and you have not changed the default release names via the `${RELEASE_NAME}` environment variable.
 
-```bash
-curl -s http://localhost:8000/v1/models \
-  -H "Content-Type: application/json" | jq
-{
-  "data": [
-    {
-      "created": 1753468493,
-      "id": "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic",
-      "max_model_len": 32000,
-      "object": "model",
-      "owned_by": "vllm",
-      "parent": null,
-      "permission": [
-        {
-          "allow_create_engine": false,
-          "allow_fine_tuning": false,
-          "allow_logprobs": true,
-          "allow_sampling": true,
-          "allow_search_indices": false,
-          "allow_view": true,
-          "created": 1753468493,
-          "group": null,
-          "id": "modelperm-df4f0c7555e648fe82a3a952d0634e20",
-          "is_blocking": false,
-          "object": "model_permission",
-          "organization": "*"
-        }
-      ],
-      "root": "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic"
-    }
-  ],
-  "object": "list"
-}
-```
+## Using the stack
 
-1. Try curling the `v1/completions` endpoint:
-
-```bash
-curl -s http://localhost:8000/v1/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic",
-    "prompt": "How are you today?",
-    "max_tokens": 50
-  }' | jq
-{
-  "choices": [
-    {
-      "finish_reason": "length",
-      "index": 0,
-      "logprobs": null,
-      "prompt_logprobs": null,
-      "stop_reason": null,
-      "text": " I hope you are having a great day so far. I just wanted to remind you that you are not alone. No matter what you are going through, you have people who care about you and want to help.\nIf you are struggling with difficult emotions"
-    }
-  ],
-  "created": 1753468566,
-  "id": "cmpl-e18c8248-bcd7-4c26-a7fc-a7e214dc3ff1",
-  "kv_transfer_params": null,
-  "model": "RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic",
-  "object": "text_completion",
-  "service_tier": null,
-  "system_fingerprint": null,
-  "usage": {
-    "completion_tokens": 50,
-    "prompt_tokens": 6,
-    "prompt_tokens_details": null,
-    "total_tokens": 56
-  }
-}
-```
+For instructions on getting started making inference requests see [our docs](../../docs/getting-started-inferencing.md)
 
 ## Cleanup
 
@@ -180,15 +125,18 @@ To remove the deployment:
 
 ```bash
 # Remove the model services
-# From examples/inference-scheduling
-helmfile --selector managedBy=helmfile destroy -f helmfile.yaml
+helmfile destroy
 
 # Remove the infrastructure
-helm uninstall infra-pd -n llm-d-pd
+helm uninstall ms-pd -n ${NAMESPACE}
+helm uninstall gaie-pd -n ${NAMESPACE}
+helm uninstall infra-pd -n ${NAMESPACE}
 ```
+
+**_NOTE:_** If you set the `$RELEASE_NAME_POSTFIX` environment variable, your release names will be different from the command above: `infra-$RELEASE_NAME_POSTFIX`, `gaie-$RELEASE_NAME_POSTFIX` and `ms-$RELEASE_NAME_POSTFIX`.
+
+**_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the quickstart, even if you use a non-default option.
 
 ## Customization
 
-- **Change model**: Edit `ms-pd/values.yaml` and update the `modelArtifacts.uri` and `routing.modelName`
-- **Adjust resources**: Modify the GPU/CPU/memory requests in the container specifications
-- **Scale workers**: Change the `replicas` count for decode/prefill deployments
+For information on customizing an installation of a quickstart path and tips to build your own, see [our docs](../../docs/customizing-a-quickstart-inference-stack.md)

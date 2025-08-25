@@ -1,5 +1,5 @@
+# Infra values
 gateway:
-  gatewayClassName: istio
   gatewayParameters:
     logLevel: error
     resources:
@@ -10,8 +10,6 @@ gateway:
         cpu: "1"
         memory: 1Gi
   destinationRule:
-    enabled: true
-    host: gaie-pd-epp.llm-d-pd.svc.cluster.local
     trafficPolicy:
       connectionPool:
         http:
@@ -23,6 +21,16 @@ gateway:
           maxConnections: 256000
           maxConnectionDuration: "1800s"
           connectTimeout: "900s"
-      tls:
-        mode: SIMPLE
-        insecureSkipVerify: true
+
+# MS values
+routing:
+  proxy:
+    debugLevel: 1
+  # IF epp is created through ms, set its debugLevel
+  epp:
+    debugLevel: 1
+
+# GAIE values
+inferenceExtension:
+  # IF epp is created through gaie, set its debugLevel
+  logVerbosity: 1

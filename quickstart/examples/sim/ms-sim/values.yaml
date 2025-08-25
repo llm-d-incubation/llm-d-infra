@@ -1,12 +1,11 @@
-# Creates the resources for simulating llm-d inference
 multinode: false
 
 modelArtifacts:
   uri: "hf://random"
+  name: random
   size: 5Mi
 
 routing:
-  # This is the model name for the openai api request
   modelName: random
   servicePort: 8000
   parentRefs:
@@ -30,7 +29,6 @@ routing:
     create: true
 
   epp:
-    # use GAIE instead of EPP
     create: false
 
 decode:
