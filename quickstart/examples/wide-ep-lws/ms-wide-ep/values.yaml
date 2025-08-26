@@ -1,12 +1,12 @@
 multinode: true
 
 modelArtifacts:
-  uri: "hf://deepseek-ai/DeepSeek-R1-0528"
+  uri: "hf://deepseek-ai/DeepSeek-V3-0324"
   size: 100Gi
   authSecretName: "llm-d-hf-token"
 
 routing:
-  modelName: deepseek-ai/DeepSeek-R1-0528
+  modelName: deepseek-ai/DeepSeek-V3-0324
   servicePort: 8000
   parentRefs:
     - group: gateway.networking.k8s.io
@@ -68,7 +68,7 @@ decode:
 
           source /opt/vllm/bin/activate
           exec vllm serve \
-            deepseek-ai/DeepSeek-R1-0528 \
+            deepseek-ai/DeepSeek-V3-0324 \
             --port 8200 \
             --disable-log-requests \
             --disable-uvicorn-access-log \
@@ -160,8 +160,7 @@ decode:
         sizeLimit: 8Gi
     - name: hf-cache
       hostPath:
-        path: /mnt/local/hf-cache
-        type: DirectoryOrCreate
-
+        path: /home/smo/.cache/huggingface
+        type: Directory
 prefill: 
   replicas: 0

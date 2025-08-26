@@ -216,7 +216,6 @@ validate_hf_token() {
   fi
 }
 
-
 install() {
   if [[ "${SKIP_GATEWAY_PROVIDER}" == "false" ]]; then
     log_info "🏗️ Installing GAIE Kubernetes infrastructure…"
@@ -263,7 +262,9 @@ install() {
     --set gateway.gatewayClassName="${GATEWAY_TYPE}" \
     --set gateway.gatewayParameters.proxyUID="${PROXY_UID}" \
     --set ingress.clusterRouterBase="${BASE_OCP_DOMAIN}" \
-    --set gateway.serviceType="${SERVICE_TYPE:-NodePort}"
+    --set gateway.serviceType="${SERVICE_TYPE:-NodePort}" \
+    --skip-schema-validation
+
   log_success "$HELM_RELEASE_NAME deployed"
 
   log_success "🎉 Installation complete."
@@ -283,7 +284,6 @@ uninstall() {
 
   log_success "💀 Uninstallation complete"
 }
-
 
 main() {
   parse_args "$@"
