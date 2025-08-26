@@ -57,6 +57,7 @@ decode:
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash", "-c"]
+      priorityClassName: "priorityclass.scheduling.k8s.io/moe-testing"
       modelCommand: "custom"
       args:
         - |-

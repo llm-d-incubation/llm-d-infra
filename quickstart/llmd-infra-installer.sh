@@ -97,19 +97,19 @@ check_cluster_reachability() {
   fi
 }
 
-# Derive an OpenShift PROXY_UID; default to 0 if not available
-fetch_kgateway_proxy_uid() {
-  log_info "Fetching OCP proxy UID..."
-  local uid_range
-  uid_range=$($KCMD get namespace "${NAMESPACE}" -o jsonpath='{.metadata.annotations.openshift\.io/sa\.scc\.uid-range}' 2>/dev/null || true)
-  if [[ -n "$uid_range" ]]; then
-    PROXY_UID=$(echo "$uid_range" | awk -F'/' '{print $1 + 1}')
-    log_success "Derived PROXY_UID=${PROXY_UID}"
-  else
-    PROXY_UID=0
-    log_info "No OpenShift SCC annotation found; defaulting PROXY_UID=${PROXY_UID}"
-  fi
-}
+# # Derive an OpenShift PROXY_UID; default to 0 if not available
+# fetch_kgateway_proxy_uid() {
+#   log_info "Fetching OCP proxy UID..."
+#   local uid_range
+#   uid_range=$($KCMD get namespace "${NAMESPACE}" -o jsonpath='{.metadata.annotations.openshift\.io/sa\.scc\.uid-range}' 2>/dev/null || true)
+#   if [[ -n "$uid_range" ]]; then
+#     PROXY_UID=$(echo "$uid_range" | awk -F'/' '{print $1 + 1}')
+#     log_success "Derived PROXY_UID=${PROXY_UID}"
+#   else
+#     PROXY_UID=0
+#     log_info "No OpenShift SCC annotation found; defaulting PROXY_UID=${PROXY_UID}"
+#   fi
+# }
 
 parse_args() {
   while [[ $# -gt 0 ]]; do
@@ -216,12 +216,12 @@ validate_hf_token() {
   fi
 }
 
-validate_gateway_type() {
-  if [[ "${GATEWAY_TYPE}" != "istio" && "${GATEWAY_TYPE}" != "kgateway" && "${GATEWAY_TYPE}" != "gke-l7-regional-external-managed" ]]; then
-    die "Invalid gateway type: ${GATEWAY_TYPE}. Supported types are: istio, kgateway, gke-l7-regional-external-managed."
-  fi
-  log_success "Gateway type validated"
-}
+# validate_gateway_type() {
+#   if [[ "${GATEWAY_TYPE}" != "istio" && "${GATEWAY_TYPE}" != "kgateway" && "${GATEWAY_TYPE}" != "gke-l7-regional-external-managed" ]]; then
+#     die "Invalid gateway type: ${GATEWAY_TYPE}. Supported types are: istio, kgateway, gke-l7-regional-external-managed."
+#   fi
+#   log_success "Gateway type validated"
+# }
 
 install() {
   if [[ "${SKIP_GATEWAY_PROVIDER}" == "false" ]]; then
