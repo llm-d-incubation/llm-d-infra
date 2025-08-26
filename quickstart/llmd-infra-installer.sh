@@ -285,7 +285,6 @@ uninstall() {
 }
 
 
-
 main() {
   parse_args "$@"
 
