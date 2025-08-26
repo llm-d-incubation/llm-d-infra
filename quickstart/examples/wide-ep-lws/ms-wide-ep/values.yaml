@@ -86,7 +86,7 @@ decode:
       interval: "30s"
   containers:
     - name: vllm-worker-decode
-      image: "ghcr.io/llm-d/llm-d:v0.2.0"
+      image: "ghcr.io/llm-d/llm-d-dev@sha256:dcb6b80a53d058e62dcbfc1166bf9e78419a62ea1e424489c85bc872f229a8e7"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash", "-c"]
@@ -221,7 +221,7 @@ prefill:
       interval: "30s"
   containers:
     - name: vllm-worker-prefill
-      image: "ghcr.io/llm-d/llm-d:v0.2.0"
+      image: "ghcr.io/llm-d/llm-d-dev@sha256:dcb6b80a53d058e62dcbfc1166bf9e78419a62ea1e424489c85bc872f229a8e7"
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash", "-c"]
