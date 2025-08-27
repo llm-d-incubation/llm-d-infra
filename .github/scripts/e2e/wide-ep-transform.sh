@@ -15,8 +15,8 @@ FILE="$1"
 
 OLD_MODEL_ORG="deepseek-ai"
 OLD_MODEL_NAME="DeepSeek-R1-0528"
-NEW_MODEL_ORG="Qwen"
-NEW_MODEL_NAME="Qwen1.5-MoE-A2.7B-Chat-GPTQ-Int4"
+NEW_MODEL_ORG="deepseek-ai"
+NEW_MODEL_NAME="DeepSeek-V2-Lite"
 
 OLD_MODEL="${OLD_MODEL_ORG}/${OLD_MODEL_NAME}"
 OLD_MODEL_SED_ESCAPED="${OLD_MODEL_ORG}\/${OLD_MODEL_NAME}"
@@ -43,16 +43,22 @@ patch() {
 
     yq e '.decode.containers[0].args[0] = strenv(decode_args_updated)' -i ${FILE}
 
-    ### See above, example is a 2 by 2
+    ### DP_SIZE 2, DP_SIZE_LOCAL 1
+    yq e '.decode.parallelism.data = 2' -i ${FILE}
     yq e '(.decode.containers[0].env[] | select(.name == "DP_SIZE_LOCAL")).value = "1"' -i ${FILE}
 
     ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead
     yq 'del(.decode.containers[0].env[] | select(.name == "HF_HUB_CACHE"))' -i ${FILE}
     yq 'del(.decode.containers[0].env[] | select(.name == "HF_HUB_DISABLE_XET"))' -i ${FILE}
 
+    ### L40s Dont support DeepEP kernles, use naive 
+    yq e '(.decode.containers[0].env[] | select(.name == "VLLM_ALL2ALL_BACKEND")).value = "naive"' -i ${FILE}
 
-    ### L40s Dont support DeepEP kernles, use naive PPLX
-    yq e '(.decode.containers[0].env[] | select(.name == "VLLM_ALL2ALL_BACKEND")).value = "pplx"' -i ${FILE}
+    ### Remove deep gemm
+    yq e 'del(.decode.containers[0].env[] | select(.name == "VLLM_USE_DEEP_GEMM"))' -i ${FILE}
+
+    ### Remove security context
+    yq e 'del(.decode.containers[0].securityContext)' -i ${FILE}
 
     ### See above, example is a 2 by 2
     yq e '
@@ -87,15 +93,22 @@ patch() {
 
     yq e '.prefill.containers[0].args[0] = strenv(prefill_args_updated)' -i ${FILE}
 
-    ### Size 1, DP 1
+    ### DP_SIZE 2, DP_SIZE_LOCAL 1
+    yq e '.prefill.parallelism.data = 2' -i ${FILE}
     yq e '(.prefill.containers[0].env[] | select(.name == "DP_SIZE_LOCAL")).value = "1"' -i ${FILE}
 
     ### The example is set to work out of the box on the coreweave cluster loading model from node storage. Were going to use HF download instead
     yq 'del(.prefill.containers[0].env[] | select(.name == "HF_HUB_CACHE"))' -i ${FILE}
     yq 'del(.prefill.containers[0].env[] | select(.name == "HF_HUB_DISABLE_XET"))' -i ${FILE}
 
-    ### L40s Dont support DeepEP kernles, use naive PPLX
-    yq e '(.prefill.containers[0].env[] | select(.name == "VLLM_ALL2ALL_BACKEND")).value = "pplx"' -i ${FILE}
+    ### L40s Dont support DeepEP kernles, use naive
+    yq e '(.prefill.containers[0].env[] | select(.name == "VLLM_ALL2ALL_BACKEND")).value = "naive"' -i ${FILE}
+    
+    ### Remove deep gemm
+    yq e 'del(.prefill.containers[0].env[] | select(.name == "VLLM_USE_DEEP_GEMM"))' -i ${FILE}
+
+    ### Remove security context
+    yq e 'del(.prefill.containers[0].securityContext)' -i ${FILE}
 
     ### See above, example is a 2 by 2
     yq e '
