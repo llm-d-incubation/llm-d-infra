@@ -31,6 +31,7 @@ patch() {
 
     yq e '.modelArtifacts.uri = "hf://'${NEW_MODEL}'"' -i ${FILE}
     yq e '.modelArtifacts.size = "30Gi"' -i ${FILE}
+    yq e '.modelArtifacts.name = "'${NEW_MODEL}'"' -i ${FILE}
     yq e '.routing.modelName = "'${NEW_MODEL}'"' -i ${FILE}
 
     ## Decode specific changes
