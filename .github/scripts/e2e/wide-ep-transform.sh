@@ -52,7 +52,7 @@ patch() {
     yq 'del(.decode.containers[0].env[] | select(.name == "HF_HUB_CACHE"))' -i ${FILE}
     yq 'del(.decode.containers[0].env[] | select(.name == "HF_HUB_DISABLE_XET"))' -i ${FILE}
 
-    ### L40s Dont support DeepEP kernles, use naive 
+    ### L40s Dont support DeepEP kernles, use naive
     yq e '(.decode.containers[0].env[] | select(.name == "VLLM_ALL2ALL_BACKEND")).value = "naive"' -i ${FILE}
 
     ### Remove deep gemm
@@ -104,7 +104,7 @@ patch() {
 
     ### L40s Dont support DeepEP kernles, use naive
     yq e '(.prefill.containers[0].env[] | select(.name == "VLLM_ALL2ALL_BACKEND")).value = "naive"' -i ${FILE}
-    
+
     ### Remove deep gemm
     yq e 'del(.prefill.containers[0].env[] | select(.name == "VLLM_USE_DEEP_GEMM"))' -i ${FILE}
 
