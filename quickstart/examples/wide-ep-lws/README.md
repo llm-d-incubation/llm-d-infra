@@ -108,7 +108,7 @@ kubectl port-forward -n llm-d-wide-ep service/infra-wide-ep-inference-gateway-is
 And then you should be able to curl your gateway service:
 
 ```bash
-curl -vvv http://localhost:8000/v1/models \
+curl -s http://localhost:8000/v1/models \
   -H "Content-Type: application/json" | jq
 {
   "data": [
@@ -145,7 +145,7 @@ curl -vvv http://localhost:8000/v1/models \
 Finally, we should be able to perform inference with curl:
 
 ```bash
-curl -vvv http://infra-wide-ep-inference-gateway-istio.llm-d-wide-ep.svc.cluster.local/v1/completions \
+curl -s http://localhost:8000/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "deepseek-ai/DeepSeek-R1-0528",
