@@ -40,7 +40,7 @@ decode:
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # This must equal the number of nodes rather than the dp_size.
-    data: 9
+    data: 8
     tensor: 1 # these will be derived based performance testing
   monitoring:
     podmonitor:
@@ -78,7 +78,7 @@ decode:
             --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
             --enable-eplb \
-            --num-redundant-experts 32 \
+            --num-redundant-experts 64 \
             --eplb-window-size 1000 \
             --eplb-step-interval 6000 \
             --eplb-log-balancedness

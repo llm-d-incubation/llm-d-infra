@@ -33,31 +33,40 @@ routing:
   epp:
     create: true
     image: ghcr.io/llm-d/llm-d-inference-scheduler:v0.2.1
-    debugLevel: 1
+    debugLevel: 4
     pluginsConfigFile: "pd-config.yaml"
-    pluginsCustomConfig:
-      pd-config.yaml: |
-        # ALWAYS DO PD IN THIS EXAMPLE (THRESHOLD 0)
-        apiVersion: inference.networking.x-k8s.io/v1alpha1
-        kind: EndpointPickerConfig
-        plugins:
-        - type: prefill-header-handler
-        - type: prefill-filter
-        - type: decode-filter
-        - type: random-picker
+    pluginsCustomConfig:	
+      pd-config.yaml: |	
+        # ALWAYS DO PD IN THIS EXAMPLE (THRESHOLD 0)	
+        apiVersion: inference.networking.x-k8s.io/v1alpha1	
+        kind: EndpointPickerConfig	
+        plugins:	
+        - type: prefill-header-handler	
+        - type: prefill-filter	
+        - type: decode-filter	
+        - type: max-score-picker	
+        - type: queue-scorer	
+          parameters:	
+            hashBlockSize: 5	
+            maxPrefixBlocksToMatch: 256	
+            lruCapacityPerServer: 31250	
+        - type: pd-profile-handler	
           parameters:
-            maxNumOfEndpoints: 1
-        - type: pd-profile-handler
-          parameters:
-            threshold: 0
-            hashBlockSize: 5
-        schedulingProfiles:
-        - name: prefill
-          plugins:
-          - pluginRef: random-picker
-        - name: decode
-          plugins:
-          - pluginRef: random-picker
+            threshold: 0	
+            hashBlockSize: 5	
+        schedulingProfiles:	
+        - name: prefill	
+          plugins:	
+          - pluginRef: prefill-filter	
+          - pluginRef: queue-scorer	
+            weight: 1.0	
+          - pluginRef: max-score-picker	
+        - name: decode	
+          plugins:	
+          - pluginRef: decode-filter	
+          - pluginRef: queue-scorer	
+            weight: 1.0	
+          - pluginRef: max-score-picker
 
 decode:
   priorityClassName: moe-testing
@@ -66,7 +75,7 @@ decode:
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # This must equal the number of nodes rather than the dp_size.
-    data: 9
+    data: 1
     tensor: 1 # these will be derived based performance testing
   monitoring:
     podmonitor:
@@ -103,11 +112,12 @@ decode:
             --data-parallel-rpc-port 5555 \
             --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
-            --enable-eplb \
-            --num-redundant-experts 104 \
-            --eplb-window-size 1000 \
-            --eplb-step-interval 6000 \
-            --eplb-log-balancedness
+            --enforce-eager
+            # --enable-eplb \
+            # --num-redundant-experts 32 \
+            # --eplb-window-size 1000 \
+            # --eplb-step-interval 3000 \
+            # --eplb-log-balancedness
 
       ports:
         - containerPort: 8200
@@ -187,7 +197,7 @@ decode:
 prefill: 
   priorityClassName: moe-testing
   create: true
-  replicas: 4
+  replicas: 1
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # This must equal the number of nodes rather than the dp_size.
@@ -227,7 +237,8 @@ prefill:
             --data-parallel-address ${LWS_LEADER_ADDRESS} \
             --data-parallel-rpc-port 5555 \
             --data-parallel-start-rank $START_RANK \
-            --trust-remote-code
+            --trust-remote-code \
+            --enforce-eager
       ports:
         - containerPort: 8200
           name: metrics
