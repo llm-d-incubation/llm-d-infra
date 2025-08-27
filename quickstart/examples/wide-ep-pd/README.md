@@ -10,7 +10,7 @@
 
    ```bash
    export HF_TOKEN=${HFTOKEN}
-   ./llmd-infra-installer.sh --namespace llm-d-wide-ep-pd -r infra-wide-ep-pd -f examples/wide-ep-lws/infra-wide-ep/values.yaml --disable-metrics-collection
+   ./llmd-infra-installer.sh --namespace llm-d-wide-ep-pd -r infra-wide-ep-pd -f examples/wide-ep-pd/infra-wide-ep-pd/values.yaml --disable-metrics-collection
    ```
 
    **_NOTE:_** The release name `infra-wide-ep-pd` is important here, because it matches up with pre-built values files used in this example.
