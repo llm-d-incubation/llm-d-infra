@@ -18,6 +18,7 @@
 1. Use the helmfile to apply the modelservice chart on top of it
 
    ```bash
+   ./patch-istio-deployment.sh
    cd examples/wide-ep-pd
    helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install
    ```

@@ -11,7 +11,7 @@ gateway:
         memory: 8Gi
   destinationRule:
     enabled: true
-    host: ms-wide-ep-pd-llm-d-modelservice-epp.llm-d-wide-ep.svc.cluster.local
+    host: ms-wide-ep-pd-llm-d-modelservice-epp.llm-d-wide-ep-pd.svc.cluster.local
     trafficPolicy:
       connectionPool:
         http:
