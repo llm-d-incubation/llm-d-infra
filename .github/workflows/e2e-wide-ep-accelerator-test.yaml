@@ -376,7 +376,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "HF_TOKEN=$HF_TOKEN GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart/wide-ep-lws
+            cd llm-d-infra/quickstart/examples/wide-ep-lws
             echo "Deploying llm-d infrastructure for Wide EP into namespace: llm-d-wide-ep ..."
             helmfile apply -e ${GATEWAY_TYPE} | tee ~/llmd-wide-ep-installer.log
           EOF
