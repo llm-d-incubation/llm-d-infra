@@ -368,7 +368,7 @@ jobs:
             set -x
             cd llm-d-infra/quickstart/gateway-control-plane-providers
             ./install-gateway-provider-dependencies.sh
-            helmfile apply -e ${GATEWAY_TYPE}
+            helmfile apply -f ${GATEWAY_TYPE}.helmfile.yaml
           EOF
 
       - name: Run installer to deploy llm-d infrastructure
