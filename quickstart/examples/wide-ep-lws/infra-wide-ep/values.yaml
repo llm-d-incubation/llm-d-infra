@@ -4,11 +4,11 @@ gateway:
     logLevel: info
     resources:
       limits:
-        cpu: "4"
-        memory: 4Gi
+        cpu: "8"
+        memory: 8Gi
       requests:
-        cpu: "1"
-        memory: 1Gi
+        cpu: "8"
+        memory: 8Gi
   destinationRule:
     enabled: true
     host: gaie-wide-ep-epp.llm-d-wide-ep.svc.cluster.local

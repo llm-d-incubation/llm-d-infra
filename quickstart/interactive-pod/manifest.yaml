@@ -45,4 +45,4 @@ spec:
           cpu: "32"
           memory: "128Gi"
 
-# URL=http://infra-wide-ep-inference-gateway-istio.llm-d-wide-ep.svc.cluster.local MODEL=deepseek-ai/DeepSeek-V3-0324 PROCESSOR=deepseek-ai/DeepSeek-V3-0324 guidellm benchmark --target=$URL --model=$MODEL --rate-type=concurrent --rate=5000 --max-requests=10001 --processor=$PROCESSOR --data='{"prompt_tokens":5, "output_tokens":500}' --max-seconds=10000
+# 
