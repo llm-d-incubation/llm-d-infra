@@ -112,7 +112,7 @@ decode:
             --data-parallel-rpc-port 5555 \
             --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
-            --enforce-eager
+            --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
             # --enable-eplb \
             # --num-redundant-experts 32 \
             # --eplb-window-size 1000 \
@@ -226,7 +226,7 @@ prefill:
           source /opt/vllm/bin/activate
           exec vllm serve \
             deepseek-ai/DeepSeek-V3-0324 \
-            --port 8200 \
+            --port 8000 \
             --disable-log-requests \
             --disable-uvicorn-access-log \
             --enable-expert-parallel \
@@ -238,7 +238,7 @@ prefill:
             --data-parallel-rpc-port 5555 \
             --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
-            --enforce-eager
+            --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
       ports:
         - containerPort: 8200
           name: metrics

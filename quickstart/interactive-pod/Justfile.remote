@@ -8,6 +8,15 @@ eval MODEL URL CONCURRENT LIMIT:
 sweep MODEL OUTFILE URL:
   OUTFILE={{OUTFILE}} MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep.sh
 
+bench_one MODEL URL INPUT_LEN:
+  python vllm/benchmarks/benchmark_one_concurrent.py \
+    --base-url {{URL}} \
+    --model {{MODEL}} \
+    --input-len {{INPUT_LEN}} \
+    --output-len 1 \
+    --num-requests 5 \
+    --seed $(date +%s)
+
 bench_sharegpt MODEL URL:
   python3 vllm/benchmarks/benchmark_serving.py \
     --base-url {{URL}} \
