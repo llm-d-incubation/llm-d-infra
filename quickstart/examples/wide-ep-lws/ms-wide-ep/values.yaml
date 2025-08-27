@@ -34,12 +34,9 @@ routing:
     create: false
 
 decode:
+  priorityClassName: moe-testing
   create: true
   replicas: 1
-  acceleratorTypes:
-    labelKey: gpu.nvidia.com/model
-    labelValues:
-      - H200
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # This must equal the number of nodes rather than the dp_size.
@@ -57,7 +54,6 @@ decode:
       imagePullPolicy: Always
       workingDir: /code
       command: ["/bin/bash", "-c"]
-      priorityClassName: "priorityclass.scheduling.k8s.io/moe-testing"
       modelCommand: "custom"
       args:
         - |-
@@ -127,7 +123,9 @@ decode:
         - name: VLLM_LOGGING_LEVEL
           value: "INFO"
         - name: HF_HUB_CACHE
-          value: /huggingface-cache
+          value: /huggingface-cache/hub
+        - name: HF_HUB_OFFLINE
+          value: "1"
         - name: VLLM_TORCH_PROFILER_DIR
           value: /home/vllm
         - name: VLLM_NIXL_SIDE_CHANNEL_HOST
@@ -136,23 +134,21 @@ decode:
               fieldPath: status.podIP
       resources:
         limits:
-          memory: 512Gi
+          cpu: 32
+          memory: 256Gi
           ephemeral-storage: 64Gi
-          nvidia.com/gpu: "8"
-          rdma/ib: 1
+          nvidia.com/gpu: 8
         requests:
           cpu: 32
-          memory: 512Gi
+          memory: 256Gi
           ephemeral-storage: 64Gi
-          nvidia.com/gpu: "8"
-          rdma/ib: 1
+          nvidia.com/gpu: 8
       mountModelVolume: false
       volumeMounts:
         - name: dshm
           mountPath: /dev/shm
         - name: hf-cache
           mountPath: /huggingface-cache
-
   volumes:
     - name: dshm
       emptyDir:

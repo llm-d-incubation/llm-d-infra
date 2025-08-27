@@ -1,11 +1,14 @@
 # Run these on the cluster
 
-eval MODEL URL CONCURRENT LIMIT:
+MODEL := "deepseek-ai/DeepSeek-V3-0324"
+URL := "http://infra-wide-ep-inference-gateway-istio.llm-d-wide-ep.svc.cluster.local"
+
+eval CONCURRENT LIMIT:
     lm_eval --model local-completions --tasks gsm8k \
     --model_args model={{MODEL}},base_url={{URL}}/v1/completions,num_concurrent={{CONCURRENT}},tokenized_requests=false \
     --limit {{LIMIT}}
 
-sweep MODEL OUTFILE URL:
+sweep OUTFILE:
   OUTFILE={{OUTFILE}} MODEL={{MODEL}} BASE_URL={{URL}} bash ./sweep.sh
 
 bench_sharegpt MODEL URL:
@@ -19,8 +22,8 @@ bench_sharegpt MODEL URL:
     --metric-percentiles 90,95,99 \
     --ignore-eos
 
-curl MODEL URL:
-  curl -X POST {{URL}}/v1/completions \
+curl:
+  curl -vvv -X POST {{URL}}/v1/completions \
     -H "Content-Type: application/json" \
     -d '{ \
       "model": "{{MODEL}}", \

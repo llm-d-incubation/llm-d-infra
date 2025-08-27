@@ -3,6 +3,10 @@ kind: Pod
 metadata:
   name: interactive-pod
 spec:
+  tolerations:
+    - key: "nvidia.com/gpu"
+      operator: "Exists"
+      effect: "NoSchedule"
   containers:
     - name: benchmark-runner
       image: "docker.io/rgshaw2/interactive-pod:0.2"
@@ -22,6 +26,10 @@ kind: Pod
 metadata:
   name: guidellm
 spec:
+  tolerations:
+    - key: "nvidia.com/gpu"
+      operator: "Exists"
+      effect: "NoSchedule"
   containers:
     - name: guidellm
       image: "ghcr.io/vllm-project/guidellm:pr-233"
@@ -37,4 +45,4 @@ spec:
           cpu: "32"
           memory: "128Gi"
 
-# guidellm benchmark --target=$URL --model=$MODEL --rate-type=concurrent --rate=5000 --max-requests=5000 --processor=$PROCESSOR --data='{"prompt_tokens":5, "output_tokens":500}'
+# URL=http://infra-wide-ep-inference-gateway-istio.llm-d-wide-ep.svc.cluster.local MODEL=deepseek-ai/DeepSeek-V3-0324 PROCESSOR=deepseek-ai/DeepSeek-V3-0324 guidellm benchmark --target=$URL --model=$MODEL --rate-type=concurrent --rate=5000 --max-requests=10001 --processor=$PROCESSOR --data='{"prompt_tokens":5, "output_tokens":500}' --max-seconds=10000
