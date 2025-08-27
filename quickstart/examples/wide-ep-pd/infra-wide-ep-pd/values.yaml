@@ -1,0 +1,29 @@
+gateway:
+  gatewayClassName: istio
+  gatewayParameters:
+    logLevel: info
+    resources:
+      limits:
+        cpu: "8"
+        memory: 8Gi
+      requests:
+        cpu: "8"
+        memory: 8Gi
+  destinationRule:
+    enabled: true
+    host: ms-wide-ep-pd-llm-d-modelservice-epp.llm-d-wide-ep.svc.cluster.local
+    trafficPolicy:
+      connectionPool:
+        http:
+          http1MaxPendingRequests: 256000
+          maxRequestsPerConnection: 256000
+          http2MaxRequests: 256000
+          idleTimeout: "900s"
+          maxRequestsPerConnection: 256000
+        tcp:
+          maxConnections: 256000
+          maxConnectionDuration: "1800s"
+          connectTimeout: "900s"
+      tls:
+        mode: SIMPLE
+        insecureSkipVerify: true

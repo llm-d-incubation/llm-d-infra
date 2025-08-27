@@ -20,29 +20,3 @@ spec:
         limits:
           cpu: "8"
           memory: "4Gi"
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: guidellm
-spec:
-  tolerations:
-    - key: "nvidia.com/gpu"
-      operator: "Exists"
-      effect: "NoSchedule"
-  containers:
-    - name: guidellm
-      image: "ghcr.io/vllm-project/guidellm:pr-233"
-      command: ["/bin/sh", "-c", "sleep infinity"]
-      imagePullPolicy: Always
-      stdin: true
-      tty: true
-      resources:
-        requests:
-          cpu: "32"
-          memory: "128Gi"
-        limits:
-          cpu: "32"
-          memory: "128Gi"
-
-# 

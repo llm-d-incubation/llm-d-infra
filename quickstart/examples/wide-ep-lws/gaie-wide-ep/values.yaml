@@ -7,7 +7,7 @@ inferenceExtension:
     pullPolicy: Always
   extProcPort: 9002
   pluginsConfigFile: "plugins-v2.yaml"
-  logVerbosity: 4
+  logVerbosity: 1
   pluginsCustomConfig:
     plugins-v2.yaml: |
       apiVersion: inference.networking.x-k8s.io/v1alpha1
