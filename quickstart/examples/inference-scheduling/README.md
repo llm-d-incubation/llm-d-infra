@@ -122,6 +122,22 @@ helm uninstall ms-inference-scheduling -n ${NAMESPACE}
 
 **_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the quickstart, even if you use a non-default option. You do, however, have to set the `-n ${NAMESPACE}` otherwise it may not cleanup the releases in the proper namespace.
 
+### Cleanup HTTPRoute
+
+Follow provider specific instructions for deleting HTTPRoute.
+
+=== "kgateway" or "istio"
+
+    ```bash
+    kubectl delete -f httproute.yaml
+    ```
+
+=== "gke"
+
+    ```
+    kubectl delete -f httproute.gke.yaml
+    ```
+
 ## Customization
 
 For information on customizing an installation of a quickstart path and tips to build your own, see [our docs](../../docs/customizing-a-quickstart-inference-stack.md)
