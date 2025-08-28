@@ -77,11 +77,13 @@ While this example out of the box requires Infiniband RDMA, GKE does not support
 Follow provider specific instructions for installing HTTPRoute.
 
 === "kgateway" or "istio"
+
     ```bash
     helmfile install -f httproute.yaml
     ```
 
 === "gke"
+
     ```
     helmfile install -f httproute.gke.yaml
     ```
