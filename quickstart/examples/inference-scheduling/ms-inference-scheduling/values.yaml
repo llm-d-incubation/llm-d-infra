@@ -27,7 +27,7 @@ routing:
     # name: gaie-inference-scheduling # set in helmfile
 
   httpRoute:
-    create: true
+    create: false
 
   epp:
     create: false

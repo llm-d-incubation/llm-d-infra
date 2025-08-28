@@ -28,7 +28,7 @@ routing:
     # name: gaie-pd # set in helmfile
 
   httpRoute:
-    create: true
+    create: false
 
   epp:
     create: false
