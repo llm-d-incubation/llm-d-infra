@@ -79,13 +79,13 @@ Follow provider specific instructions for installing HTTPRoute.
 === "kgateway" or "istio"
 
     ```bash
-    helmfile install -f httproute.yaml
+    kubectl apply -f httproute.yaml
     ```
 
 === "gke"
 
     ```
-    helmfile install -f httproute.gke.yaml
+    kubectl apply -f httproute.gke.yaml
     ```
 
 ## Verify the Installation
@@ -154,6 +154,22 @@ helm uninstall infra-pd -n ${NAMESPACE}
 **_NOTE:_** If you set the `$RELEASE_NAME_POSTFIX` environment variable, your release names will be different from the command above: `infra-$RELEASE_NAME_POSTFIX`, `gaie-$RELEASE_NAME_POSTFIX` and `ms-$RELEASE_NAME_POSTFIX`.
 
 **_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the quickstart, even if you use a non-default option. You do, however, have to set the `-n ${NAMESPACE}` otherwise it may not cleanup the releases in the proper namespace.
+
+### Cleanup HTTPRoute
+
+Follow provider specific instructions for deleting HTTPRoute.
+
+=== "kgateway" or "istio"
+
+    ```bash
+    kubectl delete -f httproute.yaml
+    ```
+
+=== "gke"
+
+    ```
+    kubectl delete -f httproute.gke.yaml
+    ```
 
 ## Customization
 

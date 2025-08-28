@@ -35,7 +35,8 @@ releases:
       type: infrastructure
       kind: inference-stack
     values:
-      - {{ .Environment.Values | toYaml | nindent 8  }}
+      - gateway:
+        {{ .Environment.Values.gateway | toYaml | nindent 10 }}
       - gateway:
           destinationRule:
             host: {{ printf "gaie-inference-scheduling-epp.%s.svc.cluster.local" $ns | quote }}
@@ -50,7 +51,8 @@ releases:
     values:
       - gaie-inference-scheduling/values.yaml
     {{- if eq .Environment.Name "gke" }}
-      - provider: {{ .Environment.Values.provider }}
+      - provider:
+          name: {{ .Environment.Values.provider.name }}
     {{- end }}
     labels:
       kind: inference-stack

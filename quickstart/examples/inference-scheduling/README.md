@@ -49,13 +49,15 @@ You can also customize your gateway, for more information on how to do that see 
 Follow provider specific instructions for installing HTTPRoute.
 
 === "kgateway" or "istio"
+
     ```bash
-    helmfile install -f httproute.yaml
+    kubectl apply -f httproute.yaml
     ```
 
 === "gke"
+
     ```
-    helmfile install -f httproute.gke.yaml
+    kubectl apply -f httproute.gke.yaml
     ```
 
 ## Verify the Installation

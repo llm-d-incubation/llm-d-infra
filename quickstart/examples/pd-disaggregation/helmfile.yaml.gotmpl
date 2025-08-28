@@ -55,7 +55,8 @@ releases:
     values:
       - gaie-pd/values.yaml
     {{- if eq .Environment.Name "gke" }}
-      - provider: {{ .Environment.Values.provider }}
+      - provider:
+          name: {{ .Environment.Values.provider.name }}
     {{- end }}
     {{- if or (eq .Environment.Name "istioBench") (eq .Environment.Name "default") }}
       - inferenceExtension:
