@@ -76,13 +76,13 @@ While this example out of the box requires Infiniband RDMA, GKE does not support
 
 Follow provider specific instructions for installing HTTPRoute.
 
-#### "kgateway" or "istio"
+#### Install for "kgateway" or "istio"
 
 ```bash
 kubectl apply -f httproute.yaml
 ```
 
-#### "gke"
+#### Install for "gke"
 
 ```bash
 kubectl apply -f httproute.gke.yaml
@@ -159,13 +159,13 @@ helm uninstall infra-pd -n ${NAMESPACE}
 
 Follow provider specific instructions for deleting HTTPRoute.
 
-#### "kgateway" or "istio"
+#### Cleanup for "kgateway" or "istio"
 
 ```bash
 kubectl delete -f httproute.yaml
 ```
 
-#### "gke"
+#### Cleanup for "gke"
 
 ```bash
 kubectl delete -f httproute.gke.yaml
