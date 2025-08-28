@@ -2,6 +2,8 @@
 
 This folder houses the client‑side tooling needed to use the LLM‑D quickstarts (e.g., kubectl, helm, helmfile, gh, yq, etc.). By keeping the install scripts and this doc together, we can version and update them in one place.
 
+To install the dependencies, use the provided [install-deps.sh](./install-deps.sh).
+
 ## Supported Development Platforms
 
 Currently LLM-D community only supports OSX and Linux development.
