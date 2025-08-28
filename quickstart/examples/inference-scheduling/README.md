@@ -126,7 +126,7 @@ helm uninstall ms-inference-scheduling -n ${NAMESPACE}
 
 Follow provider specific instructions for deleting HTTPRoute.
 
-#### Cleanup for "kgateway" or "istio" 
+#### Cleanup for "kgateway" or "istio"
 
 ```bash
 kubectl delete -f httproute.yaml
