@@ -225,11 +225,6 @@ jobs:
             cat ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
             echo "---"
             echo ""
-            echo "infra-wide-ep/values.yaml:"
-            echo "---"
-            cat ${{ env.WIDE_EP_PATH }}/infra-wide-ep/values.yaml
-            echo "---"
-            echo ""
             echo "=== End of values files output ==="
           EOF
 
@@ -368,12 +363,12 @@ jobs:
         env:
           GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
             set -euo pipefail
             set -x
             cd llm-d-infra/quickstart/gateway-control-plane-providers
             ./install-gateway-provider-dependencies.sh
-            helmfile apply -e ${GATEWAY_TYPE}
+            helmfile apply -f ${GATEWAY_TYPE}.helmfile.yaml
           EOF
 
       - name: Run installer to deploy llm-d infrastructure
@@ -381,13 +376,9 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "HF_TOKEN=$HF_TOKEN GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart
+            cd llm-d-infra/quickstart/examples/wide-ep-lws
             echo "Deploying llm-d infrastructure for Wide EP into namespace: llm-d-wide-ep ..."
-            ./llmd-infra-installer.sh \
-                --namespace "llm-d-wide-ep" \
-                -r infra-wide-ep \
-                -f examples/wide-ep-lws/infra-wide-ep/values.yaml \
-                | tee ~/llmd-wide-ep-installer.log
+            helmfile apply -e ${GATEWAY_TYPE} | tee ~/llmd-wide-ep-installer.log
           EOF
 
       - name: Install LeaderWorkerSet helm chart and wait for controller
