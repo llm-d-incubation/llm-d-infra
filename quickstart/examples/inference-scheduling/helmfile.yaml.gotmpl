@@ -10,13 +10,13 @@ environments:
       - ../common/gateway-configurations/gke.yaml
   gke_tpu: &GKE_TPU
     values:
-      - ../common/gateway-configurations/gke.yaml
+      - ../common/gateway-configurations/gke_tpu.yaml
   default:
     <<: *I
 
 ---
 
-{{- $ns := .Namespace | default "llm-d-inference-scheduler" -}}
+{{- $ns := .Namespace | default "llm-d-inference-scheduling" -}}
 {{- $rn := (env "RELEASE_NAME_POSTFIX") | default "inference-scheduling" -}}
 
 # set $ns as namespace for all releases
@@ -53,7 +53,7 @@ releases:
       - {{ printf "infra-%s" $rn | quote }}
     values:
       - gaie-inference-scheduling/values.yaml
-    {{- if (eq .Environment.Name "gke") or (eq .Environment.Name "gke_tpu") }}
+    {{- if or (eq .Environment.Name "gke") (eq .Environment.Name "gke_tpu") }}
       - provider:
           name: {{ .Environment.Values.provider.name }}
     {{- end }}

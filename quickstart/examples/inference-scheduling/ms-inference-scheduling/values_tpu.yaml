@@ -10,26 +10,25 @@ modelArtifacts:
 routing:
   modelName: meta-llama/Llama-3.1-70B
   servicePort: 8000
-
-  proxy:
-    image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
-    secure: false
-    connector: nixlv2
-
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: infra-inference-scheduling-inference-gateway
+      # name: infra-inference-scheduling-inference-gateway # set in helmfile
+  
+  proxy:
+    image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
+    connector: nixlv2
+    secure: false
 
   inferenceModel:
     create: false
 
   inferencePool:
     create: false
-    name: gaie-inference-scheduling
+    # name: gaie-inference-scheduling # set in helmfile
 
   httpRoute:
-    create: true
+    create: false
 
   epp:
     create: false
@@ -77,47 +76,5 @@ decode:
   - name: torch-compile-cache
     emptyDir: {}
 
-
-# The prefill replica is disabled via 'create: false' since pd is not
-# enabled for this configuration, uncomment to deploy a p replica
 prefill:
   create: false
-  replicas: 0
-  nodeSelector:
-    cloud.google.com/gke-tpu-topology: "2x4"
-    cloud.google.com/gke-tpu-accelerator: "tpu-v6e-slice"
-  monitoring:
-    podmonitor:
-      enabled: false
-      portName: "metrics"  # decode vLLM service port (from routing.proxy.targetPort)
-      path: "/metrics"
-      interval: "30s"
-  containers:
-  - name: "vllm"
-    image: "vllm/vllm-tpu:e92694b6fe264a85371317295bca6643508034ef"
-    modelCommand: vllmServe
-    args:
-      - "--tensor-parallel-size=8"
-      - "--max-model-len=4096"
-    ports:
-      - containerPort: 5557
-        protocol: TCP
-      - containerPort: 8200
-        name: metrics
-        protocol: TCP
-    resources:
-      limits:
-        google.com/tpu: 8
-      requests:
-        google.com/tpu: 8
-    mountModelVolume: true
-    volumeMounts:
-    - name: metrics-volume
-      mountPath: /.config
-    - name: torch-compile-cache
-      mountPath: /.cache
-  volumes:
-  - name: metrics-volume
-    emptyDir: {}
-  - name: torch-compile-cache
-    emptyDir: {}
