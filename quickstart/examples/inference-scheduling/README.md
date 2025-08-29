@@ -46,8 +46,6 @@ To see what gateway options are supported refer to our [gateway control plane do
 
 You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
 
-
-
 ### Install HTTPRoute
 
 Follow provider specific instructions for installing HTTPRoute.
