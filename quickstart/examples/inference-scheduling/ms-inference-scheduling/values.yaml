@@ -43,7 +43,7 @@ decode:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: "ghcr.io/llm-d/llm-d:v0.2.0"
+    image: "ghcr.io/llm-d/llm-d-dev:pr-170"
     modelCommand: vllmServe
     args:
       - "--enforce-eager"
