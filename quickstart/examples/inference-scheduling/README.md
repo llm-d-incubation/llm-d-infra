@@ -32,6 +32,8 @@ helmfile apply -n ${NAMESPACE}
 
 **_NOTE:_** This uses Istio as the default provider, see [Gateway Options](./README.md#gateway-options) for installing with a specific provider.
 
+**_NOTE:_** You can use vLLM on TPU instead by using the `-e gke_tpu` flag.
+
 ### Gateway options
 
 To see specify your gateway choice you can use the `-e <gateway option>` flag, ex:
@@ -43,6 +45,8 @@ helmfile apply -e kgateway -n ${NAMESPACE}
 To see what gateway options are supported refer to our [gateway control plane docs](../../gateway-control-plane-providers/README.md#supported-providers). Gateway configurations per provider are tracked in the [gateway-configurations directory](../common/gateway-configurations/).
 
 You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
+
+
 
 ### Install HTTPRoute
 
