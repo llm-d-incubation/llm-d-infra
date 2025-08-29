@@ -14,7 +14,7 @@ routing:
     - group: gateway.networking.k8s.io
       kind: Gateway
       # name: infra-inference-scheduling-inference-gateway # set in helmfile
-  
+
   proxy:
     image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
     connector: nixlv2
