@@ -43,6 +43,6 @@ helm-uninstall: ## Uninstall the Helm release
 
 ##@ Automation
 
-.Phony: bump-chart-version
+.PHONY: bump-chart-version
 bump-chart-version:
 	helpers/scripts/increment-chart-version.sh
