@@ -1,8 +1,21 @@
-# Quickstart with llm-d
+# Deploying distributed inference on Kubernetes with llm-d
 
-## Our Well-Lit Paths
+Our guides provide tested and benchmarked recipes and Helm charts to start serving large language models (LLMs) quickly with best practices common to production deployments. A familiarity with basic deployment and operation of Kubernetes is assumed.
 
-Our well-lit paths provide tested and benchmarked recipes and Helm charts to start serving quickly with best practices common to production deployments. They are extensible and customizable for particulars of your models and use cases, using popular open source components like Kubernetes, Envoy proxy, NIXL, and vLLM. Our intent is to eliminate the heavy lifting common in deploying inference at scale so users can focus on building.
+If you want to learn by doing, follow the [first deployment quickstart](./QUICKSTART.md).
+
+These guides are intended to be used as a starting point for your own configuration and deployment of model servers. Our Helm charts provide basic reusable building blocks for vLLM deployments and inference scheduler configuration within these guides but will not support the full range of all possible configurations. Both guides and charts depend on features provided and supported in the [vLLM](https://github.com/vllm-project/vllm) and [inference gateway](https://github.com/kubernetes-sigs/gateway-api-inference-extensions) open source projects.
+
+## Who are these guides (and llm-d) for?
+
+These guides are targeted to startups and enterprises to deploy production LLM serving at scale and minimize long term maintenance. We focus on the following use cases:
+
+* Deploying a self-hosted LLM behind a single workload across tens or hundreds of nodes
+* Running a production model-as-a-service platform that supports many users and workloads sharing one or more LLM deployments
+
+## Our Well-Lit Path Guides
+
+A well-lit path is a documented, tested, and benchmarked solution of choice to reduce risk and maintenance cost. These are the central best practices common to production deployments of large language model serving.
 
 We currently offer three tested and benchmarked paths to help you deploy large models:
 
@@ -10,6 +23,8 @@ We currently offer three tested and benchmarked paths to help you deploy large m
 2. [Prefill/Decode Disaggregation](./pd-disaggregation) - Reduce time to first token (TTFT) and get more predictable time per output token (TPOT) by splitting inference into prefill servers handling prompts and decode servers handling responses, primarily on large models such as Llama-70B and when processing very long prompts.
 3. [Wide Expert-Parallelism](./wide-ep-lws) - Deploy very large Mixture-of-Experts (MoE) models like [DeepSeek-R1](https://huggingface.co/deepseek-ai/DeepSeek-R1) and significantly reduce end-to-end latency and increase throughput by scaling up with [Data Parallelism and Expert Parallelism](https://docs.vllm.ai/en/latest/serving/data_parallel_deployment.html) over fast accelerator networks.
 
-## Supporting Examples
+## Supporting Guides
 
-- [llm-d Simulation](./sim) can deploy a vLLM model server simulator that allows testing inference scheduling at scale as each instance does not need accelerators.
+Our supporting guides address common operational challenges with model serving at scale:
+
+- [Simulating model servers](./simulated-accelerators) can deploy a vLLM model server simulator that allows testing inference scheduling and orchestration at scale as each instance does not need accelerators.
