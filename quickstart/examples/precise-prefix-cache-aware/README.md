@@ -87,13 +87,14 @@ We have docs on getting started sending inference requests [available here](../.
 ```bash
 
 kubectl port-forward -n ${NAMESPACE} service/infra-kv-events-inference-gateway-istio 8000:80
+export LONG_TEXT_200_WORDS="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
 curl -s http://localhost:8000/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "Qwen/Qwen3-0.6B",
-    "prompt": "Hello, how are you?",
-    "max_tokens": 1
+    "prompt": "'"$LONG_TEXT_200_WORDS"'",
+    "max_tokens": 50
   }' | jq
 ```
 
@@ -109,13 +110,13 @@ You should see output similar to:
 2025-08-24T19:19:16Z  LEVEL(-4) prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:125 Got pod scores  {"x-request-id": "28b10175-d1f3-45c4-b970-a13dfc6811e3", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
 ```
 
-1. Repeat steps 5 and 6 to see the prefix-cache-scorer in action
+1. Repeat the steps above to see the prefix-cache-scorer in action
 
 You should see output similar to:
 
 ```log
-2025-08-24T19:41:23Z  LEVEL(-4) prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:125 Got pod scores  {"x-request-id": "4d3b41fe-e95e-4628-b6f9-c7b5b20ea69f", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
-2025-08-24T19:41:46Z  LEVEL(-4) prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:125 Got pod scores  {"x-request-id": "6db977c6-96aa-482d-ab89-ad0e114d71d5", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
+2025-07-18T22:00:24Z    LEVEL(-4)       prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:133     Got pod scores  {"x-request-id": "0e08703d-30c0-4624-a7b3-31e94dc99bc8", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": null}
+2025-07-18T22:00:46Z    LEVEL(-4)       prefix-cache-scorer/prefix-cache-scorer scorer/prefix_cache_tracking.go:133     Got pod scores  {"x-request-id": "8d0b587d-058f-4d2e-a062-a859a565d37a", "model": "Qwen/Qwen3-0.6B", "resolvedTargetModel": "Qwen/Qwen3-0.6B", "criticality": "Sheddable", "scores": {"${POD_IP}":2}}
 ```
 
 **_NOTE:_** These logs will only appear for unique requests, so if you don't see repeated instances of these logs make sure to redo them in a unique way.
