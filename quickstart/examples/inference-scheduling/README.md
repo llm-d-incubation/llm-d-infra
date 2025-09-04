@@ -18,6 +18,15 @@ This example out of the box requires 2 Nvidia GPUs of any kind (support determin
 
 - Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
 
+- **For Intel XPU deployments**: You must have the Intel GPU Plugin deployed on your cluster. The plugin provides the `gpu.intel.com/i915` resource that the Intel XPU workloads require. 
+  
+  To deploy the Intel GPU Plugin:
+  ```bash
+  kubectl apply -k 'https://github.com/intel/intel-device-plugins-for-kubernetes/deployments/gpu_plugin?ref=v0.32.1'
+  ```
+  
+  You can verify it's installed by running `kubectl get nodes -o yaml | grep gpu.intel.com/i915` or check that Intel GPU plugin pods are running with `kubectl get pods -n kube-system | grep intel-gpu`.
+
 ## Installation
 
 Use the helmfile to compose and install the stack. The Namespace in which the stack will be deployed will be derived from the `${NAMESPACE}` environment variable. If you have not set this, it will default to `llm-d-inference-scheduler` in this example.
@@ -28,13 +37,23 @@ cd quickstart/examples/inference-scheduling
 helmfile apply -n ${NAMESPACE}
 ```
 
+**For Intel XPU deployment:**
+```bash
+export NAMESPACE=llm-d # shorter namespace recommended to avoid hostname length issues
+export RELEASE_NAME_POSTFIX=r1
+cd quickstart/examples/inference-scheduling
+helmfile apply -e xpu -n ${NAMESPACE}
+```
+
 **_NOTE:_** You can set the `$RELEASE_NAME_POSTFIX` env variable to change the release names. This is how we support concurrent installs. Ex: `RELEASE_NAME_POSTFIX=inference-scheduling-2 helmfile apply -n ${NAMESPACE}`
+
+**_IMPORTANT:_** When using long namespace names (like `llm-d-inference-scheduler`), the generated pod hostnames may become too long and cause issues due to Linux hostname length limitations (typically 64 characters maximum). It's recommended to use shorter namespace names (like `llm-d`) and set `RELEASE_NAME_POSTFIX` to generate shorter hostnames and avoid potential networking or vLLM startup problems.
 
 **_NOTE:_** This uses Istio as the default provider, see [Gateway Options](./README.md#gateway-options) for installing with a specific provider.
 
 ### Gateway options
 
-To see specify your gateway choice you can use the `-e <gateway option>` flag, ex:
+To specify your gateway choice you can use the `-e <gateway option>` flag, ex:
 
 ```bash
 helmfile apply -e kgateway -n ${NAMESPACE}

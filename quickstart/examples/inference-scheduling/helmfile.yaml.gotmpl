@@ -11,6 +11,9 @@ environments:
   gke_tpu: &GKE_TPU
     values:
       - ../common/gateway-configurations/gke_tpu.yaml
+  xpu: &XPU
+    values:
+      - ../common/gateway-configurations/istio.yaml
   default:
     <<: *I
 
@@ -68,6 +71,8 @@ releases:
     values:
     {{- if eq .Environment.Name "gke_tpu" }}
       - ms-inference-scheduling/values_tpu.yaml
+    {{- else if eq .Environment.Name "xpu" }}
+      - ms-inference-scheduling/values-xpu.yaml
     {{- else }}
       - ms-inference-scheduling/values.yaml
     {{- end }}
