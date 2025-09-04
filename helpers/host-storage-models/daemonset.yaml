@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: hf-prewarm
+  namespace: llm-d-wide-ep
+spec:
+  selector:
+    matchLabels: { app: hf-prewarm }
+  template:
+    metadata:
+      labels: { app: hf-prewarm }
+    spec:
+      tolerations:
+        - operator: Exists
+      containers:
+        - name: downloader
+          image: python:3.11-slim
+          securityContext: { runAsUser: 0 }
+          env:
+            - name: HUGGINGFACE_HUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: llm-d-hf-token
+                  key: HUGGINGFACE_HUB_TOKEN
+            - name: MODEL
+              value: "Qwen/Qwen3-30B-A3B-Instruct-2507-FP8"
+            - name: REVISION
+              value: ""                                # optional: tag/commit for pinning
+            - name: TARGET_DIR
+              value: "/var/lib/llm-d/models"
+            - name: HF_HUB_ENABLE_HF_TRANSFER
+              value: "1"                               # faster downloader (optional)
+          volumeMounts:
+            - name: modelstore
+              mountPath: /var/lib/llm-d/models
+          command: ["bash","-lc"]
+          args:
+            - |
+              set -euo pipefail
+              pip install --no-cache-dir --upgrade huggingface_hub hf_transfer >/dev/null
+              mkdir -p "${TARGET_DIR}"
+              python -c "import os; from huggingface_hub import snapshot_download as dl; \
+              m=os.environ['MODEL']; rev=os.environ.get('REVISION') or None; \
+              dest=os.environ['TARGET_DIR']+'/'+m.replace('/','__'); \
+              dl(repo_id=m, revision=rev, local_dir=dest, local_dir_use_symlinks=False, resume_download=True); \
+              print('Downloaded', m, '->', dest)"
+              echo "Done on node: $(hostname)"
+      volumes:
+        - name: modelstore
+          hostPath:
+            path: /var/lib/llm-d/models
+            type: DirectoryOrCreate
