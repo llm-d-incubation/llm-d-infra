@@ -11,12 +11,12 @@ Please join [SIG-Observability](https://github.com/llm-d/llm-d/blob/dev/SIGS.md#
 - If running on OpenShift, User Workload Monitoring provides an accessible Prometheus Stack for scraping metrics. See the
   [OpenShift documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/monitoring/configuring-user-workload-monitoring#enabling-monitoring-for-user-defined-projects_preparing-to-configure-the-monitoring-stack-uwm)
   to enable this feature.
-- In any Kubernetes environment, Prometheus custom resources must be available in the cluster. To install a simple Prometheus and Grafana stack,
+- In other Kubernetes environments, Prometheus custom resources must be available in the cluster. To install a simple Prometheus and Grafana stack,
   refer to [prometheus-grafana-stack.md](./prometheus-grafana-stack.md).
 
 ### Helmfile Integration
 
-Provided Prometheus custom resources exist in the cluster, the [llm-d well-lit paths](../examples/README.md) include the option to enable Prometheus
+Provided Prometheus custom resources exist in the cluster, all [llm-d guides](../../guides/README.md) include the option to enable Prometheus
 PodMonitor creation for scraping vLLM metrics. With any llm-d helmfile example, update the modelservice values to enable monitoring:
 
 ```yaml
