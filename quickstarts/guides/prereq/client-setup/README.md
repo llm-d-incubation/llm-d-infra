@@ -1,16 +1,12 @@
-# Quickstart Dependencies
+# Client Setup Prerequisites
 
-This folder houses the client‑side tooling needed to use the LLM‑D quickstarts (e.g., kubectl, helm, helmfile, gh, yq, etc.). By keeping the install scripts and this doc together, we can version and update them in one place.
-
-To install the dependencies, use the provided [install-deps.sh](./install-deps.sh).
+llm-d guides use a standard set of client tools on Linux and Mac OSX. The provided [install-deps.sh](./install-deps.sh) script will download and install the tools below.
 
 ## Supported Development Platforms
 
-Currently LLM-D community only supports OSX and Linux development.
+Currently llm-d community only supports OSX and Linux development.
 
 ## Required Tools
-
-Following prerequisite are required for the installer to work.
 
 | Binary      | Minimum Required Version | Download / Installation Instructions                                                            |
 | ----------- | ------------------------ | ----------------------------------------------------------------------------------------------- |
@@ -31,22 +27,21 @@ Following prerequisite are required for the installer to work.
 
 ## HuggingFace Token
 
-Most of these quickstarts download their model from Huggingface directly in the `llm-d` image. There are exceptions to this like the [`sim` example](../examples/sim/) that uses no model, or the [`wide-ep-lws` example](../examples/wide-ep-lws/) which uses a model loaded from storage directly on the nodes for faster development cycle iterations.
+Most guides download their model from Huggingface directly in the `llm-d` image. There are exceptions to this like the [`simulated-accelerators` guide](../examples/simulated-accelerators/) that uses no model, or the [`wide-ep-lws` guide](../examples/wide-ep-lws/) which uses a model loaded from storage directly on the nodes for faster development cycle iterations.
 
-For the rest however, you will need to the secret containing your HuggingFace Token. For more information on getting a token, see [the huggingface docs](https://huggingface.co/docs/hub/en/security-tokens).
+For the rest you will need to create a Kubernetes secret in your deployment namespace containing your HuggingFace Token. For more information on getting a token, see [the huggingface docs](https://huggingface.co/docs/hub/en/security-tokens).
 
-Once you have a token value you create the k8s secret to hold it:
+The following script will create the token in the current namespace using the name `llm-d-hf-token`, which is used in all guides:
 
 ```bash
-export HF_TOKEN=...
+export HF_TOKEN=<from Huggingface>
 export HF_TOKEN_NAME=${HF_TOKEN_NAME:-llm-d-hf-token}
-export NAMESPACE=...
 kubectl create secret generic ${HF_TOKEN_NAME} \
     --from-literal="HF_TOKEN=${HF_TOKEN}" \
     --namespace "${NAMESPACE}" \
     --dry-run=client -o yaml | kubectl apply -f -
 ```
 
-## Pulling LLM-D Images from GHCR
+## Pulling llm-d Images from GitHub Container Registry (GHCR)
 
-All of our container images on the `llm-d` organization on github are public. Because of this you should not need any authentication to pull any of them.
+All of the container images in the `llm-d` organization are public on GitHub and require no authentication to pull.

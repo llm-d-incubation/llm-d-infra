@@ -1,25 +1,29 @@
-# Gateway Providers
+# Gateway Provider Prerequisite
 
-This document will help walk you through choices around your gateway provider.
+This document will guide you through choosing a Gateway provider that can support the llm-d `inference-scheduler` component.
 
-## Pre-requisites
+## Before you begin
 
-Prior to applying your Gateway Control Plane infrastructure, there are two dependencies:
+Prior to deploying a Gateway control plane, you must install the custom resource definitions (CRDs) that add the Kubernetes API objects:
 
 - [Gateway API v1.3.0 CRDs](https://github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.3.0)
   - for more information see their [docs](https://gateway-api.sigs.k8s.io/guides/)
 - [Gateway API Inference Extension CRDs v0.5.1](https://github.com/kubernetes-sigs/gateway-api-inference-extension/config/crd?ref=v0.5.1)
   - for more information see their [docs](https://gateway-api-inference-extension.sigs.k8s.io/)
 
-We have provided you the [`install-gateway-provider-dependencies.sh`](./install-gateway-provider-dependencies.sh) script to facilitate this, so feel free to run that as so:
+We have provided the [`install-gateway-provider-dependencies.sh`](./install-gateway-provider-dependencies.sh) script to handle that deployment:
 
 ```bash
 ./install-gateway-provider-dependencies.sh
 ```
 
-It supports both installation by default, but also teardown as \`$1\`: `./install-gateway-provider-dependencies.sh delete`.
+To remove the created dependencies: 
 
-Additionally you can specify any valid git ref for versions as `GATEWAY_API_CRD_REVISION` and `GATEWAY_API_INFERENCE_EXTENSION_CRD_REVISION` respectively, ex:
+```bash
+./install-gateway-provider-dependencies.sh delete`
+```
+
+You may specify any valid git source control reference for versions as `GATEWAY_API_CRD_REVISION` and `GATEWAY_API_INFERENCE_EXTENSION_CRD_REVISION`:
 
 ```bash
 export GATEWAY_API_CRD_REVISION="v1.2.0"
@@ -29,18 +33,18 @@ export GATEWAY_API_INFERENCE_EXTENSION_CRD_REVISION="v0.5.0"
 
 ## Supported Providers
 
-This section will cover what Gateway Control Plane providers are supported. Currently that list is:
+`llm-d` guides cover the following Gateway providers. See the [inference gateway documentation](https://gateway-api-inference-extension.sigs.k8s.io/implementations/gateways/) for a complete list of supported Gateways.
 
 - `kgateway`
 - `istio`
 - `gke` *
 
 > [!IMPORTANT]
-> While LLM-D supports GKE Gateways, it comes setup out of the box on GKE, and so no action is required to deploy the control plane. If you are using GKE you may skip this document.
+> While llm-d supports GKE Gateways, it comes setup out of the box on GKE, and so no action is required to deploy the control plane. If you are using GKE you may skip this document.
 
 ## Installation
 
-To Install the gateway control plane and corresponding CRDs you can use:
+To install the gateway control plane:
 
 ```bash
 helmfile apply -f <your_gateway_choice>.helmfile.yaml # options: [`istio`, `kgateway`]
@@ -49,12 +53,12 @@ helmfile apply -f <your_gateway_choice>.helmfile.yaml # options: [`istio`, `kgat
 
 ### Targeted install
 
-If the CRDs already exist in your cluster and you do not wish to re-apply them, you use the `--selector kind=gateway-control-plane` selector to only apply or tear down the control plane, ex:
+If the CRDs already exist in your cluster and you do not wish to re-apply them, use the `--selector kind=gateway-control-plane` selector to limit your changes to the infrastructure:
 
 ```bash
-# Spin up
+# Install
 helmfile apply -f <your_gateway_choice> --selector kind=gateway-control-plane
-# Tear down
+# Uninstall
 helmfile destroy -f <your_gateway_choice> --selector kind=gateway-control-plane
 ```
 
