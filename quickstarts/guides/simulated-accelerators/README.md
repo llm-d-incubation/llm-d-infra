@@ -1,14 +1,15 @@
-# Feature: llm-d Simulation
+# Feature: llm-d Accelerator Simulation
 
 ## Overview
 
-This is a simulation example that demonstrates how to deploy using the llm-d-infra system with the `ghcr.io/llm-d/llm-d-inference-sim` image. This example simulates inference responses and can run on minimal resources without requiring actual GPU hardware.
+Conducting large scale testing of AI/ML workloads is difficult when capacity is limited or already committed to production workloads. `llm-d` provides a lightweight model server that mimics the behavior of executing inference without requiring an attached accelerator. This simulated server can be run in wide or dense configurations on CPU-only machines to validate the correct behavior of other parts of the system, including Kubernetes autoscaling and the `inference-scheduler`.
 
-## Pre-requisites
+This guide demonstrates how to deploy the simulator `ghcr.io/llm-d/llm-d-inference-sim` image and generate inference responses.
 
-- It is assumed that you have the proper tools installed on your local system to use these quickstart. To see what those tools are and minimum versions, check [our docs](../../dependencies/README.md#required-tools), and to install them, see our [install-deps.sh](../../dependencies/install-deps.sh) script.
+## Prerequisites
 
-- Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
+- Have the [proper client tools installed on your local system](../prereq/client-setup/README.md) to use this guide.
+- Configure and deploy your [Gateway control plane](../prereq/gateway-provider/README.md).
 
 **_NOTE:_** Unlike other examples which require models, the simulator stubs the vLLM server and so no HuggingFace token is needed.
 
@@ -106,4 +107,4 @@ helm uninstall ms-sim -n ${NAMESPACE}
 
 ## Customization
 
-For information on customizing an installation of a quickstart path and tips to build your own, see [our docs](../../docs/customizing-a-quickstart-inference-stack.md)
+For information on customizing a guide and tips to build your own, see [our docs](../../docs/customizing-a-guide.md)

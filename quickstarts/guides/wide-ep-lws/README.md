@@ -2,8 +2,7 @@
 
 ## Overview
 
-- This example demonstrates how to deploy DeepSeek-R1-0528 using vLLM's P/D disaggregation support with NIXL in a wide expert parallel pattern with LeaderWorkerSets
-- This "path" has been validated on a Cluster with 16xH200 GPUs split across two nodes with InfiniBand networking
+This guide demonstrates how to deploy DeepSeek-R1-0528 using vLLM's P/D disaggregation support with NIXL in a wide expert parallel pattern with LeaderWorkerSets. This guide has been validated on a cluster with 16xH200 GPUs split across two nodes with InfiniBand networking.
 
 > WARNING: We are still investigating and optimizing performance for other hardware and networking configurations
 
@@ -14,15 +13,13 @@ In this example, we will demonstrate a deployment of `DeepSeek-R1-0528` with:
 
 ## Hardware Requirements
 
-This example out of the box requires 16 Nvidia H200 GPUs, and Inifiniband RDMA. It requires 1024 Gi of memory across and 128 Gi of ephemeral storage all 3 pods (512 Gi memory and 64 Gi storage for both Decode pods together and 512 Gi memory and 64 Gi storage for the prefill pod).
+This guide requires 16 Nvidia H200 GPUs, and InfiniBand RDMA. It requires 1024 Gi of memory across and 128 Gi of ephemeral storage all 3 pods (512 Gi memory and 64 Gi storage for both Decode pods together and 512 Gi memory and 64 Gi storage for the prefill pod).
 
-## Pre-requisites
+## Prerequisites
 
-- It is assumed that you have the proper tools installed on your local system to use these quickstart. To see what those tools are and minimum versions, check [our docs](../../dependencies/README.md#required-tools), and to install them, see our [install-deps.sh](../../dependencies/install-deps.sh) script.
-
-- You must have the secret containing a HuggingFace Token in the namespace you want to deploy to with key `HF_TOKEN` (see [instructions](../../dependencies/README.md#huggingface-token)).
-
-- Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
+- Have the [proper client tools installed on your local system](../prereq/client-setup/README.md) to use this guide.
+- Configure and deploy your [Gateway control plane](../prereq/gateway-provider/README.md).
+- [Create the `llm-d-hf-token` secret in your target namespace with the key `HF_TOKEN` matching a valid HuggingFace token](../prereq/client-setup/README.md#huggingface-token) to pull models.
 
 ## Installation
 
@@ -122,4 +119,4 @@ helm uninstall infra-wide-ep -n ${NAMESPACE}
 
 ## Customization
 
-For information on customizing an installation of a quickstart path and tips to build your own, see [our docs](../../docs/customizing-a-quickstart-inference-stack.md)
+For information on customizing a guide and tips to build your own, see [our docs](../../docs/customizing-a-guide.md)
