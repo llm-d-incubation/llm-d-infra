@@ -131,8 +131,6 @@ decode:
         #  value: "y"
         - name: TRITON_LIBCUDA_PATH
           value: "/usr/lib64"
-        - name: HF_HUB_DISABLE_XET
-          value: "1"
         - name: VLLM_SKIP_P2P_CHECK
           value: "1"
         - name: VLLM_RANDOMIZE_DP_DUMMY_INPUTS
@@ -159,8 +157,6 @@ decode:
           value: "ibp"
         - name: VLLM_LOGGING_LEVEL
           value: "INFO"
-        - name: HF_HUB_CACHE
-          value: /huggingface-cache
         - name: VLLM_NIXL_SIDE_CHANNEL_HOST
           valueFrom:
             fieldRef:
@@ -184,22 +180,16 @@ decode:
           ephemeral-storage: 64Gi
           nvidia.com/gpu: "8"
           rdma/ib: 1
-      mountModelVolume: false
+      mountModelVolume: true
       volumeMounts:
         - name: dshm
           mountPath: /dev/shm
-        - name: hf-cache
-          mountPath: /huggingface-cache
 
   volumes:
     - name: dshm
       emptyDir:
         medium: Memory
         sizeLimit: 1Gi
-    - name: hf-cache
-      hostPath:
-        path: /mnt/local/hf-cache
-        type: DirectoryOrCreate
 
 prefill:
   create: true
@@ -265,8 +255,6 @@ prefill:
 
         - name: TRITON_LIBCUDA_PATH
           value: "/usr/lib64"
-        - name: HF_HUB_DISABLE_XET
-          value: "1"
         - name: VLLM_SKIP_P2P_CHECK
           value: "1"
         - name: VLLM_RANDOMIZE_DP_DUMMY_INPUTS
@@ -293,8 +281,6 @@ prefill:
           value: "ibp"
         - name: VLLM_LOGGING_LEVEL
           value: "INFO"
-        - name: HF_HUB_CACHE
-          value: /huggingface-cache
         - name: VLLM_NIXL_SIDE_CHANNEL_HOST
           valueFrom:
             fieldRef:
@@ -318,19 +304,12 @@ prefill:
           ephemeral-storage: 64Gi
           nvidia.com/gpu: "8"
           rdma/ib: 1
-      mountModelVolume: false
+      mountModelVolume: true
       volumeMounts:
         - name: dshm
           mountPath: /dev/shm
-        - name: hf-cache
-          mountPath: /huggingface-cache
-
   volumes:
     - name: dshm
       emptyDir:
         medium: Memory
         sizeLimit: 1Gi
-    - name: hf-cache
-      hostPath:
-        path: /mnt/local/hf-cache
-        type: DirectoryOrCreate
