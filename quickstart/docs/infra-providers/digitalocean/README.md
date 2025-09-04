@@ -8,7 +8,7 @@ This script provides a **minimal Prefill/Decode (P/D) Disaggregation** deploymen
 
 ### Architecture
 
-```
+```text
 ┌─────────────────────┐    ┌─────────────────────┐
 │   Prefill Pod       │    │   Decode Pod        │
 │   (GPU Node 1)      │    │   (GPU Node 2)      │
@@ -62,6 +62,7 @@ cd quickstart/docs/infra-providers/digitalocean
 ```
 
 This command automatically:
+
 1. Checks prerequisites
 2. Sets up GPU environment (installs NVIDIA Device Plugin if needed)
 3. Sets up Gateway infrastructure (Istio)
@@ -195,6 +196,7 @@ Deploy with built-in monitoring using the `-m` flag:
 ```
 
 This installs:
+
 - **Prometheus**: Metrics collection with P/D specific scraping
 - **Grafana**: Inference Gateway dashboard for EPP routing analysis
 - **AlertManager**: Alert notifications
@@ -227,18 +229,21 @@ kubectl port-forward -n llm-d-monitoring svc/prometheus-kube-prometheus-promethe
 ### Key Metrics Monitored
 
 **Inference Gateway (EPP Router):**
+
 - KV Cache utilization analysis
 - Request routing decisions and performance
 - Endpoint selection and load balancing
 - Queue management and optimization
 
 **Model Service Performance:**
+
 - vLLM prefill and decode metrics
 - GPU utilization per pod role
 - Request latency and throughput
 - Memory usage and resource allocation
 
 **Infrastructure:**
+
 - DigitalOcean GPU node utilization
 - Kubernetes cluster health
 - Network performance between components
@@ -253,6 +258,7 @@ kubectl port-forward -n llm-d-monitoring svc/prometheus-kube-prometheus-promethe
 **Cause**: GPU nodes may not have proper labels or tolerations
 
 **Solution**:
+
 ```bash
 # Check GPU nodes
 kubectl get nodes -l doks.digitalocean.com/gpu-brand=nvidia
@@ -280,20 +286,23 @@ args:
 **Check Steps**:
 
 1. Confirm pods are running:
-```bash
-kubectl get pods -n llm-d-pd
-```
 
-2. Check pod logs:
-```bash
-kubectl logs -n llm-d-pd -l llm-d.ai/role=prefill
-kubectl logs -n llm-d-pd -l llm-d.ai/role=decode
-```
+   ```bash
+   kubectl get pods -n llm-d-pd
+   ```
 
-3. Check gateway status:
-```bash
-kubectl get gateway -n llm-d-pd
-```
+1. Check pod logs:
+
+   ```bash
+   kubectl logs -n llm-d-pd -l llm-d.ai/role=prefill
+   kubectl logs -n llm-d-pd -l llm-d.ai/role=decode
+   ```
+
+1. Check gateway status:
+
+   ```bash
+   kubectl get gateway -n llm-d-pd
+   ```
 
 ## Uninstall
 
@@ -302,6 +311,7 @@ kubectl get gateway -n llm-d-pd
 ```
 
 This will clean up all related resources including:
+
 - P/D disaggregation pods
 - HuggingFace secrets
 - Gateway infrastructure
