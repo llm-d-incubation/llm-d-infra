@@ -1,14 +1,15 @@
-# Feature: llm-d Simulation
+# Feature: llm-d Accelerator Simulation
 
 ## Overview
 
-This is a simulation example that demonstrates how to deploy using the llm-d-infra system with the `ghcr.io/llm-d/llm-d-inference-sim` image. This example simulates inference responses and can run on minimal resources without requiring actual GPU hardware.
+Conducting large scale testing of AI/ML workloads is difficult when capacity is limited or already committed to production workloads. `llm-d` provides a lightweight model server that mimics the behavior of executing inference without requiring an attached accelerator. This simulated server can be run in wide or dense configurations on CPU-only machines to validate the correct behavior of other parts of the system, including Kubernetes autoscaling and the `inference-scheduler`.
 
-## Pre-requisites
+This guide demonstrates how to deploy the simulator `ghcr.io/llm-d/llm-d-inference-sim` image and generate inference responses.
 
-- It is assumed that you have the proper tools installed on your local system to use these quickstart. To see what those tools are and minimum versions, check [our docs](../../dependencies/README.md#required-tools), and to install them, see our [install-deps.sh](../../dependencies/install-deps.sh) script.
+## Prerequisites
 
-- Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
+- Have the [proper client tools installed on your local system](../prereq/client-setup/README.md) to use this guide.
+- Configure and deploy your [Gateway control plane](../prereq/gateway-provider/README.md).
 
 **_NOTE:_** Unlike other examples which require models, the simulator stubs the vLLM server and so no HuggingFace token is needed.
 
@@ -18,7 +19,7 @@ Use the helmfile to compose and install the stack. The Namespace in which the st
 
 ```bash
 export NAMESPACE=llm-d-sim # Or any namespace your heart desires
-cd quickstart/examples/sim
+cd guides/simulated-accelerators
 helmfile apply -n ${NAMESPACE}
 ```
 
@@ -34,7 +35,7 @@ To see specify your gateway choice you can use the `-e <gateway option>` flag, e
 helmfile apply -e kgateway -n ${NAMESPACE}
 ```
 
-To see what gateway options are supported refer to our [gateway control plane docs](../../gateway-control-plane-providers/README.md#supported-providers). Gateway configurations per provider are tracked in the [gateway-configurations directory](../common/gateway-configurations/).
+To see what gateway options are supported refer to our [gateway provider prereq doc](../prereq/gateway-provider/README.md#supported-providers). Gateway configurations per provider are tracked in the [gateway-configurations directory](../prereq/gateway-provider/common-configurations/).
 
 You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
 
@@ -80,7 +81,7 @@ replicaset.apps/ms-sim-llm-d-modelservice-decode-674774f45d    3         3      
 replicaset.apps/ms-sim-llm-d-modelservice-prefill-76c86dd9f8   1         1         1       7m11s
 ```
 
-**_NOTE:_** This assumes no other quickstart deployments in your given `${NAMESPACE}`.
+**_NOTE:_** This assumes no other guide deployments in your given `${NAMESPACE}`.
 
 ## Using the stack
 
@@ -102,8 +103,8 @@ helm uninstall ms-sim -n ${NAMESPACE}
 
 **_NOTE:_** If you set the `$RELEASE_NAME_POSTFIX` environment variable, your release names will be different from the command above: `infra-$RELEASE_NAME_POSTFIX`, `gaie-$RELEASE_NAME_POSTFIX` and `ms-$RELEASE_NAME_POSTFIX`.
 
-**_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the quickstart, even if you use a non-default option. You do, however, have to set the `-n ${NAMESPACE}` otherwise it may not cleanup the releases in the proper namespace.
+**_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the guide, even if you use a non-default option. You do, however, have to set the `-n ${NAMESPACE}` otherwise it may not cleanup the releases in the proper namespace.
 
 ## Customization
 
-For information on customizing an installation of a quickstart path and tips to build your own, see [our docs](../../docs/customizing-a-quickstart-inference-stack.md)
+For information on customizing a guide and tips to build your own, see [our docs](../../docs/customizing-a-guide.md)

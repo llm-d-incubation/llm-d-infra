@@ -1,6 +1,6 @@
 # Overview
 
-This document is coming soon. Its a placeholder for a place to provide guidance on customizing quickstarts.
+This document is coming soon. This will provide guidance on customizing llm-d guides and the limits and expectations for future evolution.
 
 ## Methods of BYO Model
 

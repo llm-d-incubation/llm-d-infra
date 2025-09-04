@@ -1,12 +1,14 @@
-# Requesting the quickstart Stack
+# Inference against llm-d
 
-## Pre-requistes
+This document show you how to interact with the model server and inference scheduler.
 
-This document is meant to pick up after you have deployed a quickstart and walk you through sending requests and interacting with the stack you just deployed.
+## Prerequisites
+
+You are assumed to have deployed the llm-d inference stack from a guide, using the model service Helm charts, or otherwise followed the llm-d conventions for deployment of inference scheduler and model server.
 
 ## Exposing your gateway
 
-First we need to choose what strategy were going to use to expose / interact with our gateway. It should be noted that this will be affected by the values you used when installing the `llm-d-infra` chart for your given quickstart. There are three options:
+First we need to choose what strategy were going to use to expose / interact with your gateway. It should be noted that this will be affected by the values you used when installing the `llm-d-infra` chart for your given guide. There are three options:
 
 1. Port-forward the gateway service to localhost
     - Pros: works on any k8s cluster type
@@ -24,19 +26,19 @@ First we need to choose what strategy were going to use to expose / interact wit
 
 **_NOTE:_** If you’re unsure which to use—start with port-forward as its the most reliable and easiest. For anything shareable, use Ingress/Route. Use LoadBalancer if your provider supports it and you just need raw L4 access.
 
-**_NOTE:_** It should also be noted that you can use other platform specific networking options such as Openshift Routes. However this is obviously platform dependent and can also cause externalities. When benchmarking the `pd-dissaggregation` example with OCP routes we noticed that Openshift Networking was enforcing timeouts on gateway requests, which, under heavy load affected our results. If you wish to use a platform dependent option with a benchmarking setup ensure to check your platform docs.
+**_NOTE:_** It should also be noted that you can use other platform specific networking options such as Openshift Routes. When benchmarking the `pd-disaggregation` example with OCP routes we noticed that Openshift Networking was enforcing timeouts on gateway requests, which, under heavy load affected our results. If you wish to use a platform dependent option with a benchmarking setup ensure to check your platform docs.
 
 Each of these paths should export the `${ENDPOINT}` environment variable which we can send requests to.
 
-### Port-forward to Localhost
+### Port-forward to a gateway on cluster
 
-Given a `$NAMESPACE` you can grab your gateway service name with the following.
+For gateway providers that install into the cluster you can port forward to the gateway deployment directly.
 
 ```bash
 GATEWAY_SVC=$(kubectl get svc -n "${NAMESPACE}" -o yaml | yq '.items[] | select(.metadata.name | test(".*-inference-gateway(-.*)?$")).metadata.name' | head -n1)
 ```
 
-**_NOTE:_** This command assumes you have one gateway in your given `${NAMESPACE}`, even if you have multiple it will only grab the name of the first gateway service in alphabetical order. If you are running multiple quickstarts in a singular namespace, you will have to explicitly set your `$GATEWAY_SVC` by listing services, finding the right one and exporting it, ex:
+**_NOTE:_** This command assumes you have one gateway in your given `${NAMESPACE}`, even if you have multiple it will only grab the name of the first gateway service in alphabetical order. If you are running multiple gateway deployments in a single namespace, you will have to explicitly set your `$GATEWAY_SVC` to the appropriate gateway endpoint.
 
 ```bash
 k get services
@@ -50,14 +52,14 @@ infra-sim-inference-gateway                          LoadBalancer   10.16.1.62  
 export GATEWAY_SVC="infra-inference-scheduling-inference-gateway-istio"
 ```
 
-After we have our gateway service name, we can portforward it:
+After we have our gateway service name, we can port forward it:
 
 ```bash
 export ENDPOINT="http://localhost:8000"
 kubectl port-forward -n ${NAMESPACE} service/${GATEWAY_SVC} 8000:80
 ```
 
-**_NOTE:_** in all of our quickstarts, 8000 is the default gateway service port. You can change this by adjusting the values for the `llm-d-infra` helm chart, and if you do make sure to adjust your port-forward command.
+**_NOTE:_** Port 8000 is the default gateway service port in our guides. You can change this by altering the values for the `llm-d-infra` helm chart and updating your port-forward command appropriately.
 
 ### Using the Gateway External IP with service type `LoadBalancer`
 
@@ -111,7 +113,7 @@ export ENDPOINT=$(kubectl get ingress ${GATEWAY_NAME} --no-headers -n ${NAMESPAC
 
 ### /v1/models endpoint
 
-The first path we can hit is `/v1/models`. This endpoint is only dependent on a vllm server being up and running in your inferecepool, so even if you are doing a wide case and only 1 decode or prefill instance is up, you should be able to get a response (this depends on configurations used by EPP as well). This is generally the safest request to make because the models per each quickstart path vary, but hit `/v1/models` does not depend on the model name.
+The first path we can hit is `/v1/models`. This endpoint is only dependent on a vllm server being up and running in your InferencePool, so even if you are following the wide expert-parallelism guide and only 1 decode or prefill instance is up, you should be able to get a response (this depends on configurations used by EPP as well). This is generally the safest request to make because while models per guide vary, the `/v1/models` is always available.
 
 1. Try curling the `/v1/models` endpoint:
 
@@ -208,7 +210,7 @@ The [initial implementation for the kv-cache-manager package](https://github.com
 
 ## Following logs for requests
 
-We recommend the `stern` tool for following requests because it will allow you to follow multiple pod logs at once. This is particularly useful in the context of llm-d because most deployments have multiple `decode` pods. For more information on this see our docs on [optional tools](../dependencies/README.md#optional-tools).
+We recommend the `stern` tool for following requests because it will allow you to follow multiple pod logs at once. This is particularly useful in the context of llm-d because most deployments have multiple `decode` pods. For more information on this see our docs on [optional tools](../guides/prereq/client-setup/README.md#optional-tools).
 
 To grab all decode pods in a namespace we can do the following:
 
@@ -235,7 +237,7 @@ For grabbing the prefill pods you can re-use our same command from earlier just 
 PREFILL_PODS=$(kubectl get pods --no-headers -n ${NAMESPACE} -l "llm-d.ai/role=prefill" -o custom-columns=":metadata.name")
 ```
 
-Typically this won't be as necessary because prefill does better with lower parallelism, and currently all of our quickstarts use 1 prefill instance.
+Typically this won't be as necessary because prefill does better with lower parallelism, and currently all of our guides use 1 prefill instance.
 
 ### `grep`ing out noise from logs
 

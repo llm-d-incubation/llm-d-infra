@@ -1,88 +1,72 @@
-# llm-d-infra Quick Start
-
-This document is meant to guide users through the process of using, deploying and potentially customizing a quickstart. The source of truth for installing a given quickstart will always live that particular directory, this guide is mean to walk through the common steps, and educate users on decisions that happen at each of those phases.
+# llm-d Quick Start
 
 ## Overview
 
-This guide will walk you through the steps to install and deploy llm-d on a Kubernetes cluster, using an opinionated flow in order to get up and running as quickly as possible.
+This quick start will walk you through the steps to install and deploy llm-d on a Kubernetes cluster and explain some of the key choices at each step as well as how to validate and remove your deployment.
 
 ## Prerequisites
 
+### Run with sufficient permissions to deploy
+
+Before running any deployment, ensure you have have sufficient permissions to deploy new custom resource definitions (CRDs), alter roles. Our guides are written for cluster administrators, especially for the prerequisites. Once prerequisites are configured, deploying model servers and new InferencePools typically requires only namespace editor permissions.
+
 ### Tool Dependencies
 
-You will need to install some dependencies (like helm, yq, git, etc.) and have a HuggingFace token for most examples. We have documented these requirements and instructions in the [dependencies directory](./dependencies/README.md). To install the dependencies, use the provided [install-deps.sh](./dependencies/install-deps.sh) script.
+You will need to install some dependencies (like helm, yq, git, etc.) and have a HuggingFace token for most examples. We have documented these requirements and instructions in the [prereq/client-setup directory](./prereq/client-setup/README.md). To install the dependencies, use the provided [install-deps.sh](./prereq/client-setup/install-deps.sh) script.
 
 ### HuggingFace Token
 
-A HuggingFace token is required to download models from the HuggingFace Hub. You must create a Kubernetes secret containing your HuggingFace token in the target namespace before deployment, see [instructions](./dependencies/README.md#huggingface-token).
+A HuggingFace token is required to download models from the HuggingFace Hub. You must create a Kubernetes secret containing your HuggingFace token in the target namespace before deployment, see [instructions](./prereq/client-setup/README.md#huggingface-token).
 
-### Gateway Control Plane
+### Gateway provider
 
-Additionally, it is assumed you have configured and deployed your Gateway Control Plane and their prerequisite CRDs. For information on this, see the [gateway-control-plane-providers](./gateway-control-plane-providers/README.md).
+Additionally, it is assumed you have configured and deployed your Kubernetes Gateway control plane and its prerequisite CRDs. For information see the [gateway-provider prereq](./prereq/gateway-provider/README.md).
 
 ### Target Platforms
 
-Since the llm-d-infra is based on helm charts, llm-d can be deployed on a variety of Kubernetes platforms. Requirements, workarounds, and any other documentation relevant to these platforms will live in the [infra-providers directory](./docs/infra-providers/).
+llm-d can be deployed on a variety of Kubernetes platforms. Specific requirements, workarounds, and any other documentation relevant to these platforms will live in the [infra-providers directory](../docs/infra-providers/).
 
-## llm-d-infra Installation
+## Deployment
 
-The llm-d-infra repository provides Helm charts to deploy various llm-d components. To install a specific component, navigate to its example directory and follow the instructions in its README:
+Select an appropriate guide from the list in the [README.md](./README.md). We recommend starting with the [inference scheduling](./inference-scheduling/README.md) well-lit path if you are looking to deploy vLLM in a recommended production serving configuration.
 
-- [inference-scheduling](./examples/inference-scheduling/README.md): Inference scheduling
-- [pd-disaggregation](./examples/pd-disaggregation/README.md): PD disaggregated deployment
-- [precise-prefix-cache-aware](./examples/precise-prefix-cache-aware/README.md): Precise prefix cache
-- [wide-ep-lws](./examples/wide-ep-lws/README.md): Wide EP LWS
-- [sim](./examples/sim/README.md): vLLM simulator
-
-### Install llm-d on an Existing Kubernetes Cluster
-
-To install llm-d components, navigate to the desired example directory and follow its README instructions. For example:
+Navigate to the desired guide directory and follow its README instructions. For example:
 
 ```bash
-cd examples/inference-scheduling  # Navigate to your desired example directory
+cd quickstarts/guides/inference-scheduling  # Navigate to your desired example directory
 # Follow the README.md instructions in the example directory
 ```
 
-### Install on OpenShift
-
-Before running any installation, ensure you have logged into the cluster as a cluster administrator. For example:
-
-```bash
-oc login --token=sha256~yourtoken --server=https://api.yourcluster.com:6443
-```
-
-After logging in, follow the same steps as described in the "Install llm-d on an Existing Kubernetes Cluster" section above.
+When you complete the deployment successfully, return here.
 
 ### Validation
 
-After executing the install steps from the specific example README, you will find that resources are created according to the installation options.
-
-First, you should be able to list all Helm releases to view the charts installed into your chosen namespace:
+You should be able to list all Helm releases to view the charts installed installed by the guide:
 
 ```bash
 helm list -n ${NAMESPACE}
 ```
 
-Out of the box with this example, you should have the following resources:
+You can view all resources in your namespace with:
 
 ```bash
 kubectl get all -n ${NAMESPACE}
 ```
 
-**Note:** This assumes no other quickstart deployments in your given `${NAMESPACE}`.
+**Note:** This assumes no other guide deployments in your given `${NAMESPACE}`.
 
-### Using the Stack
+### Making inference requests to your deployments
 
-For instructions on getting started with making inference requests, see [getting-started-inferencing.md](./docs/getting-started-inferencing.md).
+For instructions on getting started with making inference requests, see [getting-started-inferencing.md](../docs/getting-started-inferencing.md).
 
-### Metrics Collection
+### Metrics collection
 
-llm-d-infra includes support for metrics collection from vLLM pods. llm-d applies PodMonitors to trigger Prometheus
-scrape targets when enabled with llm-d-modelservice helm chart values. See [MONITORING.md](MONITORING.md) for details.
-In OpenShift, the built-in user workload monitoring Prometheus stack can be utilized to collect metrics.
+llm-d charts include support for metrics collection from vLLM pods. llm-d applies PodMonitors to trigger Prometheus
+scrape targets when enabled with the appropriate Helm chart values. See [MONITORING.md](/docs/monitoring/README.md) for details.
+
 In Kubernetes, Prometheus and Grafana can be installed from the prometheus-community
-[kube-prometheus-stack helm charts](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack).
+[kube-prometheus-stack helm charts](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack). In OpenShift, the built-in user workload monitoring Prometheus stack can be utilized to collect metrics.
 
 ### Uninstall
 
-To remove llm-d resources from the cluster, refer to the uninstallation instructions in the specific example's README that you installed.
+To remove llm-d resources from the cluster, refer to the uninstallation instructions in the specific guide README that you installed.

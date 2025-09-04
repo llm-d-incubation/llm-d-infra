@@ -2,13 +2,15 @@
 
 This document will guide you through choosing a Gateway provider that can support the llm-d `inference-scheduler` component.
 
+This prerequisite generally requires cluster administration rights.
+
 ## Before you begin
 
 Prior to deploying a Gateway control plane, you must install the custom resource definitions (CRDs) that add the Kubernetes API objects:
 
-- [Gateway API v1.3.0 CRDs](https://github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.3.0)
+- [Gateway API v1.3.0 CRDs](https://github.com/kubernetes-sigs/gateway-api/tree/v1.3.0/config/crd)
   - for more information see their [docs](https://gateway-api.sigs.k8s.io/guides/)
-- [Gateway API Inference Extension CRDs v0.5.1](https://github.com/kubernetes-sigs/gateway-api-inference-extension/config/crd?ref=v0.5.1)
+- [Gateway API Inference Extension CRDs v0.5.1](https://github.com/kubernetes-sigs/gateway-api-inference-extension/tree/v0.5.1/config/crd)
   - for more information see their [docs](https://gateway-api-inference-extension.sigs.k8s.io/)
 
 We have provided the [`install-gateway-provider-dependencies.sh`](./install-gateway-provider-dependencies.sh) script to handle that deployment:

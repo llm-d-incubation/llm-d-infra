@@ -2,8 +2,7 @@
 
 ## Overview
 
-- This example demonstrates how to deploy DeepSeek-R1-0528 using vLLM's P/D disaggregation support with NIXL in a wide expert parallel pattern with LeaderWorkerSets
-- This "path" has been validated on a Cluster with 16xH200 GPUs split across two nodes with InfiniBand networking
+This guide demonstrates how to deploy DeepSeek-R1-0528 using vLLM's P/D disaggregation support with NIXL in a wide expert parallel pattern with LeaderWorkerSets. This guide has been validated on a cluster with 24xH200 GPUs split across two nodes with InfiniBand networking.
 
 > WARNING: We are still investigating and optimizing performance for other hardware and networking configurations
 
@@ -14,15 +13,13 @@ In this example, we will demonstrate a deployment of `DeepSeek-R1-0528` with:
 
 ## Hardware Requirements
 
-This example out of the box requires 16 Nvidia H200 GPUs, and Inifiniband RDMA. It requires 1024 Gi of memory across and 128 Gi of ephemeral storage all 3 pods (512 Gi memory and 64 Gi storage for both Decode pods together and 512 Gi memory and 64 Gi storage for the prefill pod).
+This guide requires 24 Nvidia H200 GPUs and InfiniBand RDMA. It requires 1024 Gi of memory across and 128 Gi of ephemeral storage all 3 pods (512 Gi memory and 64 Gi storage for both Decode pods together and 512 Gi memory and 64 Gi storage for the prefill pod).
 
-## Pre-requisites
+## Prerequisites
 
-- It is assumed that you have the proper tools installed on your local system to use these quickstart. To see what those tools are and minimum versions, check [our docs](../../dependencies/README.md#required-tools), and to install them, see our [install-deps.sh](../../dependencies/install-deps.sh) script.
-
-- You must have the secret containing a HuggingFace Token in the namespace you want to deploy to with key `HF_TOKEN` (see [instructions](../../dependencies/README.md#huggingface-token)).
-
-- Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
+- Have the [proper client tools installed on your local system](../prereq/client-setup/README.md) to use this guide.
+- Configure and deploy your [Gateway control plane](../prereq/gateway-provider/README.md).
+- [Create the `llm-d-hf-token` secret in your target namespace with the key `HF_TOKEN` matching a valid HuggingFace token](../prereq/client-setup/README.md#huggingface-token) to pull models.
 
 ## Installation
 
@@ -30,7 +27,7 @@ Use the helmfile to compose and install the stack. The Namespace in which the st
 
 ```bash
 export NAMESPACE=llm-d-wide-ep # or any other namespace
-cd quickstart/examples/wide-ep-lws
+cd guides/wide-ep-lws
 helmfile apply -n ${NAMESPACE}
 ```
 
@@ -46,7 +43,7 @@ To see specify your gateway choice you can use the `-e <gateway option>` flag, e
 helmfile apply -e kgateway -n ${NAMESPACe}
 ```
 
-To see what gateway options are supported refer to our [gateway control plane docs](../../gateway-control-plane-providers/README.md#supported-providers). Gateway configurations per provider are tracked in the [gateway-configurations directory](../common/gateway-configurations/).
+To see what gateway options are supported refer to our [gateway provider prereq doc](../prereq/gateway-provider/README.md#supported-providers). Gateway configurations per provider are tracked in the [gateway-configurations directory](../prereq/gateway-provider/common-configurations/).
 
 You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
 
@@ -93,7 +90,7 @@ statefulset.apps/ms-wide-ep-llm-d-modelservice-decode-0   1/1     2m13s
 statefulset.apps/ms-wide-ep-llm-d-modelservice-prefill    1/1     2m13s
 ```
 
-**_NOTE:_** This assumes no other quickstart deployments in your given `${NAMESPACE}` and you have not changed the default release names via the `${RELEASE_NAME}` environment variable.
+**_NOTE:_** This assumes no other guide deployments in your given `${NAMESPACE}` and you have not changed the default release names via the `${RELEASE_NAME}` environment variable.
 
 ## Using the stack
 
@@ -118,8 +115,8 @@ helm uninstall infra-wide-ep -n ${NAMESPACE}
 
 **_NOTE:_** If you set the `$RELEASE_NAME_POSTFIX` environment variable, your release names will be different from the command above: `infra-$RELEASE_NAME_POSTFIX`, `gaie-$RELEASE_NAME_POSTFIX` and `ms-$RELEASE_NAME_POSTFIX`.
 
-**_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the quickstart, even if you use a non-default option.
+**_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the guide, even if you use a non-default option.
 
 ## Customization
 
-For information on customizing an installation of a quickstart path and tips to build your own, see [our docs](../../docs/customizing-a-quickstart-inference-stack.md)
+For information on customizing a guide and tips to build your own, see [our docs](../../docs/customizing-a-guide.md)

@@ -20,7 +20,7 @@ show_usage() {
   cat << EOF
 Usage: $0 [OPTIONS]
 
-Install essential tools for llm-d-infra development.
+Install essential tools for llm-d deployment.
 
 OPTIONS:
   --dev     Install additional development tools (chart-testing)

@@ -15,7 +15,6 @@ Currently llm-d community only supports OSX and Linux development.
 | `helm`      | v3.12.0+                 | [Helm – quick-start install](https://helm.sh/docs/intro/install/)                               |
 | `helmfile`  | v1.1.0+                  | [Helmfile - installation](https://github.com/helmfile/helmfile?tab=readme-ov-file#installation) |
 | `kubectl`   | v1.28.0+                 | [kubectl – install & setup](https://kubernetes.io/docs/tasks/tools/install-kubectl/)            |
-| ----------- | ------------------------ | ----------------------------------------------------------------------------------------------- |
 
 ### Optional Tools
 
@@ -23,11 +22,10 @@ Currently llm-d community only supports OSX and Linux development.
 | ------------------ | ------------------------ | ------------------------------------------------------------------------------------------------ |
 | `stern`            | 1.30+                    | [stern - installation](https://github.com/stern/stern?tab=readme-ov-file#installation)           |
 | `helm diff` plugin | v3.10.0+                 | [helm diff installation docs](https://github.com/databus23/helm-diff?tab=readme-ov-file#install) |
-| ------------------ | ------------------------ | ------------------------------------------------------------------------------------------------ |
 
 ## HuggingFace Token
 
-Most guides download their model from Huggingface directly in the `llm-d` image. There are exceptions to this like the [`simulated-accelerators` guide](../examples/simulated-accelerators/) that uses no model, or the [`wide-ep-lws` guide](../examples/wide-ep-lws/) which uses a model loaded from storage directly on the nodes for faster development cycle iterations.
+Most guides download their model from Huggingface directly in the `llm-d` image. There are exceptions to this like the [`simulated-accelerators` guide](../../simulated-accelerators/) that uses no model, or the [`wide-ep-lws` guide](../../wide-ep-lws/) which uses a model loaded from storage directly on the nodes for faster development cycle iterations.
 
 For the rest you will need to create a Kubernetes secret in your deployment namespace containing your HuggingFace Token. For more information on getting a token, see [the huggingface docs](https://huggingface.co/docs/hub/en/security-tokens).
 
