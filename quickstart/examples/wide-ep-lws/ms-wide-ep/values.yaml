@@ -69,8 +69,8 @@ decode:
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # This must equal the number of nodes rather than the dp_size.
-    data: 2
-    tensor: 1 # these will be derived based performance testing
+    data: 9
+    tensor: 3
   monitoring:
     podmonitor:
       enabled: false
@@ -121,7 +121,7 @@ decode:
         - name: HF_HUB_OFFLINE
           value: "1"
         - name: DP_SIZE_LOCAL
-          value: "8"
+          value: "3"
         #- name: UCX_TLS
         #  value: "rc,sm,self"
         #- name: UCX_PROTO_INFO
@@ -169,13 +169,13 @@ decode:
         limits:
           memory: 512Gi
           ephemeral-storage: 64Gi
-          nvidia.com/gpu: "8"
+          nvidia.com/gpu: "3"
           rdma/ib: 1
         requests:
           cpu: 32
           memory: 512Gi
           ephemeral-storage: 64Gi
-          nvidia.com/gpu: "8"
+          nvidia.com/gpu: "3"
           rdma/ib: 1
       mountModelVolume: false
       volumeMounts:
@@ -202,8 +202,8 @@ prefill:
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # It must equal the number of nodes rather than the dp_size.
-    data: 1
-    tensor: 1 # these will be derived based performance testing
+    data: 4
+    tensor: 3 # these will be derived based performance testing
   monitoring:
     podmonitor:
       enabled: false
@@ -246,7 +246,7 @@ prefill:
           protocol: TCP
       env:
         - name: DP_SIZE_LOCAL
-          value: "8"
+          value: "3"
         # - name: HF_HOME
         #   value: "/mnt/local/llm-d/models"
         # - name: HF_HUB_CACHE
@@ -300,13 +300,13 @@ prefill:
         limits:
           memory: 512Gi
           ephemeral-storage: 64Gi
-          nvidia.com/gpu: "8"
+          nvidia.com/gpu: "3"
           rdma/ib: 1
         requests:
           cpu: 32
           memory: 512Gi
           ephemeral-storage: 64Gi
-          nvidia.com/gpu: "8"
+          nvidia.com/gpu: "3"
           rdma/ib: 1
       mountModelVolume: false
       volumeMounts:
