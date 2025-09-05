@@ -1,0 +1,800 @@
+---
+# Source: llm-d-infra/templates/gateway-infrastructure/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: infra-wide-ep-inference-gateway
+  labels: 
+    app.kubernetes.io/name: llm-d-infra
+    helm.sh/chart: llm-d-infra-v1.3.0
+    app.kubernetes.io/instance: infra-wide-ep
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: "v0.3.0"
+    app.kubernetes.io/gateway: infra-wide-ep-inference-gateway
+    app.kubernetes.io/component: inference-gateway
+  annotations:
+data:
+  deployment: |
+    spec:
+      template:
+        spec:
+          containers:
+          - name: istio-proxy
+            args:
+              - proxy
+              - router
+              - --domain
+              - $(POD_NAMESPACE).svc.cluster.local
+              - --proxyLogLevel
+              - error
+              - --proxyComponentLogLevel
+              - misc:error
+              - --log_output_level
+              - default:error
+            resources: 
+              limits:
+                cpu: "4"
+                memory: 4Gi
+              requests:
+                cpu: "1"
+                memory: 1Gi
+  service: |
+    spec:
+      type: "LoadBalancer"
+---
+# Source: llm-d-infra/templates/gateway-infrastructure/destinationrule.yaml
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: infra-wide-ep-inference-gateway
+spec:
+  host: ms-wide-ep-llm-d-modelservice-epp.llm-d-wide-ep.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      http:
+        http1MaxPendingRequests: 256000
+        http2MaxRequests: 256000
+        idleTimeout: 900s
+        maxRequestsPerConnection: 256000
+      tcp:
+        connectTimeout: 900s
+        maxConnectionDuration: 1800s
+        maxConnections: 256000
+    tls:
+      insecureSkipVerify: true
+      mode: SIMPLE
+---
+# Source: llm-d-infra/templates/gateway-infrastructure/gateway.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: infra-wide-ep-inference-gateway
+  labels:
+    app.kubernetes.io/name: llm-d-infra
+    helm.sh/chart: llm-d-infra-v1.3.0
+    app.kubernetes.io/instance: infra-wide-ep
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: "v0.3.0"
+    app.kubernetes.io/gateway: infra-wide-ep-inference-gateway
+    app.kubernetes.io/component: inference-gateway
+    istio.io/enable-inference-extproc: "true"
+  annotations:
+    networking.istio.io/service-type: ClusterIP
+spec:
+  gatewayClassName: "istio"
+  listeners:
+    - port: 80
+      protocol: HTTP
+      name: default
+      path: /
+      allowedRoutes:
+        namespaces:
+          from: All
+  infrastructure:
+    parametersRef:
+      name: infra-wide-ep-inference-gateway
+      group: ""
+      kind: ConfigMap
+
+---
+# Source: llm-d-modelservice/templates/epp-sa.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ms-wide-ep-llm-d-modelservice-epp
+  labels:
+    helm.sh/chart: llm-d-modelservice-v0.2.7
+    app.kubernetes.io/version: "v0.2.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: llm-d-modelservice/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ms-wide-ep-llm-d-modelservice
+  labels:
+    helm.sh/chart: llm-d-modelservice-v0.2.7
+    app.kubernetes.io/version: "v0.2.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: llm-d-modelservice/templates/epp-plugin-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ms-wide-ep-llm-d-modelservice-epp
+  namespace: llm-d-wide-ep
+data:
+  default-config.yaml: |
+    apiVersion: inference.networking.x-k8s.io/v1alpha1
+    kind: EndpointPickerConfig
+    plugins:
+    - type: prefix-cache-scorer
+      parameters:
+        hashBlockSize: 5
+        maxPrefixBlocksToMatch: 256
+        lruCapacityPerServer: 31250
+    - type: decode-filter
+    - type: max-score-picker
+    - type: single-profile-handler
+    schedulingProfiles:
+    - name: default
+      plugins:
+      - pluginRef: decode-filter
+      - pluginRef: max-score-picker
+      - pluginRef: prefix-cache-scorer
+        weight: 50
+  prefix-cache-tracking-config.yaml: |
+    apiVersion: inference.networking.x-k8s.io/v1alpha1
+    kind: EndpointPickerConfig
+    plugins:
+      - type: single-profile-handler
+      - type: decode-filter
+      - type: prefix-cache-scorer
+        parameters:
+          mode: cache_tracking
+          indexerConfig:
+            tokenProcessorConfig:
+              blockSize: 64                         # must match vLLM block size if not default (16)
+              hashSeed: "42"                        # must match PYTHONHASHSEED in vLLM pods
+            kvBlockIndexConfig:
+              enableMetrics: true                   # enable kv-block index metrics (prometheus)
+              metricsLoggingInterval: 60000000000   # log kv-block metrics as well (1m in nanoseconds)
+      - type: kv-cache-scorer # kv-cache-utilization
+      - type: queue-scorer
+      - type: max-score-picker
+    schedulingProfiles:
+      - name: default
+        plugins:
+          - pluginRef: decode-filter
+          - pluginRef: prefix-cache-scorer
+            weight: 3.0
+          - pluginRef: kv-cache-scorer
+            weight: 1.0
+          - pluginRef: queue-scorer
+            weight: 1.0
+          - pluginRef: max-score-picker
+  prefix-estimate-config.yaml: |
+    apiVersion: inference.networking.x-k8s.io/v1alpha1
+    kind: EndpointPickerConfig
+    plugins:
+    - type: single-profile-handler
+    - type: decode-filter
+    - type: prefix-cache-scorer
+    - type: load-aware-scorer
+    - type: max-score-picker
+    schedulingProfiles:
+    - name: default
+      plugins:
+      - pluginRef: decode-filter
+      - pluginRef: prefix-cache-scorer
+        weight: 2.0
+      - pluginRef: load-aware-scorer
+        weight: 1.0
+      - pluginRef: max-score-picker
+  default-pd-config.yaml: |
+    apiVersion: inference.networking.x-k8s.io/v1alpha1
+    kind: EndpointPickerConfig
+    plugins:
+    - type: prefill-header-handler
+    - type: prefix-cache-scorer
+      parameters:
+        hashBlockSize: 5
+        maxPrefixBlocksToMatch: 256
+        lruCapacityPerServer: 31250
+    - type: prefill-filter
+    - type: decode-filter
+    - type: max-score-picker
+    - type: pd-profile-handler
+      parameters:
+        threshold: 10
+        hashBlockSize: 5
+    schedulingProfiles:
+    - name: prefill
+      plugins:
+      - pluginRef: prefill-filter
+      - pluginRef: max-score-picker
+      - pluginRef: prefix-cache-scorer
+        weight: 50
+    - name: decode
+      plugins:
+      - pluginRef: decode-filter
+      - pluginRef: max-score-picker
+      - pluginRef: prefix-cache-scorer
+        weight: 50
+  pd-config.yaml: |
+    # ALWAYS DO PD IN THIS EXAMPLE (THRESHOLD 0)
+    apiVersion: inference.networking.x-k8s.io/v1alpha1
+    kind: EndpointPickerConfig
+    plugins:
+    - type: prefill-header-handler
+    - type: prefill-filter
+    - type: decode-filter
+    - type: max-score-picker
+    - type: queue-scorer
+      parameters:
+        hashBlockSize: 5
+        maxPrefixBlocksToMatch: 256
+        lruCapacityPerServer: 31250
+    - type: pd-profile-handler
+      parameters:
+        threshold: 0
+        hashBlockSize: 5
+    schedulingProfiles:
+    - name: prefill
+      plugins:
+      - pluginRef: prefill-filter
+      - pluginRef: queue-scorer
+        weight: 1.0
+      - pluginRef: max-score-picker
+    - name: decode
+      plugins:
+      - pluginRef: decode-filter
+      - pluginRef: queue-scorer
+        weight: 1.0
+      - pluginRef: max-score-picker
+---
+# Source: llm-d-modelservice/templates/epp-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ms-wide-ep-llm-d-modelservice-epp
+rules:
+- apiGroups:
+  - inference.networking.x-k8s.io
+  resources:
+  - inferencemodels
+  - inferencepools
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+# Source: llm-d-modelservice/templates/epp-rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ms-wide-ep-llm-d-modelservice-epp
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ms-wide-ep-llm-d-modelservice-epp
+subjects:
+- kind: ServiceAccount
+  name: ms-wide-ep-llm-d-modelservice-epp
+---
+# Source: llm-d-modelservice/templates/epp-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-wide-ep-llm-d-modelservice-epp
+  labels:
+    helm.sh/chart: llm-d-modelservice-v0.2.7
+    app.kubernetes.io/version: "v0.2.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - name: grpc-ext-proc
+      port: 9002
+      targetPort: 9002
+      protocol: TCP
+      appProtocol: http2
+  selector:
+    llm-d.ai/epp: ms-wide-ep-llm-d-modelservice-epp
+---
+# Source: llm-d-modelservice/templates/epp-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-wide-ep-llm-d-modelservice-epp
+  labels:
+    llm-d.ai/epp: ms-wide-ep-llm-d-modelservice-epp
+  namespace: llm-d-wide-ep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      llm-d.ai/epp: ms-wide-ep-llm-d-modelservice-epp
+  template:
+    metadata:
+      labels:
+        llm-d.ai/epp: ms-wide-ep-llm-d-modelservice-epp
+    spec:
+      containers:
+      - name: epp
+        imagePullPolicy: Always
+        image: ghcr.io/llm-d/llm-d-inference-scheduler:v0.2.1
+        args:
+        - --poolName
+        - ms-wide-ep
+        - --poolNamespace
+        - llm-d-wide-ep
+        - -v
+        - "1"
+        - --zap-encoder
+        - json
+        - --grpcPort
+        - "9002"
+        - --grpcHealthPort
+        - "9003"
+        - "-configFile"
+        - "config/pd-config.yaml"
+        ports:
+        - containerPort: 9002
+          name: grpc
+          protocol: TCP
+        - containerPort: 9003
+          name: grpc-health
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        readinessProbe:
+          grpc:
+            port: 9003
+            service: envoy.service.ext_proc.v3.ExternalProcessor
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          grpc:
+            port: 9003
+            service: envoy.service.ext_proc.v3.ExternalProcessor
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        volumeMounts:
+          - name: plugins-config-volume
+            mountPath: "/config"
+      volumes:
+      - name: plugins-config-volume
+        configMap:
+          name: ms-wide-ep-llm-d-modelservice-epp
+      serviceAccount: ms-wide-ep-llm-d-modelservice-epp
+      serviceAccountName: ms-wide-ep-llm-d-modelservice-epp
+---
+# Source: llm-d-modelservice/templates/inferencemodel.yaml
+apiVersion: inference.networking.x-k8s.io/v1alpha2
+kind: InferenceModel
+metadata:
+  labels:
+    llm-d.ai/inferenceServing: "true"
+    llm-d.ai/model: ms-wide-ep-llm-d-modelservice
+  name: ms-wide-ep-llm-d-modelservice
+spec:
+  criticality: Critical
+  modelName: random/model
+  poolRef:
+    name: ms-wide-ep
+---
+# Source: llm-d-modelservice/templates/inferencepool.yaml
+apiVersion: inference.networking.x-k8s.io/v1alpha2
+kind: InferencePool
+metadata:
+  name: ms-wide-ep
+  namespace: llm-d-wide-ep
+spec:
+  extensionRef:
+    failureMode: FailClose
+    group: ""
+    kind: Service
+    name: ms-wide-ep-llm-d-modelservice-epp
+  selector:
+    llm-d.ai/inferenceServing: "true"
+    llm-d.ai/model: ms-wide-ep-llm-d-modelservice
+  targetPortNumber: 8000
+---
+# Source: llm-d-modelservice/templates/decode-lws.yaml
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: ms-wide-ep-llm-d-modelservice-decode
+  labels:
+    helm.sh/chart: llm-d-modelservice-v0.2.7
+    app.kubernetes.io/version: "v0.2.0"
+    app.kubernetes.io/managed-by: Helm
+    llm-d.ai/inferenceServing: "true"
+    llm-d.ai/model: ms-wide-ep-llm-d-modelservice
+    llm-d.ai/role: decode
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 9
+    workerTemplate:
+      metadata:
+        labels:
+          llm-d.ai/inferenceServing: "true"
+          llm-d.ai/model: ms-wide-ep-llm-d-modelservice
+          llm-d.ai/role: decode
+      spec:
+        
+        initContainers:
+          - name: routing-proxy
+            args:
+              - --port=8000
+              - --vllm-port=8200
+              - --connector=nixlv2
+              - -v=1
+              - --secure-proxy=false
+            image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
+            imagePullPolicy: Always
+            ports:
+              - containerPort: 8000
+            resources: {}
+            restartPolicy: Always
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+        
+      
+        serviceAccountName: ms-wide-ep-llm-d-modelservice
+        
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                  - key: gpu.nvidia.com/model
+                    operator: In
+                    values:
+                      - H200
+        volumes:
+          - emptyDir:
+              medium: Memory
+              sizeLimit: 1Gi
+            name: dshm
+          - hostPath:
+              path: /mnt/local/llm-d/models
+              type: DirectoryOrCreate
+            name: modelstore
+          - name: model-storage
+            emptyDir:
+              sizeLimit: 5Mi
+          
+        containers:
+        - name: vllm-worker-decode
+          image: ghcr.io/llm-d/llm-d:v0.2.0
+          securityContext:
+            capabilities:
+              add:
+              - IPC_LOCK
+              - SYS_RAWIO
+            runAsGroup: 0
+            runAsUser: 0
+          imagePullPolicy: Always
+          
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - |-
+              #################
+              # RUN vLLM decode worker
+              #################
+              START_RANK=$(( ${LWS_WORKER_INDEX:-0} * DP_SIZE_LOCAL ))
+              source /opt/vllm/bin/activate
+              exec vllm serve \
+                /mnt/local/llm-d/models/DeepSeek-V3.1/ \
+                --served-model-name deepseek3 \
+                --port 8200 \
+                --disable-log-requests \
+                --disable-uvicorn-access-log \
+                --enable-expert-parallel \
+                --data-parallel-hybrid-lb \
+                --tensor-parallel-size $TP_SIZE \
+                --data-parallel-size $((LWS_GROUP_SIZE * DP_SIZE_LOCAL)) \
+                --data-parallel-size-local $DP_SIZE_LOCAL \
+                --data-parallel-address ${LWS_LEADER_ADDRESS} \
+                --data-parallel-rpc-port 5555 \
+                --data-parallel-start-rank $START_RANK \
+                --trust-remote-code \
+                --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
+          env:
+          - name: VLLM_FUSED_MOE_CHUNK_SIZE
+            value: "1024"
+          - name: HF_HUB_OFFLINE
+            value: "1"
+          - name: DP_SIZE_LOCAL
+            value: "3"
+          - name: TRITON_LIBCUDA_PATH
+            value: /usr/lib64
+          - name: VLLM_SKIP_P2P_CHECK
+            value: "1"
+          - name: VLLM_RANDOMIZE_DP_DUMMY_INPUTS
+            value: "1"
+          - name: VLLM_USE_DEEP_GEMM
+            value: "1"
+          - name: VLLM_ALL2ALL_BACKEND
+            value: deepep_low_latency
+          - name: NVIDIA_GDRCOPY
+            value: enabled
+          - name: NVSHMEM_DEBUG
+            value: INFO
+          - name: NVSHMEM_REMOTE_TRANSPORT
+            value: ibgda
+          - name: NVSHMEM_IB_ENABLE_IBGDA
+            value: "true"
+          - name: NVSHMEM_BOOTSTRAP_UID_SOCK_IFNAME
+            value: eth0
+          - name: GLOO_SOCKET_IFNAME
+            value: eth0
+          - name: NCCL_SOCKET_IFNAME
+            value: eth0
+          - name: NCCL_IB_HCA
+            value: ibp
+          - name: VLLM_LOGGING_LEVEL
+            value: INFO
+          - name: VLLM_NIXL_SIDE_CHANNEL_HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: DP_SIZE
+            value: "9"
+          - name: TP_SIZE
+            value: "3"
+          
+          ports:
+          - containerPort: 8200
+            name: metrics
+            protocol: TCP
+          
+          resources:
+            limits:
+              ephemeral-storage: 64Gi
+              memory: 512Gi
+              nvidia.com/gpu: 3
+              rdma/ib: 1
+            requests:
+              cpu: 32
+              ephemeral-storage: 64Gi
+              memory: 512Gi
+              nvidia.com/gpu: 3
+              rdma/ib: 1
+          
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+            - mountPath: /mnt/local/llm-d/models
+              name: modelstore
+          workingDir: /code
+---
+# Source: llm-d-modelservice/templates/prefill-lws.yaml
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: ms-wide-ep-llm-d-modelservice-prefill
+  labels:
+    helm.sh/chart: llm-d-modelservice-v0.2.7
+    app.kubernetes.io/version: "v0.2.0"
+    app.kubernetes.io/managed-by: Helm
+    llm-d.ai/inferenceServing: "true"
+    llm-d.ai/model: ms-wide-ep-llm-d-modelservice
+    llm-d.ai/role: prefill
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 4
+
+    # no sidecar so no need to specify leader separately
+
+    workerTemplate:
+      metadata:
+        labels:
+          llm-d.ai/inferenceServing: "true"
+          llm-d.ai/model: ms-wide-ep-llm-d-modelservice
+          llm-d.ai/role: prefill
+      spec:
+      
+        serviceAccountName: ms-wide-ep-llm-d-modelservice
+        
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                  - key: gpu.nvidia.com/model
+                    operator: In
+                    values:
+                      - H200
+        volumes:
+          - emptyDir:
+              medium: Memory
+              sizeLimit: 1Gi
+            name: dshm
+          - hostPath:
+              path: /mnt/local/llm-d/models
+              type: DirectoryOrCreate
+            name: modelstore
+          - name: model-storage
+            emptyDir:
+              sizeLimit: 5Mi
+          
+        containers:
+        - name: vllm-worker-prefill
+          image: ghcr.io/llm-d/llm-d:v0.2.0
+          securityContext:
+            capabilities:
+              add:
+              - IPC_LOCK
+              - SYS_RAWIO
+            runAsGroup: 0
+            runAsUser: 0
+          imagePullPolicy: Always
+          
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - |-
+              #################
+              # RUN vLLM prefill worker
+              #################
+              START_RANK=$(( ${LWS_WORKER_INDEX:-0} * DP_SIZE_LOCAL ))
+              source /opt/vllm/bin/activate
+              exec vllm serve \
+                /mnt/local/llm-d/models/DeepSeek-V3.1/ \
+                --served-model-name deepseek3 \
+                --port 8000 \
+                --disable-log-requests \
+                --disable-uvicorn-access-log \
+                --enable-expert-parallel \
+                --data-parallel-hybrid-lb \
+                --tensor-parallel-size $TP_SIZE \
+                --data-parallel-size $((LWS_GROUP_SIZE * DP_SIZE_LOCAL)) \
+                --data-parallel-size-local $DP_SIZE_LOCAL \
+                --data-parallel-address ${LWS_LEADER_ADDRESS} \
+                --data-parallel-rpc-port 5555 \
+                --data-parallel-start-rank $START_RANK \
+                --trust-remote-code \
+                --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
+          env:
+          - name: DP_SIZE_LOCAL
+            value: "3"
+          - name: HF_HUB_OFFLINE
+            value: "1"
+          - name: TRITON_LIBCUDA_PATH
+            value: /usr/lib64
+          - name: VLLM_SKIP_P2P_CHECK
+            value: "1"
+          - name: VLLM_RANDOMIZE_DP_DUMMY_INPUTS
+            value: "1"
+          - name: VLLM_USE_DEEP_GEMM
+            value: "1"
+          - name: VLLM_ALL2ALL_BACKEND
+            value: deepep_high_throughput
+          - name: NVIDIA_GDRCOPY
+            value: enabled
+          - name: NVSHMEM_DEBUG
+            value: INFO
+          - name: NVSHMEM_REMOTE_TRANSPORT
+            value: ibgda
+          - name: NVSHMEM_IB_ENABLE_IBGDA
+            value: "true"
+          - name: NVSHMEM_BOOTSTRAP_UID_SOCK_IFNAME
+            value: eth0
+          - name: GLOO_SOCKET_IFNAME
+            value: eth0
+          - name: NCCL_SOCKET_IFNAME
+            value: eth0
+          - name: NCCL_IB_HCA
+            value: ibp
+          - name: VLLM_LOGGING_LEVEL
+            value: INFO
+          - name: VLLM_NIXL_SIDE_CHANNEL_HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: DP_SIZE
+            value: "4"
+          - name: TP_SIZE
+            value: "3"
+          
+          ports:
+          - containerPort: 8000
+            name: metrics
+            protocol: TCP
+          
+          resources:
+            limits:
+              ephemeral-storage: 64Gi
+              memory: 512Gi
+              nvidia.com/gpu: 3
+              rdma/ib: 1
+            requests:
+              cpu: 32
+              ephemeral-storage: 64Gi
+              memory: 512Gi
+              nvidia.com/gpu: 3
+              rdma/ib: 1
+          
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+            - mountPath: /mnt/local/llm-d/models
+              name: modelstore
+          workingDir: /code
+---
+# Source: llm-d-modelservice/templates/httproute.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ms-wide-ep-llm-d-modelservice
+  namespace: llm-d-wide-ep
+  labels:
+    helm.sh/chart: llm-d-modelservice-v0.2.7
+    app.kubernetes.io/version: "v0.2.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+spec:
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: infra-wide-ep-inference-gateway
+  rules:
+    - backendRefs:
+      - group: inference.networking.x-k8s.io
+        kind: InferencePool
+        name: ms-wide-ep
+        port: 8000
+        weight: 1
+      timeouts:
+        backendRequest: 0s
+        request: 0s
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+

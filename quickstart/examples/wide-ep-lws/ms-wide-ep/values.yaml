@@ -1,35 +1,28 @@
 multinode: true
-
-modelArtifacts:
-  uri: "hf://deepseek-ai/DeepSeek-R1-0528"
-  size: 100Gi
-  authSecretName: "llm-d-hf-token"
-  name: "deepseek-ai/DeepSeek-R1-0528"
-
+# modelArtifacts:
+#   uri: "hf://Qwen/Qwen3-30B-A3B-Thinking-2507-FP8"
+#   size: 100Gi
+#   authSecretName: "llm-d-hf-token"
+#   name: "Qwen/Qwen3-30B-A3B-Thinking-2507-FP8"
 routing:
-  modelName: deepseek-ai/DeepSeek-R1-0528
+  modelName: deepseek3
   servicePort: 8000
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
       # name: infra-wide-ep-inference-gateway # set in helmfile
-
   proxy:
     image: "ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0"
     secure: false
     connector: nixlv2
-
   inferenceModel:
     criticality: Critical
     create: true
-
   inferencePool:
     create: true
     # name: ms-wide-ep # set in helmfile
-
   httpRoute:
     create: true
-
   epp:
     create: true
     image: ghcr.io/llm-d/llm-d-inference-scheduler:v0.2.1
@@ -76,8 +69,8 @@ decode:
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # This must equal the number of nodes rather than the dp_size.
-    data: 2
-    tensor: 1 # these will be derived based performance testing
+    data: 9
+    tensor: 3
   monitoring:
     podmonitor:
       enabled: false
@@ -97,10 +90,10 @@ decode:
           # RUN vLLM decode worker
           #################
           START_RANK=$(( ${LWS_WORKER_INDEX:-0} * DP_SIZE_LOCAL ))
-
           source /opt/vllm/bin/activate
           exec vllm serve \
-            deepseek-ai/DeepSeek-R1-0528 \
+            /mnt/local/llm-d/models/DeepSeek-V3.1/ \
+            --served-model-name deepseek3 \
             --port 8200 \
             --disable-log-requests \
             --disable-uvicorn-access-log \
@@ -114,7 +107,6 @@ decode:
             --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
-
       ports:
         - containerPort: 8200
           name: metrics
@@ -122,17 +114,20 @@ decode:
       env:
         - name: VLLM_FUSED_MOE_CHUNK_SIZE
           value: "1024"
-
+        # - name: HF_HOME
+        #   value: "/mnt/local/llm-d/models"
+        # - name: HF_HUB_CACHE
+        #   value: "/mnt/local/llm-d/models"
+        - name: HF_HUB_OFFLINE
+          value: "1"
         - name: DP_SIZE_LOCAL
-          value: "8"
+          value: "3"
         #- name: UCX_TLS
         #  value: "rc,sm,self"
         #- name: UCX_PROTO_INFO
         #  value: "y"
         - name: TRITON_LIBCUDA_PATH
           value: "/usr/lib64"
-        - name: HF_HUB_DISABLE_XET
-          value: "1"
         - name: VLLM_SKIP_P2P_CHECK
           value: "1"
         - name: VLLM_RANDOMIZE_DP_DUMMY_INPUTS
@@ -159,8 +154,6 @@ decode:
           value: "ibp"
         - name: VLLM_LOGGING_LEVEL
           value: "INFO"
-        - name: HF_HUB_CACHE
-          value: /huggingface-cache
         - name: VLLM_NIXL_SIDE_CHANNEL_HOST
           valueFrom:
             fieldRef:
@@ -176,31 +169,29 @@ decode:
         limits:
           memory: 512Gi
           ephemeral-storage: 64Gi
-          nvidia.com/gpu: "8"
+          nvidia.com/gpu: "3"
           rdma/ib: 1
         requests:
           cpu: 32
           memory: 512Gi
           ephemeral-storage: 64Gi
-          nvidia.com/gpu: "8"
+          nvidia.com/gpu: "3"
           rdma/ib: 1
       mountModelVolume: false
       volumeMounts:
         - name: dshm
           mountPath: /dev/shm
-        - name: hf-cache
-          mountPath: /huggingface-cache
-
+        - name: modelstore
+          mountPath: /mnt/local/llm-d/models
   volumes:
     - name: dshm
       emptyDir:
         medium: Memory
         sizeLimit: 1Gi
-    - name: hf-cache
+    - name: modelstore
       hostPath:
-        path: /mnt/local/hf-cache
+        path: /mnt/local/llm-d/models
         type: DirectoryOrCreate
-
 prefill:
   create: true
   replicas: 1
@@ -211,8 +202,8 @@ prefill:
   parallelism:
     # TODO: The value for parallelism.data is a hack to get the pod-per-node case working.
     # It must equal the number of nodes rather than the dp_size.
-    data: 1
-    tensor: 1 # these will be derived based performance testing
+    data: 4
+    tensor: 3 # these will be derived based performance testing
   monitoring:
     podmonitor:
       enabled: false
@@ -232,10 +223,10 @@ prefill:
           # RUN vLLM prefill worker
           #################
           START_RANK=$(( ${LWS_WORKER_INDEX:-0} * DP_SIZE_LOCAL ))
-
           source /opt/vllm/bin/activate
           exec vllm serve \
-            deepseek-ai/DeepSeek-R1-0528 \
+            /mnt/local/llm-d/models/DeepSeek-V3.1/ \
+            --served-model-name deepseek3 \
             --port 8000 \
             --disable-log-requests \
             --disable-uvicorn-access-log \
@@ -249,24 +240,25 @@ prefill:
             --data-parallel-start-rank $START_RANK \
             --trust-remote-code \
             --kv_transfer_config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
-
       ports:
         - containerPort: 8000
           name: metrics
           protocol: TCP
       env:
         - name: DP_SIZE_LOCAL
-          value: "8"
-
+          value: "3"
+        # - name: HF_HOME
+        #   value: "/mnt/local/llm-d/models"
+        # - name: HF_HUB_CACHE
+        #   value: "/mnt/local/llm-d/models"
+        - name: HF_HUB_OFFLINE
+          value: "1"
         #- name: UCX_TLS
         #  value: "rc,sm,self"
         #- name: UCX_PROTO_INFO
         #  value: "y"
-
         - name: TRITON_LIBCUDA_PATH
           value: "/usr/lib64"
-        - name: HF_HUB_DISABLE_XET
-          value: "1"
         - name: VLLM_SKIP_P2P_CHECK
           value: "1"
         - name: VLLM_RANDOMIZE_DP_DUMMY_INPUTS
@@ -293,8 +285,6 @@ prefill:
           value: "ibp"
         - name: VLLM_LOGGING_LEVEL
           value: "INFO"
-        - name: HF_HUB_CACHE
-          value: /huggingface-cache
         - name: VLLM_NIXL_SIDE_CHANNEL_HOST
           valueFrom:
             fieldRef:
@@ -310,27 +300,26 @@ prefill:
         limits:
           memory: 512Gi
           ephemeral-storage: 64Gi
-          nvidia.com/gpu: "8"
+          nvidia.com/gpu: "3"
           rdma/ib: 1
         requests:
           cpu: 32
           memory: 512Gi
           ephemeral-storage: 64Gi
-          nvidia.com/gpu: "8"
+          nvidia.com/gpu: "3"
           rdma/ib: 1
       mountModelVolume: false
       volumeMounts:
         - name: dshm
           mountPath: /dev/shm
-        - name: hf-cache
-          mountPath: /huggingface-cache
-
+        - name: modelstore
+          mountPath: /mnt/local/llm-d/models
   volumes:
     - name: dshm
       emptyDir:
         medium: Memory
         sizeLimit: 1Gi
-    - name: hf-cache
+    - name: modelstore
       hostPath:
-        path: /mnt/local/hf-cache
+        path: /mnt/local/llm-d/models
         type: DirectoryOrCreate
