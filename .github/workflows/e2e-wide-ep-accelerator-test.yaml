@@ -425,16 +425,17 @@ jobs:
       - name: Wait for all pods to be ready
         run: |
           echo "⏳ Waiting for all pods in namespace to become ready..."
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "NAMESPACE=$NAMESPACE bash -s" <<'EOF'
+          ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "NAMESPACE=$NAMESPACE bash -s" <<'EOF'
             set -euo pipefail
             kubectl wait pod \
               --for=condition=Ready \
               --all \
               -n "${NAMESPACE}" \
-              --timeout=10m
-            sleep 180 # Allow extra time for model loading in Wide EP setup
+              --timeout=30m
             echo "✅ All pods are ready."
+
             kubectl get pods -n "${NAMESPACE}"
+
           EOF
 
       - name: Show deployment status
@@ -473,7 +474,7 @@ jobs:
 
       - name: Wide EP inference test
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@"$INSTANCE_IP" <<EOF
+          ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i key.pem ubuntu@"$INSTANCE_IP" <<EOF
             set -euo pipefail
             set -x
             cd llm-d-infra/.github/scripts/e2e

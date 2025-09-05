@@ -91,6 +91,10 @@ decode:
       workingDir: /code
       command: ["/bin/bash", "-c"]
       modelCommand: "custom"
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8200
       args:
         - |-
           #################
@@ -226,6 +230,10 @@ prefill:
       workingDir: /code
       command: ["/bin/bash", "-c"]
       modelCommand: "custom"
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8000
       args:
         - |-
           #################
