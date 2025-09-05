@@ -40,7 +40,11 @@ patch() {
 
     ### Swap the model name in custom startup script
     decode_args=$(yq '.decode.containers[0].args[0]' ${FILE})
-    export decode_args_updated=$(echo "${decode_args}" | sed 's/'${OLD_MODEL_SED_ESCAPED}'/'${NEW_MODEL_SED_ESCAPED}'/g') # THIS NEEDS TO USE ARGS ABOVE
+    decode_args_updated=$(echo "${decode_args}" | sed 's/'${OLD_MODEL_SED_ESCAPED}'/'${NEW_MODEL_SED_ESCAPED}'/g') # THIS NEEDS TO USE ARGS ABOVE
+    decode_args_updated=$(echo "${decode_args_updated}" | sed '/--port/a\  --max-model-len 4096 \\')
+    decode_args_updated=$(echo "${decode_args_updated}" | sed '/--port/a\  --enforce-eager \\')
+
+    export decode_args_updated
 
     yq e '.decode.containers[0].args[0] = strenv(decode_args_updated)' -i ${FILE}
 
@@ -88,7 +92,10 @@ patch() {
     ### Swap the model name in custom startup script
     prefill_args=$(yq '.prefill.containers[0].args[0]' ${FILE})
 
-    export prefill_args_updated=$(echo "${prefill_args}" | sed 's/'${OLD_MODEL_SED_ESCAPED}'/'${NEW_MODEL_SED_ESCAPED}'/g') # THIS NEEDS TO USE ARGS ABOVE
+    prefill_args_updated=$(echo "${prefill_args}" | sed 's/'${OLD_MODEL_SED_ESCAPED}'/'${NEW_MODEL_SED_ESCAPED}'/g') # THIS NEEDS TO USE ARGS ABOVE
+    prefill_args_updated=$(echo "${prefill_args_updated}" | sed '/--port/a\  --max-model-len 4096 \\')
+    prefill_args_updated=$(echo "${prefill_args_updated}" | sed '/--port/a\  --enforce-eager \\')
+    export prefill_args_updated
 
     yq e '.prefill.containers[0].args[0] = strenv(prefill_args_updated)' -i ${FILE}
 
