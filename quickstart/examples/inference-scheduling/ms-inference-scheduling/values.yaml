@@ -12,7 +12,7 @@ routing:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      # name: infra-inference-scheduling-inference-gateway # set in helmfile
+      # name: infra-inference-scheduling-inference-gateway # set in helmfile, based on infra release name
 
   proxy:
     image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
@@ -24,7 +24,7 @@ routing:
 
   inferencePool:
     create: false
-    # name: gaie-inference-scheduling # set in helmfile
+    # name: gaie-inference-scheduling # set in helmfile, based on gaie release name. Affects httpRoute backend ref and EPP deployment, inferencepool if create through ms, inferencemodel if created (deprecated in latest)
 
   httpRoute:
     create: false
@@ -37,13 +37,13 @@ decode:
   replicas: 2
   monitoring:
     podmonitor:
-      enabled: false
+      enabled: true
       portName: "metrics"  # decode vLLM service port (from routing.proxy.targetPort)
       path: "/metrics"
       interval: "30s"
   containers:
   - name: "vllm"
-    image: "ghcr.io/llm-d/llm-d-dev:pr-170"
+    image: "ghcr.io/llm-d/llm-d:v0.2.0" # reverting image, getting lack of marlin kernels
     modelCommand: vllmServe
     args:
       - "--enforce-eager"

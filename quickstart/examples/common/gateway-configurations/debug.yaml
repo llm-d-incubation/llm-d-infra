@@ -1,0 +1,20 @@
+# Infra values
+gateway:
+  gatewayParameters:
+    logLevel: debug
+
+# MS values
+routing:
+  proxy:
+    debugLevel: 5 # max log level used in RSC
+  # IF epp is created through ms, set its debugLevel
+  epp:
+    debugLevel: 4 # EPP 4 = debug
+
+# GAIE values
+inferenceExtension:
+  # IF epp is created through gaie, set its debugLevel
+    flags:
+    # Log verbosity
+      - name: v
+        value: 4 # EPP 4 = debug

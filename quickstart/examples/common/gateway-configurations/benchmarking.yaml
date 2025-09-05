@@ -32,5 +32,8 @@ routing:
 
 # GAIE values
 inferenceExtension:
-  # IF epp is created through gaie, set its debugLevel
-  logVerbosity: 1
+  # IF epp is created through gaie, set its log verbosity
+  flags:
+    # Log verbosity
+    - name: v
+      value: 1
