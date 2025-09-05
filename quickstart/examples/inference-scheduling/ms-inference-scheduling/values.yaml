@@ -37,13 +37,13 @@ decode:
   replicas: 2
   monitoring:
     podmonitor:
-      enabled: false
+      enabled: true
       portName: "metrics"  # decode vLLM service port (from routing.proxy.targetPort)
       path: "/metrics"
       interval: "30s"
   containers:
   - name: "vllm"
-    image: "ghcr.io/llm-d/llm-d-dev:pr-170"
+    image: "ghcr.io/llm-d/llm-d-dev:pr-180"
     modelCommand: vllmServe
     args:
       - "--enforce-eager"
