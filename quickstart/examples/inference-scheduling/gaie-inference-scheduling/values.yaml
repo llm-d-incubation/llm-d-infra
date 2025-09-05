@@ -9,21 +9,23 @@ inferenceExtension:
     ###################
     # name: epp
     # hub: registry.k8s.io/gateway-api-inference-extension
-    # tag: v1.0.0-rc.3
+    # tag: v1.0.0-rc.4
     ###################
     pullPolicy: Always
   extProcPort: 9002
-  pluginsConfigFile: "plugins-v2.yaml"
-
+  pluginsConfigFile: "default-plugins.yaml"
   extraContainerPorts: []
   extraServicePorts: []
+  flags:
+    - name: "pool-group"
+      value: "inference.networking.x-k8s.io"
 inferencePool:
-  targetPorts:
-    - number: 8000
+  targetPortNumber: 8000
   modelServerType: vllm
   modelServers:
     matchLabels:
       llm-d.ai/inferenceServing: "true"
+      # app: llm-d.ai
       # llm-d.ai/model: ms-simple-llm-d-modelservice
 provider:
   name: none
