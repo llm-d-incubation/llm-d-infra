@@ -17,6 +17,12 @@ inferenceExtension:
   # https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/978c23bb96cce25f11cea2421523cb479026e2e9/config/charts/inferencepool/templates/epp-config.yaml#L57
   # This will become the default in the next gaie release.
   pluginsConfigFile: "plugins-v2.yaml"
+  monitoring:
+    servicemonitor:
+      enabled: false
+      port: "http-metrics"
+      path: "/metrics"
+      interval: "10s"
 inferencePool:
   targetPortNumber: 8000
   modelServerType: vllm

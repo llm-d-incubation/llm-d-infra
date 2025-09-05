@@ -12,6 +12,13 @@ inferenceExtension:
     # tag: v0.5.1
     ###################
     pullPolicy: Always
+  # Monitoring configuration for EPP
+  monitoring:
+    servicemonitor:
+      enabled: false
+      port: "http-metrics"
+      path: "/metrics"
+      interval: "10s"
   extProcPort: 9002
   # ZMQ port for `kvevents.Pool` (KVEvents subscriber)
   extraContainerPorts:
