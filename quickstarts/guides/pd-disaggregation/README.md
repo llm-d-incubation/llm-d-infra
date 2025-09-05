@@ -2,8 +2,10 @@
 
 ## Overview
 
-- This example demonstrates how to deploy Llama-70B using vLLM's P/D disaggregation support with NIXL
-- This "path" has been validated on an 8xH200 cluster with InfiniBand networking
+This guide demonstrates how to deploy Llama-70B using vLLM's P/D disaggregation support with NIXL. This guide has been validated on:
+
+* an 8xH200 cluster with InfiniBand networking
+* an 8xH200 cluster on GKE with RoCE networking
 
 > WARNING: We are still investigating and optimizing performance for other hardware and networking configurations
 
@@ -34,13 +36,11 @@ As a result, as you tune your P/D deployments, we suggest focusing on the follow
 
 This quickstart expects 8 Nvidia GPUs of any kind, and infiniband.
 
-## Pre-requisites
+## Prerequisites
 
-- It is assumed that you have the proper tools installed on your local system to use these quickstart. To see what those tools are and minimum versions, check [our docs](../../dependencies/README.md#required-tools), and to install them, see our [install-deps.sh](../../dependencies/install-deps.sh) script.
-
-- You must have the secret containing a HuggingFace Token in the namespace you want to deploy to with key `HF_TOKEN` (see [instructions](../../dependencies/README.md#huggingface-token)).
-
-- Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
+- Have the [proper client tools installed on your local system](../prereq/client-setup/README.md) to use this guide.
+- Configure and deploy your [Gateway control plane](../prereq/gateway-provider/README.md).
+- [Create the `llm-d-hf-token` secret in your target namespace with the key `HF_TOKEN` matching a valid HuggingFace token](../prereq/client-setup/README.md#huggingface-token) to pull models.
 
 ## Installation
 
@@ -173,4 +173,4 @@ kubectl delete -f httproute.gke.yaml
 
 ## Customization
 
-For information on customizing an installation of a quickstart path and tips to build your own, see [our docs](../../docs/customizing-a-quickstart-inference-stack.md)
+For information on customizing a guide and tips to build your own, see [our docs](../../docs/customizing-a-guide.md)

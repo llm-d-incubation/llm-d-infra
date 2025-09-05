@@ -1,14 +1,20 @@
-# Quickstart Observability & Monitoring Guide
+# llm-d Observability & Monitoring Guide
 
 This guide explains how to set up monitoring and observability for llm-d deployments.
-The llm-d quickstart provides a Prometheus and Grafana installation script with two deployment patterns:
 
 ## Overview
+
+We provide a Prometheus and Grafana installation script with two deployment patterns:
 
 1. **Central Monitoring (Default)**: Single Prometheus instance monitors all namespaces automatically
 2. **Individual User Monitoring**: Each user has their own isolated Prometheus/Grafana stack
 
 ## Platform-Specific Setup
+
+### Kubernetes Clusters
+
+If you're running on **standard Kubernetes** and you don't already have a Prometheus or observability stack deployed,
+use the `install-prometheus-grafana.sh` script to deploy a Prometheus and Grafana stack for metrics collection.
 
 ### OpenShift Clusters
 
@@ -19,11 +25,6 @@ If you're running on **OpenShift**, you **do not need** to deploy Prometheus usi
 3. Metrics will automatically be collected by OpenShift's monitoring stack
 
 The `install-prometheus-grafana.sh` script will detect OpenShift and guide you through enabling user workload monitoring if needed.
-
-### Kubernetes Clusters
-
-If you're running on **standard Kubernetes** and you don't already have a Prometheus or observability stack deployed,
-use the `install-prometheus-grafana.sh` script to deploy a Prometheus and Grafana stack for metrics collection.
 
 ## Key Requirements
 
