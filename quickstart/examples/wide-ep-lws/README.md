@@ -22,7 +22,9 @@ This example out of the box requires 16 Nvidia H200 GPUs, and Inifiniband RDMA. 
 
 - You must have the secret containing a HuggingFace Token in the namespace you want to deploy to with key `HF_TOKEN` (see [instructions](../../dependencies/README.md#huggingface-token)).
 
-- Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
+- Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../dependencies/cluster-dependencies/gateway-control-plane-providers) directory.
+
+- Finally, this examples use LeaderWorkerSet as the methedology for deployment, so this must be installed in your cluster, for information on this see the [lws dependency directory](../../dependencies/cluster-dependencies/lws/).
 
 ## Installation
 

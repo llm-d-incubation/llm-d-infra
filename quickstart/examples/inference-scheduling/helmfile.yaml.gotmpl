@@ -8,9 +8,6 @@ environments:
   gke: &GKE
     values:
       - ../common/gateway-configurations/gke.yaml
-  gke_tpu: &GKE_TPU
-    values:
-      - ../common/gateway-configurations/gke_tpu.yaml
   default:
     <<: *I
 
@@ -19,17 +16,16 @@ environments:
 {{- $ns := .Namespace | default "llm-d-inference-scheduling" -}}
 {{- $rn := (env "RELEASE_NAME_POSTFIX") | default "inference-scheduling" -}}
 
-repositories:
-  - name: llm-d-modelservice
-    url: https://llm-d-incubation.github.io/llm-d-modelservice/
-  - name: llm-d-infra
-    url: https://llm-d-incubation.github.io/llm-d-infra/
+# repositories:
+#   - name: llm-d-infra
+#     url: https://llm-d-incubation.github.io/llm-d-infra/
 
 releases:
   - name: {{ printf "infra-%s" $rn | quote }}
     namespace: {{ $ns }}
-    chart: llm-d-infra/llm-d-infra
-    version: v1.3.0
+    # chart: llm-d-infra/llm-d-infra
+    # version: v1.3.0
+    chart: ../../../charts/llm-d-infra/
     installed: true
     labels:
       type: infrastructure
@@ -43,8 +39,9 @@ releases:
 
   - name: {{ printf "gaie-%s" $rn | quote }}
     namespace: {{ $ns }}
-    chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
-    version: v0.5.1
+    # chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
+    # version: v0.5.1
+    chart: ../../../../gateway-api-inference-extension/config/charts/inferencepool/
     installed: true
     needs:
       - {{ printf "infra-%s" $rn | quote }}
@@ -54,28 +51,5 @@ releases:
       - provider:
           name: {{ .Environment.Values.provider.name }}
     {{- end }}
-    labels:
-      kind: inference-stack
-
-  - name: {{ printf "ms-%s" $rn | quote }}
-    namespace: {{ $ns }}
-    chart: llm-d-modelservice/llm-d-modelservice
-    version: v0.2.7
-    installed: true
-    needs:
-      - {{ printf "infra-%s" $rn | quote }}
-      - {{ printf "gaie-%s" $rn | quote }}
-    values:
-    {{- if eq .Environment.Name "gke_tpu" }}
-      - ms-inference-scheduling/values_tpu.yaml
-    {{- else }}
-      - ms-inference-scheduling/values.yaml
-    {{- end }}
-    set:
-    # apply release name derived values
-      - name: "routing.inferencePool.name"
-        value: {{ printf "gaie-%s" $rn | quote }}
-      - name: "routing.parentRefs[0].name"
-        value: {{ printf "infra-%s-inference-gateway" $rn | quote }}
     labels:
       kind: inference-stack

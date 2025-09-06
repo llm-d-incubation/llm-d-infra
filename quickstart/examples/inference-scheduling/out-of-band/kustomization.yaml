@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Easy deployment, uses cuda backend, istio or kgateway compatible httproute, and podmonitors
+resources:
+  - vllm/vllm-sa.yaml
+  - vllm/cuda-vllm.yaml
+  - httproute/httproute.yaml
+  - podmonitor.yaml

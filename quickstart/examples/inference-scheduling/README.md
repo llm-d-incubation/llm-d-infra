@@ -20,7 +20,13 @@ This example out of the box requires 2 Nvidia GPUs of any kind (support determin
 
 ## Installation
 
-Use the helmfile to compose and install the stack. The Namespace in which the stack will be deployed will be derived from the `${NAMESPACE}` environment variable. If you have not set this, it will default to `llm-d-inference-scheduler` in this example.
+This installation is broken into 2 key steps: 
+1) applying the  `llm-d-infra` and `gateway-api-inference-extension inferencepool` charts
+2) applying the relevant out-of-band resources. For more information on this section [see below]()
+
+### Step 1: Applying the helm charts
+
+Use the helmfile to compose and install the helm release for the `llm-d-infra` and `gateway-api-inference-extension inferencepool` charts. The Namespace in which the stack will be deployed will be derived from the `${NAMESPACE}` environment variable. If you have not set this, it will default to `llm-d-inference-scheduler` in this example.
 
 ```bash
 export NAMESPACE=llm-d-inference-scheduler # or any other namespace
@@ -32,7 +38,7 @@ helmfile apply -n ${NAMESPACE}
 
 **_NOTE:_** This uses Istio as the default provider, see [Gateway Options](./README.md#gateway-options) for installing with a specific provider.
 
-### Gateway options
+#### Gateway options
 
 To see specify your gateway choice you can use the `-e <gateway option>` flag, ex:
 
@@ -44,32 +50,57 @@ To see what gateway options are supported refer to our [gateway control plane do
 
 You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
 
-### Install HTTPRoute
+### Step 2: Applying out-of-band resources
 
-Follow provider specific instructions for installing HTTPRoute.
+We received some feedback that the old deployment patterns were difficult in a few ways:
 
-#### Install for "kgateway" or "istio"
+1) Lack of fine-grained control over the vllm deployments
+2) Fully automating the deployment steps for httpRoutes, podMonitors, etc. enforced our opinions on our users by default
+And more. 
+
+For these reasons, we have refactored our approach to create static deployment manifests that should still compose with the `infra` and `gie` helm chart installstions. Don't worry, we have kept an easy button for most users but be aware that if you are working on a specific environment you should pause and walk through the steps below to understand exactly which resources you want to deploy.
+
+For the easybutton (deploys to cuda GPUs using `Qwen/Qwen3-0.6B` with `podMonitors` enabled for the vllm workers and an httpRoute supported by either `istio` or `kgateway` but not `GKE`):
 
 ```bash
-kubectl apply -f httproute.yaml
+kubectl apply -k out-of-band/
 ```
 
-#### Install for "gke"
+#### 2.1 Deploying vLLM
+
+For performance reasons, `llm-d` does not support fat images for multiple hardware vendors at once, instead we have specific images and deployment manifests for each provider, and you may of course bring your own if you so choose to. Currently we support TPU and CUDA backends for these two examples, you can deploy vllm per backend with the relevant manifests. Before we deploy vLLM however, we need to deploy the `serviceAccount` it will use:
 
 ```bash
-kubectl apply -f httproute.gke.yaml
+# apply the service account for either deployment
+kubectl appy -f out-of-band/vllm/vllm-sa.yaml
+
+# Either use CUDA backend:
+kubectl apply -f out-of-band/vllm/cuda-decode.yaml
+# OR use TPU backend
+kubectl apply -f out-of-band/vllm/tpu-decode.yaml
+
+# More backend providers to come
 ```
+
+#### 2.2 Deploying the HTTPRoute (GKE vs non GKE gateways)
+
+If you are using a GKE based gateway (IE. `gke-17-regional-externally-managed` or `gke-17-rilb`) you should use the `gke-httpRoute.yaml`. We cannot use the default `httpRoute` on GKE because gke gateways do not the `timeoutes` section, which we set to up the default timeout when communicating with our gateway to ensure requests don't get dropped. You can do this with: `kubectl apply -f out-of-band/httproute/gke-httproute.yaml`
+
+Otherwise if you are using `istio` or `kgateway` as your gateway control plane provider, you are free to use the default `httpRoute` manifest: `kubectl apply -f out-of-band/httproute/httproute.yaml`
+
+#### 2.3 PodMonitors
+
+If you would like to track metrics for your vllm decode pods, and already deployed the metrics infrastructure (if you have not [refer to our monitoring docs](../../MONITORING.md)), you can create the out-of-band `podMonitor` manifest: `kubectl apply -f out-of-band/podmonitor.yaml`
 
 ## Verify the Installation
 
-- Firstly, you should be able to list all helm releases to view the 3 charts got installed into your chosen namespace:
+- Firstly, you should be able to list all helm releases to view the two charts got installed into your chosen namespace:
 
 ```bash
 helm list -n ${NAMESPACE}
 NAME                        NAMESPACE                 REVISION  UPDATED                               STATUS    CHART                     APP VERSION
 gaie-inference-scheduling   llm-d-inference-scheduler 1         2025-08-24 11:24:53.231918 -0700 PDT  deployed  inferencepool-v0.5.1      v0.5.1
 infra-inference-scheduling  llm-d-inference-scheduler 1         2025-08-24 11:24:49.551591 -0700 PDT  deployed  llm-d-infra-v1.3.0        v0.3.0
-ms-inference-scheduling     llm-d-inference-scheduler 1         2025-08-24 11:24:58.360173 -0700 PDT  deployed  llm-d-modelservice-v0.2.7 v0.2.0
 ```
 
 - Out of the box with this example you should have the following resources:
