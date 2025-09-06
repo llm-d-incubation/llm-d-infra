@@ -22,7 +22,7 @@ fi
 
 helm get all ${RELEASE_NAME} -n ${NAMESPACE} &> /dev/null
 
-if [ "${$?}" == "0" ]; then
+if [ "${$?}" = "0" ]; then
   echo "==============================================================" >> "${LOG_FILE}"
   echo "             Logging ${NAMESPACE}/${RELEASE_NAME}..." >> "${LOG_FILE}"
   echo "==============================================================" >> "${LOG_FILE}"
