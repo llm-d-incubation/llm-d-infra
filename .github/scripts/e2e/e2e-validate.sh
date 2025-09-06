@@ -57,7 +57,7 @@ else
   echo "Attempting to auto-discover model ID from ${SVC_HOST}/v1/models..."
   ID=$(gen_id)
   ret=0
-  MODEL_ID=$(kubectl run --rm -i curl-discover-${ID} \
+  MODEL_ID=$(kubectl run --pod-running-timeout 5m --rm -i curl-discover-${ID} \
                 --namespace "$NAMESPACE" \
                 --image=curlimages/curl --restart=Never -- \
                 curl -sS --max-time 15 "http://${SVC_HOST}/v1/models" | \
