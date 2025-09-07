@@ -57,7 +57,7 @@ else
   echo "Attempting to auto-discover model ID from ${SVC_HOST}/v1/models..."
   ID=$(gen_id)
   ret=0
-  MODEL_ID=$(kubectl run --rm -i curl-discover-${ID} \
+  MODEL_ID=$(kubectl run --pod-running-timeout 5m --rm -i curl-discover-${ID} \
                 --namespace "$NAMESPACE" \
                 --image=curlimages/curl --restart=Never -- \
                 curl -sS --max-time 15 "http://${SVC_HOST}/v1/models" | \
@@ -105,10 +105,10 @@ CMD
   output=$(kubectl run --rm -i curl-"$ID" \
             --namespace "$NAMESPACE" \
             --image=curlimages/curl --restart=Never -- \
-            curl -sS -X POST "http://${SVC_HOST}/v1/chat/completions" \
+            sh -c "sleep 1; curl -sS -X POST 'http://${SVC_HOST}/v1/chat/completions' \
                  -H 'accept: application/json' \
                  -H 'Content-Type: application/json' \
-                 -d "$chat_payload") || ret=$?
+                 -d '$chat_payload'") || ret=$?
   echo "$output"
   [[ $ret -ne 0 || "$output" != *'{'* ]] && {
     echo "Error: POST /v1/chat/completions failed (exit $ret or no JSON)" >&2; failed=true; }
@@ -134,10 +134,10 @@ CMD
   output=$(kubectl run --rm -i curl-"$ID" \
             --namespace "$NAMESPACE" \
             --image=curlimages/curl --restart=Never -- \
-            curl -sS -X POST "http://${SVC_HOST}/v1/completions" \
+            sh -c "sleep 1; curl -sS -X POST 'http://${SVC_HOST}/v1/completions' \
                  -H 'accept: application/json' \
                  -H 'Content-Type: application/json' \
-                 -d "$payload") || ret=$?
+                 -d '$payload'") || ret=$?
   echo "$output"
   [[ $ret -ne 0 || "$output" != *'{'* ]] && {
     echo "Error: POST /v1/completions failed (exit $ret or no JSON)" >&2; failed=true; }

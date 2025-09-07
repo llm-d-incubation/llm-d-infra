@@ -4,6 +4,16 @@
 set -euo pipefail
 
 ########################################
+# Component versions
+########################################
+# Helm version
+HELM_VER="v3.17.3"
+# Helmfile version
+HELMFILE_VERSION="1.1.3"
+# chart-testing version
+CT_VERSION="3.12.0"
+
+########################################
 #  Usage function
 ########################################
 show_usage() {
@@ -142,7 +152,6 @@ fi
 ########################################
 if ! command -v helm &> /dev/null; then
   echo "Installing Helm..."
-  HELM_VER="v3.17.3"
   TARBALL="helm-${HELM_VER}-${OS}-${ARCH}.tar.gz"
   curl -sLO "https://get.helm.sh/${TARBALL}"
   tar -zxvf "${TARBALL}"
@@ -161,10 +170,9 @@ fi
 #  helmfile
 ########################################
 if ! command -v helmfile &> /dev/null; then
-  echo "📦 helmfile not found. Installing v1.1.3..."
-  HELMFILE_VERSION="1.1.3"
+  echo "📦 helmfile not found. Installing ${HELMFILE_VERSION}..."
   if [[ "$OS" == "darwin" && "$ARCH" == "arm64" ]]; then
-    ARCHIVE="helmfile_1.1.3_darwin_arm64.tar.gz"
+    ARCHIVE="helmfile_${HELMFILE_VERSION}_darwin_arm64.tar.gz"
   else
     ARCHIVE="helmfile_${HELMFILE_VERSION}_${OS}_${ARCH}.tar.gz"
   fi
@@ -183,7 +191,6 @@ fi
 if [[ "$DEV_MODE" == true ]]; then
   if ! command -v ct &> /dev/null; then
     echo "Installing chart-testing (ct)..."
-    CT_VERSION="3.12.0"
     ARCHIVE="chart-testing_${CT_VERSION}_${OS}_${ARCH}.tar.gz"
     URL="https://github.com/helm/chart-testing/releases/download/v${CT_VERSION}/${ARCHIVE}"
     curl -sSL -o "/tmp/ct.tar.gz" "$URL"

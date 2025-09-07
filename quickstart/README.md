@@ -6,9 +6,19 @@ This document is meant to guide users through the process of using, deploying an
 
 This guide will walk you through the steps to install and deploy llm-d on a Kubernetes cluster, using an opinionated flow in order to get up and running as quickly as possible.
 
-## Client Configuration
+## Prerequisites
 
-You will need to install some dependencies (like helm, yq, git, etc.) and have a HuggingFace token for most of the examples. We have documented those requirements and instructions on this in the [dependencies directory](./dependencies/).
+### Tool Dependencies
+
+You will need to install some dependencies (like helm, yq, git, etc.) and have a HuggingFace token for most examples. We have documented these requirements and instructions in the [dependencies directory](./dependencies/README.md). To install the dependencies, use the provided [install-deps.sh](./dependencies/install-deps.sh) script.
+
+### HuggingFace Token
+
+A HuggingFace token is required to download models from the HuggingFace Hub. You must create a Kubernetes secret containing your HuggingFace token in the target namespace before deployment, see [instructions](./dependencies/README.md#huggingface-token).
+
+### Gateway Control Plane
+
+Additionally, it is assumed you have configured and deployed your Gateway Control Plane and their prerequisite CRDs. For information on this, see the [gateway-control-plane-providers](./gateway-control-plane-providers/README.md).
 
 ### Target Platforms
 
@@ -16,134 +26,54 @@ Since the llm-d-infra is based on helm charts, llm-d can be deployed on a variet
 
 ## llm-d-infra Installation
 
-The llm-d-infra chart contains all the helm charts necessary to deploy llm-d-infra. To facilitate the installation of the helm charts, the `llmd-infra-installer.sh` script is provided. This script will populate the necessary manifests in the `manifests` directory.
+The llm-d-infra repository provides Helm charts to deploy various llm-d components. To install a specific component, navigate to its example directory and follow the instructions in its README:
 
-- [inference-scheduling](./examples/inference-scheduling): llm-d-inference-scheduling
-- [pd-disaggregation](./examples/pd-disaggregation): llm-d-pd
-- [precise-prefix-cache-aware](./examples/precise-prefix-cache-aware): llm-d-wide-ep
-
-## Examples
+- [inference-scheduling](./examples/inference-scheduling/README.md): Inference scheduling
+- [pd-disaggregation](./examples/pd-disaggregation/README.md): PD disaggregated deployment
+- [precise-prefix-cache-aware](./examples/precise-prefix-cache-aware/README.md): Precise prefix cache
+- [wide-ep-lws](./examples/wide-ep-lws/README.md): Wide EP LWS
+- [sim](./examples/sim/README.md): vLLM simulator
 
 ### Install llm-d on an Existing Kubernetes Cluster
 
+To install llm-d components, navigate to the desired example directory and follow its README instructions. For example:
+
 ```bash
-export HF_TOKEN="your-token"
-./llmd-infra-installer.sh
+cd examples/inference-scheduling  # Navigate to your desired example directory
+# Follow the README.md instructions in the example directory
 ```
 
 ### Install on OpenShift
 
-Before running the installer, ensure you have logged into the cluster as a cluster administrator.  For example:
+Before running any installation, ensure you have logged into the cluster as a cluster administrator. For example:
 
 ```bash
 oc login --token=sha256~yourtoken --server=https://api.yourcluster.com:6443
 ```
 
-```bash
-export HF_TOKEN="your-token"
-./llmd-infra-installer.sh
-```
+After logging in, follow the same steps as described in the "Install llm-d on an Existing Kubernetes Cluster" section above.
 
 ### Validation
 
-After executing the install script, you will find that resources are created according to the installation options.
+After executing the install steps from the specific example README, you will find that resources are created according to the installation options.
 
-#### Installation with Istio
-
-- istio-system
+First, you should be able to list all Helm releases to view the charts installed into your chosen namespace:
 
 ```bash
-kubectl get pods,svc -n istio-system
+helm list -n ${NAMESPACE}
 ```
+
+Out of the box with this example, you should have the following resources:
 
 ```bash
-NAME                         READY   STATUS    RESTARTS   AGE
-pod/istiod-774dfd9b6-wjlm2   1/1     Running   0          3m33s
-
-NAME             TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                                 AGE
-service/istiod   ClusterIP   [Cluster IP]   <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   3m33s
+kubectl get all -n ${NAMESPACE}
 ```
 
-- llm-d
+**Note:** This assumes no other quickstart deployments in your given `${NAMESPACE}`.
 
-***The Namespace name might differ depending on the installation option.***
+### Using the Stack
 
-```bash
-kubectl get pods,gateway -n llm-d
-```
-
-```bash
-NAME                                                      READY   STATUS    RESTARTS   AGE
-pod/llm-d-infra-inference-gateway-istio-79b75bb5d-blwgs   1/1     Running   0          87s
-
-NAME                                                              CLASS   ADDRESS                                                       PROGRAMMED   AGE
-gateway.gateway.networking.k8s.io/llm-d-infra-inference-gateway   istio   llm-d-infra-inference-gateway-istio.llm-d.svc.cluster.local   True         87s
-```
-
-- llm-d-monitoring
-
-```bash
-kubectl get pods,gateway -n llm-d-monitoring
-```
-
-```bash
-NAME                                                         READY   STATUS    RESTARTS   AGE
-pod/alertmanager-prometheus-kube-prometheus-alertmanager-0   2/2     Running   0          2m51s
-pod/prometheus-grafana-7fbfb5f947-h92zc                      3/3     Running   0          2m51s
-pod/prometheus-kube-prometheus-operator-56c5c488db-clslv     1/1     Running   0          2m51s
-pod/prometheus-kube-state-metrics-7f5f75c85d-twvj5           1/1     Running   0          2m51s
-pod/prometheus-prometheus-kube-prometheus-prometheus-0       2/2     Running   0          2m51s
-pod/prometheus-prometheus-node-exporter-94jkw                1/1     Running   0          2m51s
-pod/prometheus-prometheus-node-exporter-c8fzc                1/1     Running   0          2m51s
-pod/prometheus-prometheus-node-exporter-tks77                1/1     Running   0          2m51s
-```
-
-#### Installation with kgateway
-
-- kgateway-system
-
-```bash
-kubectl get pods -n kgateway-system
-```
-
-```bash
-NAME                       READY   STATUS    RESTARTS   AGE
-kgateway-ddbb7668c-cc9df   1/1     Running   0          25m
-```
-
-- llm-d
-
-***The Namespace name might differ depending on the installation option.***
-
-```bash
-kubectl get pods,gateway -n llm-d
-```
-
-```bash
-NAME                                                 READY   STATUS    RESTARTS   AGE
-pod/llm-d-infra-inference-gateway-69fd4dcfb9-nzs29   1/1     Running   0          22m
-
-NAME                                                              CLASS      ADDRESS        PROGRAMMED   AGE
-gateway.gateway.networking.k8s.io/llm-d-infra-inference-gateway   kgateway   [IP Address]   True         22m
-```
-
-- llm-d-monitoring
-
-```bash
-kubectl get pods,gateway -n llm-d-monitoring
-```
-
-```bash
-NAME                                                         READY   STATUS    RESTARTS   AGE
-pod/alertmanager-prometheus-kube-prometheus-alertmanager-0   2/2     Running   0          24m
-pod/prometheus-grafana-7fbfb5f947-jdb7l                      3/3     Running   0          24m
-pod/prometheus-kube-prometheus-operator-56c5c488db-fr9vt     1/1     Running   0          24m
-pod/prometheus-kube-state-metrics-7f5f75c85d-2nfwv           1/1     Running   0          24m
-pod/prometheus-prometheus-kube-prometheus-prometheus-0       2/2     Running   0          24m
-pod/prometheus-prometheus-node-exporter-65cbt                1/1     Running   0          24m
-pod/prometheus-prometheus-node-exporter-n9n6t                1/1     Running   0          24m
-pod/prometheus-prometheus-node-exporter-szjwv                1/1     Running   0          24m
-```
+For instructions on getting started with making inference requests, see [getting-started-inferencing.md](./docs/getting-started-inferencing.md).
 
 ### Metrics Collection
 
@@ -155,9 +85,4 @@ In Kubernetes, Prometheus and Grafana can be installed from the prometheus-commu
 
 ### Uninstall
 
-This will remove llm-d resources from the cluster. This is useful, especially for test/dev if you want to
-make a change, simply uninstall and then run the installer again with any changes you make.
-
-```bash
-./llmd-infra-installer.sh --uninstall
-```
+To remove llm-d resources from the cluster, refer to the uninstallation instructions in the specific example's README that you installed.

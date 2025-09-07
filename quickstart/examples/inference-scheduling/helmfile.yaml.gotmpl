@@ -8,16 +8,16 @@ environments:
   gke: &GKE
     values:
       - ../common/gateway-configurations/gke.yaml
+  gke_tpu: &GKE_TPU
+    values:
+      - ../common/gateway-configurations/gke_tpu.yaml
   default:
     <<: *I
 
 ---
 
-{{- $ns := .Namespace | default "llm-d-inference-scheduler" -}}
+{{- $ns := .Namespace | default "llm-d-inference-scheduling" -}}
 {{- $rn := (env "RELEASE_NAME_POSTFIX") | default "inference-scheduling" -}}
-
-# set $ns as namespace for all releases
-namespace: {{ $ns }}
 
 repositories:
   - name: llm-d-modelservice
@@ -35,10 +35,11 @@ releases:
       type: infrastructure
       kind: inference-stack
     values:
-      - {{ .Environment.Values | toYaml | nindent 8  }}
+      - gateway:
+        {{ .Environment.Values.gateway | toYaml | nindent 10 }}
       - gateway:
           destinationRule:
-            host: {{ printf "gaie-inference-scheduling-epp.%s.svc.cluster.local" $ns | quote }}
+            host: {{ printf "gaie-%s-epp.%s.svc.cluster.local" $rn $ns | quote }}
 
   - name: {{ printf "gaie-%s" $rn | quote }}
     namespace: {{ $ns }}
@@ -49,8 +50,9 @@ releases:
       - {{ printf "infra-%s" $rn | quote }}
     values:
       - gaie-inference-scheduling/values.yaml
-    {{- if eq .Environment.Name "gke" }}
-      - provider: {{ .Environment.Values.provider }}
+    {{- if or (eq .Environment.Name "gke") (eq .Environment.Name "gke_tpu") }}
+      - provider:
+          name: {{ .Environment.Values.provider.name }}
     {{- end }}
     labels:
       kind: inference-stack
@@ -64,7 +66,11 @@ releases:
       - {{ printf "infra-%s" $rn | quote }}
       - {{ printf "gaie-%s" $rn | quote }}
     values:
+    {{- if eq .Environment.Name "gke_tpu" }}
+      - ms-inference-scheduling/values_tpu.yaml
+    {{- else }}
       - ms-inference-scheduling/values.yaml
+    {{- end }}
     set:
     # apply release name derived values
       - name: "routing.inferencePool.name"

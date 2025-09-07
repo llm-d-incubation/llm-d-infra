@@ -44,6 +44,22 @@ To see what gateway options are supported refer to our [gateway control plane do
 
 You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
 
+### Install HTTPRoute
+
+Follow provider specific instructions for installing HTTPRoute.
+
+#### Install for "kgateway" or "istio"
+
+```bash
+kubectl apply -f httproute.yaml
+```
+
+#### Install for "gke"
+
+```bash
+kubectl apply -f httproute.gke.yaml
+```
+
 ## Verify the Installation
 
 - Firstly, you should be able to list all helm releases to view the 3 charts got installed into your chosen namespace:
@@ -105,6 +121,22 @@ helm uninstall ms-inference-scheduling -n ${NAMESPACE}
 **_NOTE:_** If you set the `$RELEASE_NAME_POSTFIX` environment variable, your release names will be different from the command above: `infra-$RELEASE_NAME_POSTFIX`, `gaie-$RELEASE_NAME_POSTFIX` and `ms-$RELEASE_NAME_POSTFIX`.
 
 **_NOTE:_** You do not need to specify your `environment` with the `-e <environment>` flag to `helmfile` for removing a installation of the quickstart, even if you use a non-default option. You do, however, have to set the `-n ${NAMESPACE}` otherwise it may not cleanup the releases in the proper namespace.
+
+### Cleanup HTTPRoute
+
+Follow provider specific instructions for deleting HTTPRoute.
+
+#### Cleanup for "kgateway" or "istio"
+
+```bash
+kubectl delete -f httproute.yaml
+```
+
+#### Cleanup for "gke"
+
+```bash
+kubectl delete -f httproute.gke.yaml
+```
 
 ## Customization
 

@@ -20,13 +20,13 @@ if [ ! -f "${LOG_FILE}" ]; then
   exit 1
 fi
 
-helm get all ${RELEASE_NAME} -n ${NAMESPACE} 2&>1 > /dev/null
+helm get all ${RELEASE_NAME} -n ${NAMESPACE} &> /dev/null
 
-if [ "${$?}" == "0" ]; then
+if [ "${$?}" = "0" ]; then
   echo "==============================================================" >> "${LOG_FILE}"
   echo "             Logging ${NAMESPACE}/${RELEASE_NAME}..." >> "${LOG_FILE}"
   echo "==============================================================" >> "${LOG_FILE}"
-  helm get all -n "${RELEASE_NAME}" "${RELEASE_NAME}" >> "${LOG_FILE}" || true
+  helm get all -n "${NAMESPACE}" "${RELEASE_NAME}" >> "${LOG_FILE}" || true
   echo "==============================================================" >> "${LOG_FILE}"
   echo "                                                              " >> "${LOG_FILE}"
   echo "                                                              " >> "${LOG_FILE}"

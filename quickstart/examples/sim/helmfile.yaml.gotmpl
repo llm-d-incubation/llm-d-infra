@@ -35,7 +35,7 @@ releases:
       - {{ .Environment.Values | toYaml | nindent 8  }}
       - gateway:
           destinationRule:
-            host: {{ printf "gaie-sim-epp.%s.svc.cluster.local" $ns | quote }}
+            host: {{ printf "gaie-%s-epp.%s.svc.cluster.local" $rn $ns | quote }}
 
   - name: {{ printf "gaie-%s" $rn | quote }}
     namespace: {{ $ns }}

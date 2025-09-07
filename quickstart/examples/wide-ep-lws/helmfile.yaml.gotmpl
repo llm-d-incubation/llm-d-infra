@@ -40,7 +40,7 @@ releases:
         {{ .Environment.Values.gateway | toYaml | nindent 10 }}
       - gateway:
           destinationRule:
-            host: {{ printf "ms-wide-ep-llm-d-modelservice-epp.%s.svc.cluster.local" $ns | quote }}
+            host: {{ printf "ms-%s-llm-d-modelservice-epp.%s.svc.cluster.local" $rn $ns | quote }}
 
   - name: {{ printf "ms-%s" $rn | quote }}
     namespace: {{ $ns }}
