@@ -18,3 +18,6 @@ inferenceExtension:
     # Log verbosity
       - name: v
         value: 4 # EPP 4 = debug
+    # include pool group, whole flags get overwritten
+      - name: "pool-group"
+        value: "inference.networking.x-k8s.io"

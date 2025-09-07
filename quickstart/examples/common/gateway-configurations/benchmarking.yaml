@@ -37,3 +37,6 @@ inferenceExtension:
     # Log verbosity
     - name: v
       value: 1
+    # include pool group, whole flags get overwritten
+    - name: "pool-group"
+      value: "inference.networking.x-k8s.io"

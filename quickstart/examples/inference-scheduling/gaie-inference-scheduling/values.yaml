@@ -26,5 +26,3 @@ inferencePool:
   modelServers:
     matchLabels:
       llm-d.ai/inferenceServing: "true"
-provider:
-  name: none
