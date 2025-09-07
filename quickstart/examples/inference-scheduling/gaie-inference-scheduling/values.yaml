@@ -14,14 +14,13 @@ inferenceExtension:
     pullPolicy: Always
   extProcPort: 9002
   pluginsConfigFile: "default-plugins.yaml"
-  extraContainerPorts: []
-  extraServicePorts: []
   flags:
     - name: "pool-group"
       value: "inference.networking.x-k8s.io"
 inferencePool:
   apiVersion: inference.networking.x-k8s.io/v1alpha2 # use old API version for inference
-  targetPortNumber: 8000
+  targetPorts:
+    - number: 8000
   modelServerType: vllm
   modelServers:
     matchLabels:
