@@ -18,6 +18,8 @@ This example out of the box requires 2 Nvidia GPUs of any kind (support determin
 
 - Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
 
+- Monitoring is enabled by default, it is assumed you have the relevant CRDs from the `monitoring.coreos.com/v1` apiVersion. If you have not, see the [monitoring docs](../../monitoring/MONITORING.md).
+
 ## Installation
 
 Use the helmfile to compose and install the stack. The Namespace in which the stack will be deployed will be derived from the `${NAMESPACE}` environment variable. If you have not set this, it will default to `llm-d-inference-scheduler` in this example.
