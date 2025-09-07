@@ -343,6 +343,15 @@ jobs:
             helmfile apply -f ${GATEWAY_TYPE}.helmfile.yaml
           EOF
 
+      - name: Install Monitoring Stack
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP bash -s <<'EOF'
+            set -euo pipefail
+            set -x
+            cd llm-d-infra/quickstart/monitoring
+            $(./install-prometheus-grafana.sh || true) | tee ~/install-monitoring.log
+          EOF
+
       - name: Deploy example deployment
         env:
           GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}

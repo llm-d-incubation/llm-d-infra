@@ -19,9 +19,6 @@ routing:
     connector: nixlv2
     secure: false
 
-  inferenceModel:
-    create: false
-
   inferencePool:
     create: false
     # name: gaie-kv-events # set in helmfile, based on gaie release name. Affects httpRoute backend ref and EPP deployment, inferencepool if create through ms, inferencemodel if created (deprecated in latest)

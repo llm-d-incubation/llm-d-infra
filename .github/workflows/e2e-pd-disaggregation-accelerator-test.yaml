@@ -395,12 +395,21 @@ jobs:
         env:
           GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
             set -euo pipefail
             set -x
             cd llm-d-infra/quickstart/gateway-control-plane-providers
             ./install-gateway-provider-dependencies.sh
-            helmfile apply -e ${GATEWAY_TYPE}
+            helmfile apply -f ${GATEWAY_TYPE}.helmfile.yaml
+          EOF
+
+      - name: Install Monitoring Stack
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP bash -s <<'EOF'
+            set -euo pipefail
+            set -x
+            cd llm-d-infra/quickstart/monitoring
+            ./install-prometheus-grafana.sh | tee ~/install-monitoring.log
           EOF
 
       - name: Run installer to deploy llm-d infrastructure

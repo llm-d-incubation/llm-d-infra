@@ -111,6 +111,11 @@ jobs:
           cd quickstart
           ./dependencies/install-deps.sh | tee ~/install-deps.log
 
+      - name: Install Monitoring Stack
+        run: |
+          cd quickstart
+          ./monitoring/install-prometheus-grafana.sh | tee ~/install-monitoring.log
+
       - name: Deploy model service and GIE with Helmfile
         run: |
           cd quickstart/examples/pd-disaggregation
