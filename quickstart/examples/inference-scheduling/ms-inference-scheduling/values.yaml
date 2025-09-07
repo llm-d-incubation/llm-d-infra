@@ -40,7 +40,7 @@ decode:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: "ghcr.io/llm-d/llm-d:v0.2.0" # reverting image, getting lack of marlin kernels
+    image: "ghcr.io/llm-d/llm-d-dev:pr-188" # reverting image, getting lack of marlin kernels
     modelCommand: vllmServe
     args:
       - "--enforce-eager"
