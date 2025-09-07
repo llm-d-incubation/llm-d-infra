@@ -2,6 +2,10 @@ environments:
   istio: &I
     values:
       - ../common/gateway-configurations/istio.yaml
+  istioBench: &IB
+    values:
+      - ../common/gateway-configurations/istio.yaml
+      - ../common/gateway-configurations/benchmarking.yaml
   kgateway: &KG
     values:
       - ../common/gateway-configurations/kgateway.yaml
@@ -39,8 +43,8 @@ releases:
 
   - name: {{ printf "gaie-%s" $rn | quote }}
     namespace: {{ $ns }}
-    chart: oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
-    version: v0.5.1
+    chart: oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/inferencepool
+    version: v1.0.0-rc.4
     installed: true
     needs:
       - {{ printf "infra-%s" $rn | quote }}
@@ -49,6 +53,11 @@ releases:
     {{- if eq .Environment.Name "gke" }}
       - provider: {{ .Environment.Values.provider }}
     {{- end }}
+    {{- if eq .Environment.Name "istioBench" }}
+      - inferenceExtension:
+          flags:
+            {{ .Environment.Values.inferenceExtension.flags | toYaml | nindent 12}}
+    {{- end}}
     labels:
       kind: inference-stack
 
@@ -62,6 +71,13 @@ releases:
       - {{ printf "gaie-%s" $rn | quote }}
     values:
       - ms-kv-events/values.yaml
+    {{- if eq .Environment.Name "istioBench" }}
+      - routing:
+          proxy:
+            debugLevel: {{ .Environment.Values.routing.proxy.debugLevel }}
+          epp:
+            debugLevel: {{ .Environment.Values.routing.epp.debugLevel }}
+    {{- end }}
     set:
     # apply release name derived values
       - name: "routing.inferencePool.name"

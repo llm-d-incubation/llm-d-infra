@@ -5,11 +5,11 @@ inferenceExtension:
     ###################
     name: llm-d-inference-scheduler
     hub: ghcr.io/llm-d
-    tag: v0.2.1
+    tag: v0.3.0-rc.1
     ###################
     # name: epp
     # hub: registry.k8s.io/gateway-api-inference-extension
-    # tag: v0.5.1
+    # tag: v1.0.0-rc.4
     ###################
     pullPolicy: Always
   extProcPort: 9002
@@ -30,8 +30,10 @@ inferenceExtension:
         secretKeyRef:
           name: llm-d-hf-token
           key: HF_TOKEN
-  logVerbosity: 4
-
+  logVerbosity: 4 # Tracing functionality according to readme requires increased log level
+  flags:
+    - name: "pool-group"
+      value: "inference.networking.x-k8s.io"
   pluginsConfigFile: "prefix-cache-tracking-config.yaml"
   pluginsCustomConfig:
     prefix-cache-tracking-config.yaml: |
@@ -49,7 +51,7 @@ inferenceExtension:
               kvBlockIndexConfig:
                 enableMetrics: true                   # enable kv-block index metrics (prometheus)
                 metricsLoggingInterval: 60000000000   # log kv-block metrics as well (1m in nanoseconds)
-        - type: kv-cache-scorer # kv-cache-utilization
+        - type: kv-cache-utilization-scorer
         - type: queue-scorer
         - type: max-score-picker
       schedulingProfiles:
@@ -57,13 +59,15 @@ inferenceExtension:
           plugins:
             - pluginRef: prefix-cache-scorer
               weight: 2.0
-            - pluginRef: kv-cache-scorer
+            - pluginRef: kv-cache-utilization-scorer
               weight: 1.0
             - pluginRef: queue-scorer
               weight: 1.0
             - pluginRef: max-score-picker
 inferencePool:
-  targetPortNumber: 8000
+  apiVersion: inference.networking.x-k8s.io/v1alpha2 # use old API version for inference
+  targetPorts:
+    - number: 8000
   modelServerType: vllm
   modelServers:
     matchLabels:
