@@ -102,14 +102,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd quickstart
-          ./dependencies/install-deps.sh
+          cd guides
+          ./prereq/client-setup/install-deps.sh
 
       - name: Install chart dependencies (CRDs and Gateway provider)
         env:
           GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
-          cd quickstart/gateway-control-plane-providers
+          cd guides/gateway-provider
           ./install-gateway-provider-dependencies.sh
           helmfile apply -f ${GATEWAY_TYPE}.helmfile.yaml
 
@@ -121,7 +121,7 @@ jobs:
         env:
           GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
-          cd quickstart/examples/sim
+          cd guides/simulated-accelerators
           helmfile apply -e ${GATEWAY_TYPE}
 
       - name: Wait for infrastructure pods to be ready
@@ -136,7 +136,7 @@ jobs:
         env:
           GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
-          cd quickstart/examples/sim
+          cd guides/simulated-accelerators
           helmfile apply -e ${GATEWAY_TYPE}
 
       - name: Wait for all simulation pods to be ready
@@ -246,5 +246,5 @@ jobs:
           GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
           echo "🧹 Validating Cleanup…"
-          cd quickstart/examples/sim
+          cd guides/simulated-accelerators
           helmfile destroy -e ${GATEWAY_TYPE}

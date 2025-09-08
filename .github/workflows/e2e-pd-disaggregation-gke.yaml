@@ -94,20 +94,20 @@ jobs:
           echo "Applying pd-disaggregation slim values..."
           # Transform ms-pd/values.yaml to a scaled-down deployment
 
-          yq e 'del(.decode.containers[0].resources.limits."rdma/ib")' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-          yq e 'del(.decode.containers[0].resources.requests."rdma/ib")' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-          yq e 'del(.prefill.containers[0].resources.limits."rdma/ib")' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-          yq e 'del(.prefill.containers[0].resources.requests."rdma/ib")' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-          yq e '.prefill.replicas = 1' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+          yq e 'del(.decode.containers[0].resources.limits."rdma/ib")' -i guides/pd-disaggregation/ms-pd/values.yaml
+          yq e 'del(.decode.containers[0].resources.requests."rdma/ib")' -i guides/pd-disaggregation/ms-pd/values.yaml
+          yq e 'del(.prefill.containers[0].resources.limits."rdma/ib")' -i guides/pd-disaggregation/ms-pd/values.yaml
+          yq e 'del(.prefill.containers[0].resources.requests."rdma/ib")' -i guides/pd-disaggregation/ms-pd/values.yaml
+          yq e '.prefill.replicas = 1' -i guides/pd-disaggregation/ms-pd/values.yaml
 
           # Verify the slimmed down values
           echo "📋 Verifying transformation results..."
           echo "Replicas in ms-pd prefill:"
-          yq e '.prefill.replicas' quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+          yq e '.prefill.replicas' guides/pd-disaggregation/ms-pd/values.yaml
 
           # Validate YAML syntax
           echo "Validating YAML syntax..."
-          yq eval '.' quickstart/examples/pd-disaggregation/ms-pd/values.yaml > /dev/null && echo "ms-pd/values.yaml: Valid"
+          yq eval '.' guides/pd-disaggregation/ms-pd/values.yaml > /dev/null && echo "ms-pd/values.yaml: Valid"
           echo "✅ All YAML files are valid"
 
           # Display complete transformed files for debugging
@@ -116,30 +116,30 @@ jobs:
           echo ""
           echo "ms-pd/values.yaml (transformed):"
           echo "---"
-          cat quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+          cat guides/pd-disaggregation/ms-pd/values.yaml
           echo "---"
           echo ""
           echo "gaie-pd/values.yaml:"
           echo "---"
-          cat quickstart/examples/pd-disaggregation/gaie-pd/values.yaml
+          cat guides/pd-disaggregation/gaie-pd/values.yaml
           echo "---"
           echo ""
           echo "=== End of values files output ==="
 
       - name: Install dependencies
         run: |
-          cd quickstart
-          ./dependencies/install-deps.sh | tee ~/install-deps.log
+          cd guides
+          ./prereq/client-setup/install-deps.sh | tee ~/install-deps.log
 
       - name: Deploy model service and GIE with Helmfile
         run: |
-          cd quickstart/examples/pd-disaggregation
+          cd guides/pd-disaggregation
           helmfile apply -e ${GATEWAY_TYPE} | tee ~/pd-disaggregation-deployment.log
           echo "---------------------------------------" >> ~/pd-disaggregation-deployment.log
 
       - name: Deploy HTTPRoute
         run: |
-          cd quickstart/examples/pd-disaggregation
+          cd guides/pd-disaggregation
           echo "Deploying HTTPRoute..."
           kubectl apply -f httproute.gke.yaml | tee ~/pd-disaggregation-deployment.log
           echo "---------------------------------------" >> ~/pd-disaggregation-deployment.log
@@ -247,6 +247,6 @@ jobs:
       - name: Cleanup deployment
         if: always()
         run: |
-          cd quickstart/examples/pd-disaggregation
+          cd guides/pd-disaggregation
           helmfile destroy
           kubectl delete -f httproute.gke.yaml

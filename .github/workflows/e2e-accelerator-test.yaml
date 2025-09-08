@@ -156,7 +156,7 @@ jobs:
             sudo apt-get update -y
             sudo apt-get install -y git
 
-            REPO_URL="https://github.com/llm-d-incubation/llm-d-infra.git"
+            REPO_URL="https://github.com/llm-d/llm-d.git"
             REPO_DIR=$(basename "$REPO_URL" .git)
 
             echo "🛠️  Cloning: $REPO_URL"
@@ -173,14 +173,13 @@ jobs:
             fi
           EOF
 
-      - name: Run quickstart install-deps
-        id: quickstart-deps
+      - name: Install prerequisites
+        id: prerequisites
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP <<'EOF'
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart
-            ./dependencies/install-deps.sh | tee ~/install-deps.log
+            ./llm-d/guides/prereq/client-setup/install-deps.sh | tee ~/install-deps.log
           EOF
 
       - name: Setup container runtime
@@ -295,7 +294,7 @@ jobs:
           - name: precise-prefix-cache-aware
             namespace: llm-d-precise
             installer_args: "-r infra-kv-events"
-            example_dir: examples/precise-prefix-cache-aware
+            guide_dir: precise-prefix-cache-aware
             log_file: llmd-precise-installer.log
             helm_log_file: precise-prefix-deployment.log
             release_names:
@@ -306,7 +305,7 @@ jobs:
           - name: inference-scheduling
             namespace: llm-d-inference-scheduling
             installer_args: "-r infra-inference-scheduling"
-            example_dir: examples/inference-scheduling
+            guide_dir: inference-scheduling
             log_file: llmd-inference-installer.log
             helm_log_file: inference-scheduling-deployment.log
             release_names:
@@ -338,20 +337,20 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart/gateway-control-plane-providers
+            cd llm-d/guides/prereq/gateway-provider
             ./install-gateway-provider-dependencies.sh
             helmfile apply -f ${GATEWAY_TYPE}.helmfile.yaml
           EOF
 
-      - name: Deploy example deployment
+      - name: Deploy guide
         env:
           GATEWAY_TYPE: ${{ env.GATEWAY_TYPE }}
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart/${{ matrix.deployment.example_dir }}
-            echo "Deploying ${{ matrix.deployment.name }} example..."
+            cd llm-d/guides/${{ matrix.deployment.guide_dir }}
+            echo "Deploying ${{ matrix.deployment.name }} guide..."
             helmfile apply -e ${GATEWAY_TYPE} | tee ~/${{ matrix.deployment.helm_log_file }}
             echo "---------------------------------------" >> ~/${{ matrix.deployment.helm_log_file }}
           EOF
@@ -361,7 +360,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart/${{ matrix.deployment.example_dir }}
+            cd llm-d/guides/${{ matrix.deployment.guide_dir }}
             echo "Deploying HTTPRoute..."
             kubectl apply -f httproute.yaml | tee ~/${{ matrix.deployment.helm_log_file }}
             echo "---------------------------------------" >> ~/${{ matrix.deployment.helm_log_file }}
@@ -373,7 +372,7 @@ jobs:
             set -euo pipefail
             set -x
             for release_name in ${{ join(matrix.deployment.release_names, ' ') }}; do
-              ./bin/sh llm-d-infra/.github/scripts/e2e/helm-get-all.sh \
+              ./bin/sh llm-d/.github/scripts/e2e/helm-get-all.sh \
                 ~/${{ matrix.deployment.helm_log_file }} \
                 "$release_name" \
                 "${{ matrix.deployment.namespace}}"
@@ -422,43 +421,12 @@ jobs:
             echo ""
           EOF
 
-      - name: Apply Istio DestinationRule
-        if: ${{ env.GATEWAY_TYPE == 'istio' }}
-        run: |
-          set -euo pipefail
-          NS="${NAMESPACE}"
-
-          echo "🔎 Locating *-epp service in namespace $NS …"
-          EPP_NAME=$(ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP \
-              kubectl get svc -n "$NS" -o custom-columns=:metadata.name |
-              tr ' ' '\n' | grep -- '-epp$' | head -n1 || true)
-
-          echo "EPP_NAME = ${EPP_NAME:-<none found>}"
-
-          if [[ -z "$EPP_NAME" ]]; then
-            echo "❌ No Service ending in -epp found; aborting"
-            exit 1
-          fi
-
-          export EPP_NAME
-          TEMPLATE="$GITHUB_WORKSPACE/.github/manifests/istio-tls-destinationrule.yaml"
-          envsubst < "$TEMPLATE" > destinationrule.yaml
-
-          echo "📝 Rendered DestinationRule:"
-          cat destinationrule.yaml
-
-          # Copy and apply on the remote cluster
-          scp -o StrictHostKeyChecking=no -i key.pem destinationrule.yaml \
-              ubuntu@$INSTANCE_IP:/tmp/destinationrule.yaml
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP \
-              "kubectl apply -n \"$NS\" -f /tmp/destinationrule.yaml && rm /tmp/destinationrule.yaml"
-
       - name: Inference test
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@"$INSTANCE_IP" <<EOF
             set -euo pipefail
             set -x
-            cd llm-d-infra/.github/scripts/e2e
+            cd llm-d/.github/scripts/e2e
             ./e2e-validate.sh -n "${NAMESPACE}"
           EOF
 
