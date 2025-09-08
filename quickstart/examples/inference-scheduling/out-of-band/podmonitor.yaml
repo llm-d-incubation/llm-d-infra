@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: ms-inference-scheduling-llm-d-modelservice-decode-podmonitor # @Gregory-Pereira look to rename this
+  labels:
+    app.kubernetes.io/component: decode
+spec:
+  selector:
+    matchLabels:
+        app: "llm-d.ai"
+        llm-d.ai/inferenceServing: "true"
+        llm-d.ai/role: "decode"
+  podMetricsEndpoints:
+  # For decode service, this is port 8200. Must use port name.
+  - port: "metrics"
+    path: /metrics
+    interval: 30s

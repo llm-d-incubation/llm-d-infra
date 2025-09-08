@@ -1,0 +1,4 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ms-inference-scheduling-llm-d-modelservice # @Gregory-Pereira maybe can rename this
