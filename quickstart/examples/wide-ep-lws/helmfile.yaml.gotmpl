@@ -40,7 +40,28 @@ releases:
         {{ .Environment.Values.gateway | toYaml | nindent 10 }}
       - gateway:
           destinationRule:
-            host: {{ printf "ms-%s-llm-d-modelservice-epp.%s.svc.cluster.local" $rn $ns | quote }}
+            host: {{ printf "gaie-%s-epp.%s.svc.cluster.local" $rn $ns | quote }}
+
+  - name: {{ printf "gaie-%s" $rn | quote }}
+    namespace: {{ $ns }}
+    chart: oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/inferencepool
+    version: v1.0.0-rc.4
+    installed: true
+    needs:
+      - {{ printf "infra-%s" $rn | quote }}
+    values:
+      - gaie-wide-ep/values.yaml
+    {{- if eq .Environment.Name "gke" }}
+      - provider:
+          name: {{ .Environment.Values.provider.name }}
+    {{- end }}
+    {{- if or (eq .Environment.Name "istioBench") (eq .Environment.Name "default") }}
+      - inferenceExtension:
+          flags:
+            {{ .Environment.Values.inferenceExtension.flags | toYaml | nindent 12}}
+    {{- end}}
+    labels:
+      kind: inference-stack
 
   - name: {{ printf "ms-%s" $rn | quote }}
     namespace: {{ $ns }}
@@ -49,6 +70,7 @@ releases:
     installed: true
     needs:
       - {{ printf "infra-%s" $rn | quote }}
+      - {{ printf "gaie-%s" $rn | quote }}
     values:
       - ms-wide-ep/values.yaml
     {{- if or (eq .Environment.Name "istioBench") (eq .Environment.Name "default") }}
@@ -61,7 +83,7 @@ releases:
     set:
     # apply release name derived values
       - name: "routing.inferencePool.name"
-        value: {{ printf "ms-%s" $rn | quote }}
+        value: {{ printf "gaie-%s" $rn | quote }}
       - name: "routing.parentRefs[0].name"
         value: {{ printf "infra-%s-inference-gateway" $rn | quote }}
     {{- if eq .Environment.Name "gke" }}

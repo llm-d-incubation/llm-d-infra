@@ -103,7 +103,12 @@ jobs:
       - name: Install dependencies
         run: |
           cd quickstart
-          ./dependencies/install-deps.sh
+          ./dependencies/install-deps.sh | tee ~/install-deps.log
+
+      - name: Install Monitoring Stack
+        run: |
+          cd quickstart
+          ./monitoring/install-prometheus-grafana.sh | tee ~/install-monitoring.log
 
       - name: Install chart dependencies (CRDs and Gateway provider)
         env:

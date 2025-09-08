@@ -371,6 +371,15 @@ jobs:
             helmfile apply -f ${GATEWAY_TYPE}.helmfile.yaml
           EOF
 
+      - name: Install Monitoring Stack
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP bash -s <<'EOF'
+            set -euo pipefail
+            set -x
+            cd llm-d-infra/quickstart/monitoring
+            ./install-prometheus-grafana.sh
+          EOF
+
       - name: Install LeaderWorkerSet helm chart and wait for controller
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF

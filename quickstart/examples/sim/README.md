@@ -12,6 +12,8 @@ This is a simulation example that demonstrates how to deploy using the llm-d-inf
 
 **_NOTE:_** Unlike other examples which require models, the simulator stubs the vLLM server and so no HuggingFace token is needed.
 
+- Monitoring is enabled by default, it is assumed you have the relevant CRDs from the `monitoring.coreos.com/v1` apiVersion. If you have not, see the [monitoring docs](../../monitoring/MONITORING.md).
+
 ## Installation
 
 Use the helmfile to compose and install the stack. The Namespace in which the stack will be deployed will be derived from the `${NAMESPACE}` environment variable. If you have not set this, it will default to `llm-d-sim` in this example.

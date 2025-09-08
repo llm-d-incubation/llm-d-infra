@@ -12,20 +12,16 @@ routing:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      # name: infra-pd-inference-gateway # set in helmfile
+      # name: infra-pd-inference-gateway # set in helmfile, based on infra release name
 
   proxy:
     image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
     connector: nixlv2
     secure: false
 
-  inferenceModel:
-    criticality: Critical
-    create: true
-
   inferencePool:
     create: false
-    # name: gaie-pd # set in helmfile
+    # name: gaie-pd # set in helmfile, based on gaie release name. Affects httpRoute backend ref and EPP deployment, inferencepool if create through ms, inferencemodel if created (deprecated in latest)
 
   httpRoute:
     create: false
@@ -38,13 +34,13 @@ decode:
   replicas: 1
   monitoring:
     podmonitor:
-      enabled: false
+      enabled: true
       portName: "metrics" # decode vLLM service port (from routing.proxy.targetPort)
       path: "/metrics"
       interval: "30s"
   containers:
   - name: "vllm"
-    image: "ghcr.io/llm-d/llm-d-dev:pr-170"
+    image: "ghcr.io/llm-d/llm-d-dev:pr-188"
     modelCommand: vllmServe
     args:
       - "--tensor-parallel-size"
@@ -102,13 +98,13 @@ prefill:
   replicas: 4
   monitoring:
     podmonitor:
-      enabled: false
+      enabled: true
       portName: "metrics" # prefill vLLM service port (from routing.servicePort)
       path: "/metrics"
       interval: "30s"
   containers:
   - name: "vllm"
-    image: "ghcr.io/llm-d/llm-d-dev:pr-170"
+    image: "ghcr.io/llm-d/llm-d-dev:pr-188"
     modelCommand: vllmServe
     args:
       - "--block-size"

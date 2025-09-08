@@ -10,7 +10,7 @@ spec:
     name: infra-inference-scheduling-inference-gateway
   rules:
     - backendRefs:
-      - group: inference.networking.x-k8s.io
+      - group: inference.networking.x-k8s.io # use old apiVersion / group until gatewayProvider support hits
         kind: InferencePool
         name: gaie-inference-scheduling
         port: 8000
