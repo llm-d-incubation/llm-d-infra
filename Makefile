@@ -7,7 +7,7 @@ CHART ?= charts/llm-d-infra
 
 .PHONY: help
 help: ## Print help
-	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9%-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 ##@ Development
 
@@ -43,6 +43,7 @@ helm-uninstall: ## Uninstall the Helm release
 
 ##@ Automation
 
-.Phony: bump-chart-version
-bump-chart-version:
-	helpers/scripts/increment-chart-version.sh
+.PHONY: bump-chart-version-%
+bump-chart-version-%:  ## Bump chart version by type (patch, major, minor)
+	@printf "\033[33;1m==== Running bump chart version ====\033[0m\n"
+	helpers/scripts/increment-chart-version.sh $*

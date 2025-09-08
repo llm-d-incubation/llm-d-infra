@@ -44,7 +44,7 @@ decode:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: "ghcr.io/llm-d/llm-d:v0.2.0"
+    image: "ghcr.io/llm-d/llm-d-dev:pr-170"
     modelCommand: vllmServe
     args:
       - "--tensor-parallel-size"
@@ -62,6 +62,8 @@ decode:
         valueFrom:
           fieldRef:
             fieldPath: status.podIP
+      - name: VLLM_LOGGING_LEVEL
+        value: DEBUG
     ports:
       - containerPort: 8200
         name: metrics
@@ -106,7 +108,7 @@ prefill:
       interval: "30s"
   containers:
   - name: "vllm"
-    image: "ghcr.io/llm-d/llm-d:v0.2.0"
+    image: "ghcr.io/llm-d/llm-d-dev:pr-170"
     modelCommand: vllmServe
     args:
       - "--block-size"
@@ -122,6 +124,8 @@ prefill:
         valueFrom:
           fieldRef:
             fieldPath: status.podIP
+      - name: VLLM_LOGGING_LEVEL
+        value: DEBUG
     ports:
       - containerPort: 8000
         name: metrics
