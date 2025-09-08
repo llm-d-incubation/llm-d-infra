@@ -32,9 +32,11 @@ As a result, as you tune your P/D deployments, we suggest focusing on the follow
 - **Heterogeneous Parallelism**: deploy P workers with less parallelism and more replicas and D workers with more parallelism and fewer replicas
 - **xPyD Ratios**: tuning the ratio of P workers to D workers to ensure balance for your ISL|OSL ratio
 
+For very large models leveraging wide-EP, traffic for KV cache transfer may contend with expert parallelism when the ISL|OSL ratio is also high. We recommend starting with RDMA for KV cache transfer before attempting to leverage TCP, as TCP transfer requires more tuning of UCX under NIXL.
+
 ## Hardware Requirements
 
-This guide expects 8 Nvidia GPUs of any kind, and infiniband.
+This guide expects 8 Nvidia GPUs of any kind, and RDMA via InfiniBand or RoCE between all pods in the workload.
 
 ## Prerequisites
 
@@ -68,9 +70,9 @@ To see what gateway options are supported refer to our [gateway provider prereq 
 
 You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
 
-#### GKE specific workarounds
+#### Infrastructure provider specifics
 
-While this example out of the box requires Infiniband RDMA, GKE does not support this. Therefore we patch out these values in [the helmfile](./helmfile.yaml.gotmpl#L73-80).
+This guide uses RDMA via InfiniBand or RoCE for disaggregated serving kv-cache transfer. The resource attributes required to configure accelerator networking are not yet standardized via [Kubernetes Dynamic Resource Allocation](https://kubernetes.io/docs/concepts/scheduling-eviction/dynamic-resource-allocation/) and so are parameterized per infra provider in the Helm charts. If your provider has a custom setting you will need to update the charts before deploying.
 
 ### Install HTTPRoute
 
