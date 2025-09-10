@@ -1,0 +1,650 @@
+---
+# Source: llm-d-infra/templates/gateway-infrastructure/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: infra-pd-inference-gateway
+  labels:
+    app.kubernetes.io/name: llm-d-infra
+    helm.sh/chart: llm-d-infra-v1.3.0
+    app.kubernetes.io/instance: infra-pd
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: "v0.3.0"
+    app.kubernetes.io/gateway: infra-pd-inference-gateway
+    app.kubernetes.io/component: inference-gateway
+  annotations:
+data:
+  deployment: |
+    spec:
+      template:
+        spec:
+          containers:
+          - name: istio-proxy
+            args:
+              - proxy
+              - router
+              - --domain
+              - $(POD_NAMESPACE).svc.cluster.local
+              - --proxyLogLevel
+              - error
+              - --proxyComponentLogLevel
+              - misc:error
+              - --log_output_level
+              - default:error
+            resources:
+              limits:
+                cpu: "4"
+                memory: 4Gi
+              requests:
+                cpu: "1"
+                memory: 1Gi
+  service: |
+    spec:
+      type: "LoadBalancer"
+---
+# Source: llm-d-infra/templates/gateway-infrastructure/destinationrule.yaml
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: infra-pd-inference-gateway
+spec:
+  host: gaie-pd-epp.greg.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      http:
+        http1MaxPendingRequests: 256000
+        http2MaxRequests: 256000
+        idleTimeout: 900s
+        maxRequestsPerConnection: 256000
+      tcp:
+        connectTimeout: 900s
+        maxConnectionDuration: 1800s
+        maxConnections: 256000
+    tls:
+      insecureSkipVerify: true
+      mode: SIMPLE
+---
+# Source: llm-d-infra/templates/gateway-infrastructure/gateway.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: infra-pd-inference-gateway
+  labels:
+    app.kubernetes.io/name: llm-d-infra
+    helm.sh/chart: llm-d-infra-v1.3.0
+    app.kubernetes.io/instance: infra-pd
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: "v0.3.0"
+    app.kubernetes.io/gateway: infra-pd-inference-gateway
+    app.kubernetes.io/component: inference-gateway
+    istio.io/enable-inference-extproc: "true"
+  annotations:
+    networking.istio.io/service-type: ClusterIP
+spec:
+  gatewayClassName: "istio"
+  listeners:
+    - port: 80
+      protocol: HTTP
+      name: default
+      path: /
+      allowedRoutes:
+        namespaces:
+          from: All
+  infrastructure:
+    parametersRef:
+      name: infra-pd-inference-gateway
+      group: ""
+      kind: ConfigMap
+
+---
+# Source: inferencepool/templates/rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gaie-pd-epp
+  namespace: greg
+  labels:
+    app.kubernetes.io/name: gaie-pd-epp
+    app.kubernetes.io/version: "v0.5.1"
+---
+# Source: inferencepool/templates/epp-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gaie-pd-epp
+  namespace: greg
+data:
+  default-plugins.yaml: |
+    apiVersion: inference.networking.x-k8s.io/v1alpha1
+    kind: EndpointPickerConfig
+    plugins:
+    - type: low-queue-filter
+      parameters:
+        threshold: 128
+    - type: lora-affinity-filter
+      parameters:
+        threshold: 0.999
+    - type: least-queue-filter
+    - type: least-kv-cache-filter
+    - type: decision-tree-filter
+      name: low-latency-filter
+      parameters:
+        current:
+          pluginRef: low-queue-filter
+        nextOnSuccess:
+          decisionTree:
+            current:
+              pluginRef: lora-affinity-filter
+            nextOnSuccessOrFailure:
+              decisionTree:
+                current:
+                  pluginRef: least-queue-filter
+                nextOnSuccessOrFailure:
+                  decisionTree:
+                    current:
+                      pluginRef: least-kv-cache-filter
+        nextOnFailure:
+          decisionTree:
+            current:
+              pluginRef: least-queue-filter
+            nextOnSuccessOrFailure:
+              decisionTree:
+                current:
+                  pluginRef: lora-affinity-filter
+                nextOnSuccessOrFailure:
+                  decisionTree:
+                    current:
+                      pluginRef: least-kv-cache-filter
+    - type: random-picker
+      parameters:
+        maxNumOfEndpoints: 1
+    - type: single-profile-handler
+    schedulingProfiles:
+    - name: default
+      plugins:
+      - pluginRef: low-latency-filter
+      - pluginRef: random-picker
+  plugins-v2.yaml: |
+    apiVersion: inference.networking.x-k8s.io/v1alpha1
+    kind: EndpointPickerConfig
+    plugins:
+    - type: queue-scorer
+    - type: kv-cache-scorer
+    - type: prefix-cache-scorer
+      parameters:
+        hashBlockSize: 64
+        maxPrefixBlocksToMatch: 256
+        lruCapacityPerServer: 31250
+    - type: max-score-picker
+      parameters:
+        maxNumOfEndpoints: 1
+    - type: single-profile-handler
+    schedulingProfiles:
+    - name: default
+      plugins:
+      - pluginRef: queue-scorer
+        weight: 1
+      - pluginRef: kv-cache-scorer
+        weight: 1
+      - pluginRef: prefix-cache-scorer
+        weight: 1
+      - pluginRef: max-score-picker
+  pd-config.yaml: |
+    # ALWAYS DO PD IN THIS EXAMPLE (THRESHOLD 0)
+    apiVersion: inference.networking.x-k8s.io/v1alpha1
+    kind: EndpointPickerConfig
+    plugins:
+    - type: prefill-header-handler
+    - type: prefill-filter
+    - type: decode-filter
+    - type: max-score-picker
+    - type: queue-scorer
+      parameters:
+        hashBlockSize: 5
+        maxPrefixBlocksToMatch: 256
+        lruCapacityPerServer: 31250
+    - type: pd-profile-handler
+      parameters:
+        threshold: 0
+        hashBlockSize: 5
+    schedulingProfiles:
+    - name: prefill
+      plugins:
+      - pluginRef: prefill-filter
+      - pluginRef: queue-scorer
+        weight: 1.0
+      - pluginRef: max-score-picker
+    - name: decode
+      plugins:
+      - pluginRef: decode-filter
+      - pluginRef: queue-scorer
+        weight: 1.0
+      - pluginRef: max-score-picker
+---
+# Source: inferencepool/templates/rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gaie-pd-epp
+  labels:
+    app.kubernetes.io/name: gaie-pd-epp
+    app.kubernetes.io/version: "v0.5.1"
+rules:
+- apiGroups: ["inference.networking.x-k8s.io"]
+  resources: ["inferencemodels", "inferencepools"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+# Source: inferencepool/templates/rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gaie-pd-epp
+subjects:
+- kind: ServiceAccount
+  name: gaie-pd-epp
+  namespace: greg
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gaie-pd-epp
+---
+# Source: inferencepool/templates/epp-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: gaie-pd-epp
+  namespace: greg
+  labels:
+    app.kubernetes.io/name: gaie-pd-epp
+    app.kubernetes.io/version: "v0.5.1"
+spec:
+  selector:
+    inferencepool: gaie-pd-epp
+  ports:
+    - name: grpc-ext-proc
+      protocol: TCP
+      port: 9002
+    - name: http-metrics
+      protocol: TCP
+      port: 9090
+  type: ClusterIP
+---
+# Source: inferencepool/templates/epp-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gaie-pd-epp
+  namespace: greg
+  labels:
+    app.kubernetes.io/name: gaie-pd-epp
+    app.kubernetes.io/version: "v0.5.1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      inferencepool: gaie-pd-epp
+  template:
+    metadata:
+      labels:
+        inferencepool: gaie-pd-epp
+    spec:
+      serviceAccountName: gaie-pd-epp
+      # Conservatively, this timeout should mirror the longest grace period of the pods within the pool
+      terminationGracePeriodSeconds: 130
+      containers:
+      - name: epp
+        image: ghcr.io/llm-d/llm-d-inference-scheduler:v0.2.1
+        imagePullPolicy: Always
+        args:
+        - -poolName
+        - gaie-pd
+        - -poolNamespace
+        - greg
+        - --v
+        - "1"
+        - --grpcPort
+        - "9002"
+        - -grpcHealthPort
+        - "9003"
+        - -metricsPort
+        - "9090"
+        - -configFile
+        - "config/pd-config.yaml"
+        # https://pkg.go.dev/flag#hdr-Command_line_flag_syntax; space is only for non-bool flags
+        - "--enablePprof=true"
+        - "--modelServerMetricsPath=/metrics"
+        - "--modelServerMetricsScheme=http"
+        - "--modelServerMetricsHttpsInsecureSkipVerify=true"
+        ports:
+        - name: grpc
+          containerPort: 9002
+        - name: grpc-health
+          containerPort: 9003
+        - name: metrics
+          containerPort: 9090
+        livenessProbe:
+          grpc:
+            port: 9003
+            service: inference-extension
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          grpc:
+            port: 9003
+            service: inference-extension
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: plugins-config-volume
+          mountPath: "/config"
+      volumes:
+      - name: plugins-config-volume
+        configMap:
+          name: gaie-pd-epp
+---
+# Source: inferencepool/templates/inferencepool.yaml
+apiVersion: inference.networking.x-k8s.io/v1alpha2
+kind: InferencePool
+metadata:
+  name: gaie-pd
+  namespace: greg
+  labels:
+    app.kubernetes.io/name: gaie-pd-epp
+    app.kubernetes.io/version: "v0.5.1"
+spec:
+  targetPortNumber: 8000
+  selector:
+    llm-d.ai/inferenceServing: "true"
+  extensionRef:
+    name: gaie-pd-epp
+
+---
+# Source: llm-d-modelservice/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ms-pd-llm-d-modelservice
+  labels:
+    helm.sh/chart: llm-d-modelservice-v0.2.7
+    app.kubernetes.io/version: "v0.2.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: llm-d-modelservice/templates/decode-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-pd-llm-d-modelservice-decode
+  labels:
+    helm.sh/chart: llm-d-modelservice-v0.2.7
+    app.kubernetes.io/version: "v0.2.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      llm-d.ai/inferenceServing: "true"
+      llm-d.ai/model: ms-pd-llm-d-modelservice
+      llm-d.ai/role: decode
+  template:
+    metadata:
+      labels:
+        llm-d.ai/inferenceServing: "true"
+        llm-d.ai/model: ms-pd-llm-d-modelservice
+        llm-d.ai/role: decode
+    spec:
+      initContainers:
+        - name: routing-proxy
+          args:
+            - --port=8000
+            - --vllm-port=8200
+            - --connector=nixlv2
+            - -v=1
+            - --secure-proxy=false
+          image: ghcr.io/llm-d/llm-d-routing-sidecar:v0.2.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          resources: {}
+          restartPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+
+      serviceAccountName: ms-pd-llm-d-modelservice
+      volumes:
+        - emptyDir: {}
+          name: metrics-volume
+        - emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
+          name: shm
+        - emptyDir: {}
+          name: torch-compile-cache
+        - name: model-storage
+          emptyDir:
+            sizeLimit: 300Gi
+
+      containers:
+        - name: vllm
+          image: ghcr.io/llm-d/llm-d:v0.2.0
+
+          command: ["vllm", "serve"]
+          args:
+            - mistralai/Mistral-7B-Instruct-v0.3
+            - --port
+            - "8200"
+            - --served-model-name
+            - "mistralai/Mistral-7B-Instruct-v0.3"
+
+            - --block-size
+            - "128"
+            - --kv-transfer-config
+            - '{"kv_connector":"NixlConnector", "kv_role":"kv_both"}'
+            - --disable-log-requests
+            - --disable-uvicorn-access-log
+            - --max-model-len
+            - "8192"
+          env:
+          - name: VLLM_NIXL_SIDE_CHANNEL_HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: VLLM_LOGGING_LEVEL
+            value: DEBUG
+          - name: DP_SIZE
+            value: "1"
+          - name: TP_SIZE
+            value: "1"
+
+          - name: HF_HOME
+            value: /model-cache
+          - name: HF_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: llm-d-hf-token
+                key: HF_TOKEN
+          ports:
+          - containerPort: 8200
+            name: metrics
+            protocol: TCP
+
+          resources:
+            limits:
+              cpu: "16"
+              memory: 64Gi
+              nvidia.com/gpu: "1"
+            requests:
+              cpu: "16"
+              memory: 64Gi
+              nvidia.com/gpu: "1"
+
+          volumeMounts:
+            - mountPath: /.config
+              name: metrics-volume
+            - mountPath: /dev/shm
+              name: shm
+            - mountPath: /.cache
+              name: torch-compile-cache
+            - name: model-storage
+              mountPath: /model-cache
+---
+# Source: llm-d-modelservice/templates/prefill-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-pd-llm-d-modelservice-prefill
+  labels:
+    helm.sh/chart: llm-d-modelservice-v0.2.7
+    app.kubernetes.io/version: "v0.2.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      llm-d.ai/inferenceServing: "true"
+      llm-d.ai/model: ms-pd-llm-d-modelservice
+      llm-d.ai/role: prefill
+  template:
+    metadata:
+      labels:
+        llm-d.ai/inferenceServing: "true"
+        llm-d.ai/model: ms-pd-llm-d-modelservice
+        llm-d.ai/role: prefill
+    spec:
+
+      serviceAccountName: ms-pd-llm-d-modelservice
+      volumes:
+        - emptyDir: {}
+          name: metrics-volume
+        - emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
+          name: shm
+        - emptyDir: {}
+          name: torch-compile-cache
+        - name: model-storage
+          emptyDir:
+            sizeLimit: 300Gi
+
+      containers:
+        - name: vllm
+          image: ghcr.io/llm-d/llm-d:v0.2.0
+
+          command: ["vllm", "serve"]
+          args:
+            - mistralai/Mistral-7B-Instruct-v0.3
+            - --port
+            - "8000"
+            - --served-model-name
+            - "mistralai/Mistral-7B-Instruct-v0.3"
+
+            - --block-size
+            - "128"
+            - --kv-transfer-config
+            - '{"kv_connector":"NixlConnector", "kv_role":"kv_both"}'
+            - --disable-log-requests
+            - --disable-uvicorn-access-log
+          env:
+          - name: VLLM_NIXL_SIDE_CHANNEL_HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: VLLM_LOGGING_LEVEL
+            value: DEBUG
+          - name: DP_SIZE
+            value: "1"
+          - name: TP_SIZE
+            value: "1"
+
+          - name: HF_HOME
+            value: /model-cache
+          - name: HF_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: llm-d-hf-token
+                key: HF_TOKEN
+          ports:
+          - containerPort: 8000
+            name: metrics
+            protocol: TCP
+
+          resources:
+            limits:
+              cpu: "8"
+              memory: 64Gi
+              nvidia.com/gpu: "1"
+            requests:
+              cpu: "8"
+              memory: 64Gi
+              nvidia.com/gpu: "1"
+
+          volumeMounts:
+            - mountPath: /.config
+              name: metrics-volume
+            - mountPath: /dev/shm
+              name: shm
+            - mountPath: /.cache
+              name: torch-compile-cache
+            - name: model-storage
+              mountPath: /model-cache
+---
+# Source: llm-d-modelservice/templates/inferencemodel.yaml
+apiVersion: inference.networking.x-k8s.io/v1alpha2
+kind: InferenceModel
+metadata:
+  labels:
+    llm-d.ai/inferenceServing: "true"
+    llm-d.ai/model: ms-pd-llm-d-modelservice
+  name: ms-pd-llm-d-modelservice
+spec:
+  criticality: Critical
+  modelName: mistralai/Mistral-7B-Instruct-v0.3
+  poolRef:
+    name: gaie-pd
+---
+# Source: llm-d-modelservice/templates/httproute.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ms-pd-llm-d-modelservice
+  namespace: greg
+  labels:
+    helm.sh/chart: llm-d-modelservice-v0.2.7
+    app.kubernetes.io/version: "v0.2.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+spec:
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: infra-pd-inference-gateway
+  rules:
+    - backendRefs:
+      - group: inference.networking.x-k8s.io
+        kind: InferencePool
+        name: gaie-pd
+        port: 8000
+        weight: 1
+      timeouts:
+        backendRequest: 0s
+        request: 0s
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
