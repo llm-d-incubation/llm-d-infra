@@ -101,20 +101,19 @@ jobs:
         run: |
           gcloud container clusters get-credentials "${{ env.GKE_CLUSTER_NAME }}" --zone "${{ env.GKE_CLUSTER_ZONE }}"
 
-      - name: Install dependencies
+      - name: Install prerequisites
         run: |
-          cd quickstart
-          ./dependencies/install-deps.sh | tee ~/install-deps.log
+          ./guides/prereq/client-setup/install-deps.sh | tee ~/install-deps.log
 
       - name: Deploy model service and GIE with Helmfile
         run: |
-          cd quickstart/examples/inference-scheduling
+          cd guides/inference-scheduling
           helmfile apply -e ${{ matrix.accelerator.helmfile_env }} | tee ~/inference-scheduling-deployment.log
           echo "---------------------------------------" >> ~/inference-scheduling-deployment.log
 
       - name: Deploy HTTPRoute
         run: |
-          cd quickstart/examples/inference-scheduling
+          cd guides/inference-scheduling
           echo "Deploying HTTPRoute..."
           kubectl apply -f httproute.gke.yaml | tee ~/inference-scheduling-deployment.log
           echo "---------------------------------------" >> ~/inference-scheduling-deployment.log
@@ -210,6 +209,6 @@ jobs:
       - name: Cleanup deployment
         if: always()
         run: |
-          cd quickstart/examples/inference-scheduling
+          cd guides/inference-scheduling
           helmfile destroy -e ${{ matrix.accelerator.helmfile_env }}
           kubectl delete -f httproute.gke.yaml

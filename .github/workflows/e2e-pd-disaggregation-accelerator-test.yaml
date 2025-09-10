@@ -160,7 +160,7 @@ jobs:
             sudo chmod +x /usr/local/bin/yq
             yq --version
 
-            REPO_URL="https://github.com/llm-d-incubation/llm-d-infra.git"
+            REPO_URL="https://github.com/llm-d/llm-d.git"
             REPO_DIR=$(basename "$REPO_URL" .git)
 
             echo "🛠️  Cloning: $REPO_URL"
@@ -183,60 +183,60 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP <<'EOF'
             set -euo pipefail
             set -x
-            cd llm-d-infra
+            cd llm-d
 
             echo "Applying pd-disaggregation slim values..."
             # Transform ms-pd/values.yaml to a scaled-down deployment
             # Change model to lightweight version
-            yq e '.modelArtifacts.uri = "hf://Qwen/Qwen3-0.6B"' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e '.routing.modelName = "Qwen/Qwen3-0.6B"' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.decode.containers[0].args[] | select(. == "--tensor-parallel-size" or . == "4"))' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.decode.containers[0].args[] | select(. == "--max-model-len" or . == "32000"))' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.prefill.containers[0].args[] | select(. == "--max-model-len" or . == "32000"))' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.decode.containers[0].resources.limits.memory)' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.decode.containers[0].resources.requests.memory)' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.decode.containers[0].resources.limits.cpu)' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.decode.containers[0].resources.requests.cpu)' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.decode.containers[0].resources.limits."rdma/ib")' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.decode.containers[0].resources.requests."rdma/ib")' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.prefill.containers[0].resources.limits.memory)' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.prefill.containers[0].resources.requests.memory)' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.prefill.containers[0].resources.limits.cpu)' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.prefill.containers[0].resources.requests.cpu)' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.prefill.containers[0].resources.limits."rdma/ib")' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e 'del(.prefill.containers[0].resources.requests."rdma/ib")' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e '.decode.containers[0].resources.limits["nvidia.com/gpu"] = "1"' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e '.decode.containers[0].resources.requests["nvidia.com/gpu"] = "1"' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e '.prefill.replicas = 1' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e '.decode.volumes[1].emptyDir.sizeLimit = "2Gi"' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
-            yq e '.prefill.volumes[1].emptyDir.sizeLimit = "2Gi"' -i quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+            yq e '.modelArtifacts.uri = "hf://Qwen/Qwen3-0.6B"' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e '.routing.modelName = "Qwen/Qwen3-0.6B"' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.decode.containers[0].args[] | select(. == "--tensor-parallel-size" or . == "4"))' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.decode.containers[0].args[] | select(. == "--max-model-len" or . == "32000"))' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.prefill.containers[0].args[] | select(. == "--max-model-len" or . == "32000"))' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.decode.containers[0].resources.limits.memory)' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.decode.containers[0].resources.requests.memory)' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.decode.containers[0].resources.limits.cpu)' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.decode.containers[0].resources.requests.cpu)' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.decode.containers[0].resources.limits."rdma/ib")' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.decode.containers[0].resources.requests."rdma/ib")' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.prefill.containers[0].resources.limits.memory)' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.prefill.containers[0].resources.requests.memory)' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.prefill.containers[0].resources.limits.cpu)' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.prefill.containers[0].resources.requests.cpu)' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.prefill.containers[0].resources.limits."rdma/ib")' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e 'del(.prefill.containers[0].resources.requests."rdma/ib")' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e '.decode.containers[0].resources.limits["nvidia.com/gpu"] = "1"' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e '.decode.containers[0].resources.requests["nvidia.com/gpu"] = "1"' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e '.prefill.replicas = 1' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e '.decode.volumes[1].emptyDir.sizeLimit = "2Gi"' -i guides/pd-disaggregation/ms-pd/values.yaml
+            yq e '.prefill.volumes[1].emptyDir.sizeLimit = "2Gi"' -i guides/pd-disaggregation/ms-pd/values.yaml
 
             # Verify the slimmed down values
             echo "📋 Verifying transformation results..."
             echo "Model in ms-pd:"
-            yq e '.modelArtifacts.uri' quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+            yq e '.modelArtifacts.uri' guides/pd-disaggregation/ms-pd/values.yaml
             echo "GPU count in ms-pd decode:"
-            yq e '.decode.containers[0].resources.limits["nvidia.com/gpu"]' quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+            yq e '.decode.containers[0].resources.limits["nvidia.com/gpu"]' guides/pd-disaggregation/ms-pd/values.yaml
             echo "Replicas in ms-pd prefill:"
-            yq e '.prefill.replicas' quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+            yq e '.prefill.replicas' guides/pd-disaggregation/ms-pd/values.yaml
             echo "SHM size in decode:"
-            yq e '.decode.volumes[1].emptyDir.sizeLimit' quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+            yq e '.decode.volumes[1].emptyDir.sizeLimit' guides/pd-disaggregation/ms-pd/values.yaml
 
             # Validate YAML syntax
             echo "Validating YAML syntax..."
-            yq eval '.' quickstart/examples/pd-disaggregation/ms-pd/values.yaml > /dev/null && echo "ms-pd/values.yaml: Valid"
+            yq eval '.' guides/pd-disaggregation/ms-pd/values.yaml > /dev/null && echo "ms-pd/values.yaml: Valid"
             echo "✅ All YAML files are valid"
 
             # Check for malformed resource quantities
             echo "🔍 Checking resource quantities format..."
             echo "Decode GPU limits:"
-            yq e '.decode.containers[0].resources.limits | keys' quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+            yq e '.decode.containers[0].resources.limits | keys' guides/pd-disaggregation/ms-pd/values.yaml
             echo "Decode GPU requests:"
-            yq e '.decode.containers[0].resources.requests | keys' quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+            yq e '.decode.containers[0].resources.requests | keys' guides/pd-disaggregation/ms-pd/values.yaml
             echo "Prefill GPU limits:"
-            yq e '.prefill.containers[0].resources.limits | keys' quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+            yq e '.prefill.containers[0].resources.limits | keys' guides/pd-disaggregation/ms-pd/values.yaml
             echo "Prefill GPU requests:"
-            yq e '.prefill.containers[0].resources.requests | keys' quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+            yq e '.prefill.containers[0].resources.requests | keys' guides/pd-disaggregation/ms-pd/values.yaml
 
             # Display complete transformed files for debugging
             echo ""
@@ -244,30 +244,29 @@ jobs:
             echo ""
             echo "ms-pd/values.yaml (transformed):"
             echo "---"
-            cat quickstart/examples/pd-disaggregation/ms-pd/values.yaml
+            cat guides/pd-disaggregation/ms-pd/values.yaml
             echo "---"
             echo ""
             echo "infra-pd/values.yaml:"
             echo "---"
-            cat quickstart/examples/pd-disaggregation/infra-pd/values.yaml
+            cat guides/pd-disaggregation/infra-pd/values.yaml
             echo "---"
             echo ""
             echo "gaie-pd/values.yaml:"
             echo "---"
-            cat quickstart/examples/pd-disaggregation/gaie-pd/values.yaml
+            cat guides/pd-disaggregation/gaie-pd/values.yaml
             echo "---"
             echo ""
             echo "=== End of values files output ==="
           EOF
 
-      - name: Run quickstart install-deps
-        id: quickstart-deps
+      - name: Install prerequisites
+        id: prerequisites
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP <<'EOF'
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart
-            ./dependencies/install-deps.sh | tee ~/install-deps.log
+            ./llm-d/guides/prereq/client-setup/install-deps.sh | tee ~/install-deps.log
           EOF
 
       - name: Setup container runtime
@@ -398,7 +397,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart/gateway-control-plane-providers
+            cd llm-d/guides/prereq/gateway-provider
             ./install-gateway-provider-dependencies.sh
             helmfile apply -e ${GATEWAY_TYPE}
           EOF
@@ -408,7 +407,8 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "HF_TOKEN=$HF_TOKEN GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart
+            # TODO: can we avoid this here?
+            cd llm-d-infra
             echo "Deploying llm-d infrastructure for PD-Disaggregation into namespace: llm-d-pd ..."
             ./llmd-infra-installer.sh \
               --namespace "llm-d-pd" \
@@ -422,7 +422,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart/examples/pd-disaggregation
+            cd llm-d/guides/pd-disaggregation
             echo "Deploying PD-Disaggregation example with slim configuration..."
             helmfile --selector managedBy=helmfile apply -f helmfile.yaml --skip-diff-on-install | tee ~/pd-disaggregation-deployment.log
             echo "---------------------------------------" >> ~/pd-disaggregation-deployment.log
@@ -433,7 +433,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart/${{ matrix.deployment.example_dir }}
+            cd llm-d/guides/pd-disaggregation
             echo "Deploying HTTPRoute..."
             kubectl apply -f httproute.yaml | tee ~/${{ matrix.deployment.helm_log_file }}
             echo "---------------------------------------" >> ~/${{ matrix.deployment.helm_log_file }}
@@ -444,9 +444,9 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP << EOF
             set -euo pipefail
             set -x
-            BACKUP_NAMESPACE="llm-d-pd" /bin/sh llm-d-infra/.github/scripts/e2e/helm-get-all.sh \
+            BACKUP_NAMESPACE="llm-d-pd" /bin/sh llm-d/.github/scripts/e2e/helm-get-all.sh \
               ~/pd-disaggregation-deployment.log \
-              llm-d-infra/quickstart/examples/pd-disaggregation/helmfile.yaml
+              llm-d/guides/pd-disaggregation/helmfile.yaml
           EOF
 
       - name: Wait for all pods to be ready
@@ -496,7 +496,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@"$INSTANCE_IP" <<EOF
             set -euo pipefail
             set -x
-            cd llm-d-infra/.github/scripts/e2e
+            cd llm-d/.github/scripts/e2e
 
             echo "🧪 Running PD-Disaggregation specific tests..."
             # Test the specific model and endpoints for PD setup

@@ -123,10 +123,10 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
         shell: bash
         run: |
-          cd quickstart
-          ./dependencies/install-deps.sh
-          ./gateway-control-plane-providers/install-gateway-provider-dependencies.sh
-          helmfile apply -f gateway-control-plane-providers/istio.helmfile.yaml
+          cd guides
+          ./prereq/client-setup/install-deps.sh
+          ./prereq/gateway-provider/install-gateway-provider-dependencies.sh
+          helmfile apply -f prereq/gateway-provider/istio.helmfile.yaml
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'

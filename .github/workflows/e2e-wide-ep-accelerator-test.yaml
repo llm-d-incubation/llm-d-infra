@@ -25,8 +25,7 @@ permissions:
   packages: read
 
 env:
-  QUICKSTART_PATH: "quickstart"
-  WIDE_EP_PATH: "quickstart/examples/wide-ep-lws"
+  WIDE_EP_PATH: "guides/wide-ep-lws"
 
 jobs:
   setup:
@@ -163,7 +162,7 @@ jobs:
             sudo chmod +x /usr/local/bin/yq
             yq --version
 
-            REPO_URL="https://github.com/llm-d-incubation/llm-d-infra.git"
+            REPO_URL="https://github.com/llm-d/llm-d.git"
             REPO_DIR=$(basename "$REPO_URL" .git)
 
             echo "🛠️  Cloning: $REPO_URL"
@@ -186,7 +185,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP <<'EOF'
             set -euo pipefail
             set -x
-            cd llm-d-infra
+            cd llm-d
 
             echo "Applying wide-ep slim values transform..."
             .github/scripts/e2e/wide-ep-transform.sh ${{ env.WIDE_EP_PATH }}/ms-wide-ep/values.yaml
@@ -228,14 +227,13 @@ jobs:
             echo "=== End of values files output ==="
           EOF
 
-      - name: Run quickstart install-deps
-        id: quickstart-deps
+      - name: Install prerequisites
+        id: prerequisites
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP <<'EOF'
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart
-            ./dependencies/install-deps.sh | tee ~/install-deps.log
+            ./llm-d/guides/prereq/client-setup/install-deps.sh | tee ~/install-deps.log
           EOF
 
       - name: Setup container runtime
@@ -366,7 +364,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "GATEWAY_TYPE=$GATEWAY_TYPE bash -s" <<'EOF'
             set -euo pipefail
             set -x
-            cd llm-d-infra/quickstart/gateway-control-plane-providers
+            cd llm-d/guides/gateway-provider
             ./install-gateway-provider-dependencies.sh
             helmfile apply -f ${GATEWAY_TYPE}.helmfile.yaml
           EOF
@@ -391,7 +389,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "GATEWAY_TYPE=$GATEWAY_TYPE bash -s" << EOF
             set -euo pipefail
             set -x
-            cd llm-d-infra/${{ env.WIDE_EP_PATH }}
+            cd llm-d/${{ env.WIDE_EP_PATH }}
             echo "Deploying Wide EP example with slim configuration..."
             helmfile apply -e ${GATEWAY_TYPE} \
               --set gateway.service.type=NodePort \
@@ -417,7 +415,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$INSTANCE_IP "NAMESPACE=$NAMESPACE bash -s" << EOF
             set -euo pipefail
             set -x
-            /bin/sh llm-d-infra/.github/scripts/e2e/helm-get-all.sh \
+            /bin/sh llm-d/.github/scripts/e2e/helm-get-all.sh \
               ~/wide-ep-deployment.log \
               ms-wide-ep "$NAMESPACE"
           EOF
@@ -477,7 +475,7 @@ jobs:
           ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i key.pem ubuntu@"$INSTANCE_IP" <<EOF
             set -euo pipefail
             set -x
-            cd llm-d-infra/.github/scripts/e2e
+            cd llm-d/.github/scripts/e2e
 
             echo "🧪 Running Wide EP specific tests..."
             # Test the specific model and endpoints for Wide EP setup

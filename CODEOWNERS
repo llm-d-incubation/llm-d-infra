@@ -2,11 +2,12 @@
 * @Gregory-Pereira @nerdalert @tlrmchlsmth @robertgshaw2-redhat
 
 # Example specific codeowners, including global owners
-/quickstart/examples/inference-scheduling/ @nirrozenbaum @vMaroon @ahg-g @kfirtoledo
-/quickstart/examples/pd-disaggregation/ @njhill @wseaton
-/quickstart/examples/precise-prefix-cache-aware/ @vMaroon @ahg-g
-/quickstart/examples/sim/ @shmuelk
-/quickstart/examples/wide-ep-lws/ @njhill @wseaton
+/quickstarts @smarterclayton
+/quickstarts/guides/inference-scheduling/ @nirrozenbaum @vMaroon @ahg-g @kfirtoledo
+/quickstarts/guides/pd-disaggregation/ @njhill @wseaton
+/quickstarts/guides/precise-prefix-cache-aware/ @vMaroon @ahg-g
+/quickstarts/guides/simulated-accelerators/ @shmuelk
+/quickstarts/guides/wide-ep-lws/ @njhill @wseaton
 
 # GKE specific example files
 **/gke.helmfile.yaml  @liu-cong @smarterclayton
