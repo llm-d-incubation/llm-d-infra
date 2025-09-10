@@ -1,3 +1,3 @@
-# Gateway Provider Common Configurations
+# llm-d quickstarts have graduated to guides
 
-Each quickstart pulls in these gateway configurations. They are meant to abstract all the basic values that get set if you are using a gateway of a certain type. Performance related configurations should live in [benchmarking.yaml](./benchmarking.yaml), and can then be combined with environment specific settings to create a benchmarking setup for that given environment. For an example of that see the [wide-ep-lws helmfile](../../wide-ep-lws/helmfile.yaml.gotmpl#L8).
+This file has moved to <https://github.com/llm-d/llm-d/tree/dev/guides/prereq/gateway-provider/common-configurations/README.md>.
