@@ -6,7 +6,6 @@ modelArtifacts:
   size: 5Mi
 
 routing:
-  modelName: random
   servicePort: 8000
   parentRefs:
     - group: gateway.networking.k8s.io
@@ -54,28 +53,29 @@ decode:
     volumeMounts:
     - name: metrics-volume
       mountPath: /.config
-    startupProbe:
-      httpGet:
-        path: /health
-        port: 8200
-      initialDelaySeconds: 15
-      periodSeconds: 30
-      timeoutSeconds: 5
-      failureThreshold: 60
-    livenessProbe:
-      httpGet:
-        path: /health
-        port: 8200
-      periodSeconds: 10
-      timeoutSeconds: 5
-      failureThreshold: 3
-    readinessProbe:
-      httpGet:
-        path: /health
-        port: 8200
-      periodSeconds: 5
-      timeoutSeconds: 2
-      failureThreshold: 3
+    extraConfig:
+      startupProbe:
+        httpGet:
+          path: /health
+          port: 8200
+        initialDelaySeconds: 15
+        periodSeconds: 30
+        timeoutSeconds: 5
+        failureThreshold: 60
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 8200
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 3
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8200
+        periodSeconds: 5
+        timeoutSeconds: 2
+        failureThreshold: 3
   volumes:
   - name: metrics-volume
     emptyDir: {}
@@ -103,27 +103,29 @@ prefill:
     volumeMounts:
     - name: metrics-volume
       mountPath: /.config
-    startupProbe:
-      httpGet:
-        path: /health
-        port: 8000
-      initialDelaySeconds: 15
-      periodSeconds: 30
-      timeoutSeconds: 5
-      failureThreshold: 60
-    livenessProbe:
-      httpGet:
-        path: /health
-        port: 8000
-      periodSeconds: 10
-      timeoutSeconds: 5
-      failureThreshold: 3
-    readinessProbe:
-      httpGet:
-        path: /health
-        port: 8000
-      periodSeconds: 5
-      timeoutSeconds: 2
+    extraConfig:
+      startupProbe:
+        httpGet:
+          path: /health
+          port: 8000
+        initialDelaySeconds: 15
+        periodSeconds: 30
+        timeoutSeconds: 5
+        failureThreshold: 60
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 8000
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 3
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8000
+        periodSeconds: 5
+        timeoutSeconds: 2
+        failureThreshold: 3
   volumes:
   - name: metrics-volume
     emptyDir: {}

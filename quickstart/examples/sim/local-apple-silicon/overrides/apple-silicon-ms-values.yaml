@@ -1,0 +1,19 @@
+# Apple Silicon (ARM64) Values Override
+# This file contains values overrides for Apple Silicon deployments
+#
+# Usage:
+#   helmfile apply -e apple-silicon -n ${NAMESPACE} --selector name=ms-sim
+#
+# This file is automatically included when using the 'apple-silicon' environment
+
+# Override routing proxy configuration for ARM64
+routing:
+  proxy:
+    image: localhost/llm-d-routing-sidecar:v0.2.0-arm64
+    imagePullPolicy: IfNotPresent
+
+# You can add other Apple Silicon specific overrides here as needed
+# For example:
+# resources:
+#   requests:
+#     memory: "512Mi"  # Adjust for M1/M2 memory characteristics
