@@ -1,0 +1,15 @@
+# Apple Silicon (ARM64) GAIE Values Override
+# This file contains GAIE-specific values overrides for Apple Silicon deployments
+# 
+# Usage:
+#   helmfile apply -e apple-silicon -n ${NAMESPACE} --selector name=gaie-sim
+#
+# This file is automatically included when using the 'apple-silicon' environment
+
+# Override inference extension EPP configuration for ARM64
+inferenceExtension:
+  image:
+    hub: localhost
+    name: gateway-api-inference-extension-epp
+    tag: v0.5.1-arm64
+    pullPolicy: IfNotPresent
