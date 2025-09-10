@@ -1,6 +1,6 @@
 # Apple Silicon (ARM64) GAIE Values Override
 # This file contains GAIE-specific values overrides for Apple Silicon deployments
-# 
+#
 # Usage:
 #   helmfile apply -e apple-silicon -n ${NAMESPACE} --selector name=gaie-sim
 #

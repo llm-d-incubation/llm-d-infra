@@ -147,9 +147,9 @@ helm list -n ${NAMESPACE}
 
 ```bash
 NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION
-gaie-sim        llm-d-sim       1               2025-09-09 12:05:59.924531 -0400 EDT    deployed        inferencepool-v0.5.1            v0.5.1     
-infra-sim       llm-d-sim       1               2025-09-09 11:36:49.157159 -0400 EDT    deployed        llm-d-infra-v1.3.0              v0.3.0     
-ms-sim          llm-d-sim       1               2025-09-09 13:09:29.384851 -0400 EDT    deployed        llm-d-modelservice-v0.2.9       v0.2.0    
+gaie-sim        llm-d-sim       1               2025-09-09 12:05:59.924531 -0400 EDT    deployed        inferencepool-v0.5.1            v0.5.1
+infra-sim       llm-d-sim       1               2025-09-09 11:36:49.157159 -0400 EDT    deployed        llm-d-infra-v1.3.0              v0.3.0
+ms-sim          llm-d-sim       1               2025-09-09 13:09:29.384851 -0400 EDT    deployed        llm-d-modelservice-v0.2.9       v0.2.0
 ```
 
 - Out of the box with this example you should have the following resources:
@@ -159,6 +159,7 @@ kubectl get all -n ${NAMESPACE}
 ```
 
 Expected output with ARM64 images (all pods `Running`):
+
 ```bash
 kubectl get pods -n ${NAMESPACE}
 NAME                                                 READY   STATUS    RESTARTS   AGE
@@ -171,7 +172,6 @@ ms-sim-llm-d-modelservice-prefill-789dc68f7-s84ct    1/1     Running   0        
 ```
 
 All decode pods should show `2/2` ready (init container + main container) and all other pods `1/1` ready. Note the gateway service is now `infra-sim-inference-gateway-istio` when using Istio.
-
 
 ## Using the stack
 

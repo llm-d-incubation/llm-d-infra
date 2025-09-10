@@ -1,6 +1,6 @@
 # Apple Silicon (ARM64) Values Override
 # This file contains values overrides for Apple Silicon deployments
-# 
+#
 # Usage:
 #   helmfile apply -e apple-silicon -n ${NAMESPACE} --selector name=ms-sim
 #
