@@ -32,7 +32,11 @@ As a result, as you tune your P/D deployments, we suggest focusing on the follow
 
 ## Hardware Requirements
 
+**Standard Deployment:**
 This quickstart expects 8 Nvidia GPUs of any kind, and infiniband.
+
+**Intel XPU Deployment:**
+This quickstart can also be deployed on Intel XPU with 4 Intel Data Center GPU Max devices. The Intel XPU configuration uses DeepSeek-R1-Distill-Qwen-1.5B model instead of Llama-70B for compatibility and resource optimization.
 
 ## Pre-requisites
 
@@ -41,6 +45,15 @@ This quickstart expects 8 Nvidia GPUs of any kind, and infiniband.
 - You must have the secret containing a HuggingFace Token in the namespace you want to deploy to with key `HF_TOKEN` (see [instructions](../../dependencies/README.md#huggingface-token)).
 
 - Additionally, it is assumed you have configured and deployed your Gateway Control Plane, and their pre-requisite CRDs. For information on this see the [gateway-control-plane-providers](../../gateway-control-plane-providers/) directory.
+
+- **For Intel XPU deployments**: You must have the Intel GPU Plugin deployed on your cluster. The plugin provides the `gpu.intel.com/i915` resource that the Intel XPU workloads require. 
+  
+  To deploy the Intel GPU Plugin:
+  ```bash
+  kubectl apply -k 'https://github.com/intel/intel-device-plugins-for-kubernetes/deployments/gpu_plugin?ref=v0.32.1'
+  ```
+  
+  You can verify it's installed by running `kubectl get nodes -o yaml | grep gpu.intel.com/i915` or check that Intel GPU plugin pods are running with `kubectl get pods -n kube-system | grep intel-gpu`.
 
 ## Installation
 
@@ -52,13 +65,23 @@ cd quickstart/examples/pd-disaggregation
 helmfile apply -n ${NAMESPACE}
 ```
 
+**For Intel XPU deployment:**
+```bash
+export NAMESPACE=llm-d-pd # shorter namespace recommended to avoid hostname length issues
+export RELEASE_NAME_POSTFIX=pd
+cd quickstart/examples/pd-disaggregation
+helmfile apply -e xpu -n ${NAMESPACE}
+```
+
 **_NOTE:_** You can set the `$RELEASE_NAME_POSTFIX` env variable to change the release names. This is how we support concurrent installs. Ex: `RELEASE_NAME_POSTFIX=pd-2 helmfile apply -n ${NAMESPACE}`
+
+**_IMPORTANT:_** When using long namespace names (like `llm-d-pd-disaggregation`), the generated pod hostnames may become too long and cause issues with Intel XPU deployments due to Linux hostname length limitations (typically 64 characters maximum). It's recommended to use shorter namespace names (like `llm-d-pd`) and set `RELEASE_NAME_POSTFIX` to generate shorter hostnames and avoid potential networking or vLLM startup problems.
 
 **_NOTE:_** This uses Istio as the default provider, see [Gateway Options](./README.md#gateway-options) for installing with a specific provider.
 
 ### Gateway options
 
-To see specify your gateway choice you can use the `-e <gateway option>` flag, ex:
+To specify your gateway choice you can use the `-e <gateway option>` flag, ex:
 
 ```bash
 helmfile apply -e kgateway -n ${NAMESPACE}
@@ -68,9 +91,9 @@ To see what gateway options are supported refer to our [gateway control plane do
 
 You can also customize your gateway, for more information on how to do that see our [gateway customization docs](../../docs/customizing-your-gateway.md).
 
-#### GKE specific workarounds
+#### GKE and Intel XPU specific workarounds
 
-While this example out of the box requires Infiniband RDMA, GKE does not support this. Therefore we patch out these values in [the helmfile](./helmfile.yaml.gotmpl#L73-80).
+While this example out of the box requires Infiniband RDMA, GKE and Intel XPU deployments do not support this. Therefore we patch out these values in [the helmfile](./helmfile.yaml.gotmpl#L73-80) for GKE environments and [the helmfile](./helmfile.yaml.gotmpl#L81-96) for Intel XPU environments.
 
 ### Install HTTPRoute
 

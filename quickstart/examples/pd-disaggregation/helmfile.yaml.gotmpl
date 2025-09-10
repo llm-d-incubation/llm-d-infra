@@ -12,6 +12,9 @@ environments:
   gke: &GKE
       values:
       - ../common/gateway-configurations/gke.yaml
+  xpu: &XPU
+    values:
+      - ../common/gateway-configurations/istio.yaml
   default:
     <<: *IB
 
@@ -40,7 +43,7 @@ releases:
         {{ .Environment.Values.gateway | toYaml | nindent 10 }}
       - gateway:
           destinationRule:
-            host: {{ printf "gaie-%s-epp.%s.svc.cluster.local" $ns | quote }}
+            host: {{ printf "gaie-%s-epp.%s.svc.cluster.local" $rn $ns | quote }}
 
   - name: {{ printf "gaie-%s" $rn | quote }}
     namespace: {{ $ns }}
@@ -72,6 +75,9 @@ releases:
       - {{ printf "gaie-%s" $rn | quote }}
     values:
       - ms-pd/values.yaml
+    {{- if eq .Environment.Name "xpu" }}
+      - ms-pd/values-xpu.yaml
+    {{- end }}
     {{- if or (eq .Environment.Name "istioBench") (eq .Environment.Name "default") }}
       - routing:
           proxy:
@@ -93,6 +99,26 @@ releases:
       - name: "prefill.containers[0].resources.limits.rdma/ib"
         value: null
       - name: "prefill.containers[0].resources.requests.rdma/ib"
+        value: null
+    {{- end }}
+    {{- if eq .Environment.Name "xpu" }}
+      # Remove RDMA resources for Intel XPU
+      - name: "decode.containers[0].resources.limits.rdma/ib"
+        value: null
+      - name: "decode.containers[0].resources.requests.rdma/ib"
+        value: null
+      - name: "prefill.containers[0].resources.limits.rdma/ib"
+        value: null
+      - name: "prefill.containers[0].resources.requests.rdma/ib"
+        value: null
+      # Remove NVIDIA GPU resources for Intel XPU
+      - name: "decode.containers[0].resources.limits.nvidia\\.com/gpu"
+        value: null
+      - name: "decode.containers[0].resources.requests.nvidia\\.com/gpu"
+        value: null
+      - name: "prefill.containers[0].resources.limits.nvidia\\.com/gpu"
+        value: null
+      - name: "prefill.containers[0].resources.requests.nvidia\\.com/gpu"
         value: null
     {{- end }}
     labels:
