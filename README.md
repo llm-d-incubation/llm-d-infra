@@ -66,7 +66,8 @@ See [CODEOWNERS](CODEOWNERS) for component-specific maintainers.
 
 ## Releases
 
-- **Helm Charts:** Available via [Helm repository](https://llm-d-incubation.github.io/llm-d-infra/) and [OCI registry](https://github.com/orgs/llm-d-incubation/packages/container/package/llm-d-infra%2Fllm-d)
+- **Helm Charts:** Available via the Helm repository: `helm repo add llm-d-infra https://llm-d-incubation.github.io/llm-d-infra/`
+
 - **Release Notes:** [GitHub releases](https://github.com/llm-d-incubation/llm-d-infra/releases)
 
 ## License
