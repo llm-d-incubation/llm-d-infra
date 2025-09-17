@@ -154,7 +154,22 @@ fi
 #  Helm diff plugin
 ########################################
 if ! helm plugin list | grep -q diff; then
-  helm plugin install https://github.com/databus23/helm-diff
+  echo "📦 helm-diff not found. Installing v3.11.0..."
+  HELM_DIFF_VERSION="3.11.0"
+  
+  if [[ "$OS" == "darwin" ]]; then
+    ARCHIVE="helm-diff-macos-${ARCH}.tgz"
+  else
+    ARCHIVE="helm-diff-${OS}-${ARCH}.tgz"
+  fi
+
+  URL="https://github.com/databus23/helm-diff/releases/download/v${HELM_DIFF_VERSION}/${ARCHIVE}"
+  curl -sSL -o "/tmp/helm-diff.tgz" "$URL"
+  
+  PLUGIN_DIR="${HOME}/.helm/plugins/helm-diff"
+  mkdir -p "${PLUGIN_DIR}"
+  tar -xzf /tmp/helm-diff.tgz -C "${PLUGIN_DIR}"
+  rm /tmp/helm-diff.tgz
 fi
 
 ########################################
