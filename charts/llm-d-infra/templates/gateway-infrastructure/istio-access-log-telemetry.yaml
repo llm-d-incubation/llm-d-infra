@@ -1,0 +1,14 @@
+{{ if and .Values.gateway.enabled (eq .Values.gateway.gatewayClassName "istio") .Values.gateway.gatewayParameters.enabled .Values.gateway.gatewayParameters.accessLogging }}
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: {{ include "gateway.fullname" . }}-telemetry
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: {{ include "gateway.fullname" . }}
+  accessLogging:
+  - providers:
+    - name: envoy
+{{- end }}

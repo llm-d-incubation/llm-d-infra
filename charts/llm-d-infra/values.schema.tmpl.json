@@ -127,6 +127,13 @@
           "additionalProperties": false,
           "description": "Special parameters applied to kGateway via GatewayParameters resource",
           "properties": {
+            "accessLogging": {
+              "default": true,
+              "description": "For istio to include access logging or not",
+              "required": [],
+              "title": "accessLogging",
+              "type": "boolean"
+            },
             "enabled": {
               "default": true,
               "required": [],
@@ -134,8 +141,8 @@
               "type": "boolean"
             },
             "logLevel": {
-              "default": "info",
-              "description": " default: info enum: [error,warn,info,debug] @schema",
+              "default": "warn",
+              "description": " default: warn enum: [error,warn,info,debug] @schema",
               "enum": [
                 "error",
                 "warn",

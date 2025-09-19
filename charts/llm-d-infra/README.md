@@ -1,7 +1,7 @@
 
 # llm-d-infra Helm Chart
 
-![Version: v1.3.1](https://img.shields.io/badge/Version-v1.3.1-informational?style=flat-square)
+![Version: v1.3.2](https://img.shields.io/badge/Version-v1.3.2-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
