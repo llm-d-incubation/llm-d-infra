@@ -123,8 +123,8 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
         shell: bash
         run: |
-          cd quickstart
-          ./dependencies/install-deps.sh
+          cd llm-d-infra/quickstart
+          /quickstart/dependencies/install-deps.sh
           ./gateway-control-plane-providers/install-gateway-provider-dependencies.sh
           helmfile apply -f gateway-control-plane-providers/istio.helmfile.yaml
 
