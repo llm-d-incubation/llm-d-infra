@@ -159,7 +159,6 @@ gateway:
   # -- Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled
   listeners:
     - name: default
-      path: /
       port: 80
       protocol: HTTP
       allowedRoutes:
