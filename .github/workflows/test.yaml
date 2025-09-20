@@ -123,10 +123,14 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
         shell: bash
         run: |
-          cd quickstart
-          ./dependencies/install-deps.sh
-          ./gateway-control-plane-providers/install-gateway-provider-dependencies.sh
-          helmfile apply -f gateway-control-plane-providers/istio.helmfile.yaml
+          dir=$(mktemp -d)
+          cd "${dir}"
+          curl -LsSf https://raw.githubusercontent.com/llm-d/llm-d/refs/heads/main/guides/prereq/client-setup/install-deps.sh | /bin/bash
+          curl -LsSf https://raw.githubusercontent.com/llm-d/llm-d/refs/heads/main/guides/prereq/gateway-provider/install-gateway-provider-dependencies.sh | /bin/bash
+          curl -sLO https://raw.githubusercontent.com/llm-d/llm-d/refs/heads/main/guides/prereq/gateway-provider/istio.helmfile.yaml
+          helmfile apply -f istio.helmfile.yaml
+          cd -
+          rm -rf "${dir}"
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'

@@ -79,11 +79,14 @@ gateway:
   gatewayParameters:
     enabled: true
 
+    # For istio to include access logging or not
+    accessLogging: true
+
     # @schema
-    # default: info
+    # default: warn
     # enum: [error,warn,info,debug]
     # @schema
-    logLevel: info
+    logLevel: warn
 
     # @schema
     # $ref: https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master/_definitions.json#/definitions/io.k8s.api.core.v1.ResourceRequirements
@@ -156,7 +159,6 @@ gateway:
   # -- Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled
   listeners:
     - name: default
-      path: /
       port: 80
       protocol: HTTP
       allowedRoutes:

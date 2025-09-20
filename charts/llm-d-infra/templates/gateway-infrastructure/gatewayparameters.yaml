@@ -30,7 +30,7 @@ spec:
           upstream: {{ .Values.gateway.gatewayParameters.logLevel }}
           http: {{ .Values.gateway.gatewayParameters.logLevel }}
           connection: {{ .Values.gateway.gatewayParameters.logLevel }}
-        logLevel: info # keep as info for everything else, the other debug levels will be sufficient if more logging needed
+        logLevel: warn # keep as info for everything else, the other debug levels will be sufficient if more logging needed
       {{- if .Values.gateway.gatewayParameters.resources }}
       resources: {{ .Values.gateway.gatewayParameters.resources | toYaml | nindent 8 }}
       {{- end}}
