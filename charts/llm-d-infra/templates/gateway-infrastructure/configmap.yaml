@@ -39,7 +39,7 @@ data:
             {{- end}}
   service: |
     spec:
-      type: {{ .Values.gateway.service.type | default "ClusterIP" | quote }}
+      type: {{ .Values.gateway.service.type | quote }}
       {{- if .Values.gateway.service.ports }}
       ports: {{ .Values.gateway.service.ports | toYaml | nindent 8 }}
       {{- end }}
