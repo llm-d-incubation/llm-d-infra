@@ -24,21 +24,15 @@ metadata:
     {{- if .Values.gateway.annotations }}
     {{- include "common.tplvalues.render" ( dict "value" .Values.gateway.annotations "context" .) | nindent 4 }}
     {{- end }}
-    {{- if $isIstio }}
-    networking.istio.io/service-type: ClusterIP
-    {{- end }}
 spec:
   gatewayClassName: {{ .Values.gateway.gatewayClassName | quote }}
   {{- $listeners := required "gateway.listeners must have at least 1 item" .Values.gateway.listeners }}
   listeners:
   {{- range $i, $l := $listeners }}
-    - port: {{ required (printf "gateway.listeners[%d].port is required" $i) $l.port }}
-      protocol: {{ required (printf "gateway.listeners[%d].protocol is required" $i) $l.protocol }}
+    - port: {{ $l.port }}
+      protocol: {{ $l.protocol }}
       {{- with $l.name }}
       name: {{ . }}
-      {{- end }}
-      {{- with $l.path }}
-      path: {{ . }}
       {{- end }}
       {{- with $l.allowedRoutes }}
       allowedRoutes:

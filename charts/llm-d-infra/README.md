@@ -1,7 +1,7 @@
 
 # llm-d-infra Helm Chart
 
-![Version: v1.3.2](https://img.shields.io/badge/Version-v1.3.2-informational?style=flat-square)
+![Version: v1.3.3](https://img.shields.io/badge/Version-v1.3.3-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
@@ -115,7 +115,6 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.labels | Additional labels provided to the Gateway resource | object | `{}` |
 | gateway.listeners | Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled | list | `[{"allowedRoutes":{"namespaces":{"from":"All"}},"name":"default","port":80,"protocol":"HTTP"}]` |
 | gateway.nameOverride | String to partially override gateway.fullname | string | `""` |
-| gateway.service.type | Gateway's service type. Ingress is only available if the service type is set to LoadBalancer. Accepted values: ["LoadBalancer", "ClusterIP", "NodePort"] | string | `"LoadBalancer"` |
 | ingress | Ingress configuration | object | See below |
 | ingress.annotations | Additional annotations for the Ingress resource | object | `{}` |
 | ingress.enabled | Deploy Ingress (service type must also be ClusterIP) | bool | `false` |
