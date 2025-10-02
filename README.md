@@ -43,7 +43,7 @@ For detailed configuration options, see the [Helm chart documentation](charts/ll
 
 **Note:** All quickstart guides and user documentation have moved to the main llm-d repository:
 
-- [**Deployment Guides:**](https://github.com/llm-d/llm-d/tree/dev/guides)
+- [**Deployment Guides:**](https://github.com/llm-d/llm-d/tree/main/guides)
 
 **This repository contains:**
 

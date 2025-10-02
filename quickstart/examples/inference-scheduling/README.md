@@ -1,3 +1,3 @@
 # llm-d quickstarts have graduated to guides
 
-This file has moved to <https://github.com/llm-d/llm-d/tree/dev/guides/inference-scheduling/README.md>.
+This file has moved to <https://github.com/llm-d/llm-d/tree/main/guides/inference-scheduling/README.md>.
