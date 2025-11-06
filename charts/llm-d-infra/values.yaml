@@ -194,11 +194,17 @@ gateway:
   #           type: integer
   #           minimum: 30000
   #           maximum: 32767
+  #   loadBalancerClass: 
+  #     type: string
+  #     description: >
+  #       Optional. LoadBalancerClass is the class of the load balancer to use.
+  #       Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class
   # @schema
   service:
     type: ClusterIP
     # ports:
     #   - port: 80
+    # loadBalancerClass: "metallb"
 
 # -- Ingress configuration
 # @default -- See below
