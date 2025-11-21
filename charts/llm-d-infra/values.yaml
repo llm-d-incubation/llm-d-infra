@@ -42,14 +42,12 @@ commonAnnotations: {}
 # -- Array of extra objects to deploy with the release
 extraDeploy: []
 
-
 # -- Sample application deploying a p-d pair of specific model
 # @default -- See below
 
 # -- Gateway configuration
 # @default -- See below
 gateway:
-
   # -- Deploy resources related to Gateway
   enabled: true
 
@@ -152,6 +150,28 @@ gateway:
   #       type: object
   #       description: AllowedRoutes defines the types of routes that MAY be attached to a Listener and the trusted namespaces where those Route resources MAY be present.
   #       additionalProperties: true
+  #     tls:
+  #       type: object
+  #       description: TLS configuration for the Listener. Required when protocol is HTTPS or TLS.
+  #       properties:
+  #         hostname:
+  #           type: string
+  #           description: Hostname to match for TLS SNI. Required for TLS termination.
+  #         mode:
+  #           type: string
+  #           description: TLS mode. Typically "Terminate" for TLS termination at the gateway.
+  #           enum: [Terminate, Passthrough]
+  #         certificateRef:
+  #           type: object
+  #           description: Reference to a Kubernetes Secret containing the TLS certificate.
+  #           required: [name]
+  #           properties:
+  #             name:
+  #               type: string
+  #               description: Name of the Secret containing the TLS certificate.
+  #             namespace:
+  #               type: string
+  #               description: Namespace of the Secret. If omitted, defaults to the Gateway's namespace.
   # @schema
   # -- Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled
   listeners:
@@ -161,6 +181,13 @@ gateway:
       allowedRoutes:
         namespaces:
           from: All
+      # -- Optional TLS configuration for HTTPS listeners
+      # tls:
+      #   hostname: "api.example.com"
+      #   mode: "Terminate"  # or "Passthrough"
+      #   certificateRef:
+      #     name: "my-tls-cert"
+      #     namespace: "default"
 
   # @schema
   # type: object
@@ -203,7 +230,6 @@ gateway:
 # -- Ingress configuration
 # @default -- See below
 ingress:
-
   # -- Deploy Ingress (service type must also be ClusterIP)
   enabled: false
 
@@ -233,7 +259,6 @@ ingress:
 
   # -- Ingress TLS parameters
   tls:
-
     # -- Enable TLS configuration for the host defined at `ingress.host` parameter
     enabled: false
 
