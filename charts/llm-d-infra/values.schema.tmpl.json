@@ -119,13 +119,13 @@
         },
         "gatewayClassName": {
           "default": "istio",
-          "description": "Gateway class that determines the backend used Currently supported values: \"kgateway\", \"istio\", or \"gke-l7-regional-external-managed\"",
+          "description": "Gateway class that determines the backend used Currently supported values: \"kgateway\" or \"agentgateway\" for kgateway, \"istio\", or \"gke-l7-regional-external-managed\"",
           "required": [],
           "title": "gatewayClassName"
         },
         "gatewayParameters": {
           "additionalProperties": false,
-          "description": "Special parameters applied to kGateway via GatewayParameters resource",
+          "description": "Special parameters applied to Kgateway via GatewayParameters resource",
           "properties": {
             "accessLogging": {
               "default": true,
