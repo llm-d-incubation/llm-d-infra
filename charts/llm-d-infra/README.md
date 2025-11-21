@@ -1,7 +1,7 @@
 
 # llm-d-infra Helm Chart
 
-![Version: v1.3.4](https://img.shields.io/badge/Version-v1.3.4-informational?style=flat-square)
+![Version: v1.4.0](https://img.shields.io/badge/Version-v1.4.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
@@ -110,7 +110,7 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.destinationRule | see: https://istio.io/latest/docs/reference/config/networking/destination-rule/ | object | `{"enabled":false,"exportTo":[],"host":"localhost","subsets":[],"trafficPolicy":{},"workloadSelector":{}}` |
 | gateway.enabled | Deploy resources related to Gateway | bool | `true` |
 | gateway.fullnameOverride | String to fully override gateway.fullname | string | `""` |
-| gateway.gatewayClassName | Gateway class that determines the backend used Currently supported values: "kgateway" (Kgateway with Envoy data plane), "agentgateway" (Kgateway with agentgateway data plane) "istio", or "gke-l7-regional-external-managed" | string | `"istio"` |
+| gateway.gatewayClassName | Gateway class that determines the backend used Currently supported values: "kgateway" or "agentgateway" for kgateway, "istio", or "gke-l7-regional-external-managed" | string | `"istio"` |
 | gateway.gatewayParameters.resources | Resource requests/limits <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container | object | `{"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"100m","memory":"128Mi"}}` |
 | gateway.labels | Additional labels provided to the Gateway resource | object | `{}` |
 | gateway.listeners | Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled | list | `[{"allowedRoutes":{"namespaces":{"from":"All"}},"name":"default","port":80,"protocol":"HTTP"}]` |
