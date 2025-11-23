@@ -43,4 +43,7 @@ data:
       {{- if .Values.gateway.service.ports }}
       ports: {{ .Values.gateway.service.ports | toYaml | nindent 8 }}
       {{- end }}
+      {{- if .Values.gateway.service.loadBalancerClass }}
+      loadBalancerClass: {{ .Values.gateway.service.loadBalancerClass | quote }}
+      {{- end }}
 {{- end}}
