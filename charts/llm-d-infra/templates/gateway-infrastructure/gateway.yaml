@@ -38,6 +38,16 @@ spec:
       allowedRoutes:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if $l.tls }}
+      hostname: {{ $l.tls.hostname | quote }}
+      tls:
+        mode: {{ $l.tls.mode | quote }}
+        {{- with $l.tls.certificateRef }}
+        certificateRef:
+          name: {{ .name | quote }}
+          namespace: {{ .namespace | quote }}
+        {{- end }}
+      {{- end }}
   {{- end}}
   {{- if and (eq .Values.gateway.gatewayClassName "kgateway") .Values.gateway.gatewayParameters.enabled }}
   infrastructure:

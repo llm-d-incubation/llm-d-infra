@@ -195,6 +195,46 @@
                 "description": "Protocol specifies the network protocol this listener expects to receive.",
                 "required": [],
                 "type": "string"
+              },
+              "tls": {
+                "description": "TLS configuration for the Listener. Required when protocol is HTTPS or TLS.",
+                "properties": {
+                  "certificateRef": {
+                    "description": "Reference to a Kubernetes Secret containing the TLS certificate.",
+                    "properties": {
+                      "name": {
+                        "description": "Name of the Secret containing the TLS certificate.",
+                        "required": [],
+                        "type": "string"
+                      },
+                      "namespace": {
+                        "description": "Namespace of the Secret. If omitted, defaults to the Gateway's namespace.",
+                        "required": [],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ],
+                    "type": "object"
+                  },
+                  "hostname": {
+                    "description": "Hostname to match for TLS SNI. Required for TLS termination.",
+                    "required": [],
+                    "type": "string"
+                  },
+                  "mode": {
+                    "description": "TLS mode. Typically \"Terminate\" for TLS termination at the gateway.",
+                    "enum": [
+                      "Terminate",
+                      "Passthrough"
+                    ],
+                    "required": [],
+                    "type": "string"
+                  }
+                },
+                "required": [],
+                "type": "object"
               }
             },
             "required": [
