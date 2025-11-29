@@ -253,24 +253,28 @@
                             "tls": {
                                 "description": "TLS configuration for the Listener. Required when protocol is HTTPS or TLS.",
                                 "properties": {
-                                    "certificateRef": {
-                                        "description": "Reference to a Kubernetes Secret containing the TLS certificate.",
-                                        "properties": {
-                                            "name": {
-                                                "description": "Name of the Secret containing the TLS certificate.",
-                                                "required": [],
-                                                "type": "string"
+                                    "certificateRefs": {
+                                        "description": "References to Kubernetes Secrets containing TLS certificates.",
+                                        "items": {
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Name of the Secret containing the TLS certificate.",
+                                                    "required": [],
+                                                    "type": "string"
+                                                },
+                                                "namespace": {
+                                                    "description": "Namespace of the Secret. If omitted, defaults to the Gateway's namespace.",
+                                                    "required": [],
+                                                    "type": "string"
+                                                }
                                             },
-                                            "namespace": {
-                                                "description": "Namespace of the Secret. If omitted, defaults to the Gateway's namespace.",
-                                                "required": [],
-                                                "type": "string"
-                                            }
+                                            "required": [
+                                                "name"
+                                            ],
+                                            "type": "object"
                                         },
-                                        "required": [
-                                            "name"
-                                        ],
-                                        "type": "object"
+                                        "required": [],
+                                        "type": "array"
                                     },
                                     "hostname": {
                                         "description": "Hostname to match for TLS SNI. Required for TLS termination.",
@@ -310,8 +314,13 @@
                 },
                 "service": {
                     "additionalProperties": false,
-                    "description": " type: object additionalProperties: false required: [type] properties:   type:     type: string     description: >       Gateway's service type. Ingress is only available if the service type       is set to LoadBalancer. Accepted values: [\"LoadBalancer\",\"ClusterIP\",\"NodePort\"].     enum: [LoadBalancer, ClusterIP, NodePort]     default: ClusterIP   ports:     type: array     description: >       Optional. List of service ports. If provided, each item must include \"port\".     items:       type: object       additionalProperties: true       required: [port]       properties:         port:           description: >             Port is the network port. Multiple listeners may use the same port             (subject to compatibility rules).           type: integer           minimum: 1           maximum: 65535         nodePort:           type: integer           minimum: 30000           maximum: 32767 @schema",
+                    "description": " type: object additionalProperties: false required: [type] properties:   type:     type: string     description: >       Gateway's service type. Ingress is only available if the service type       is set to LoadBalancer. Accepted values: [\"LoadBalancer\",\"ClusterIP\",\"NodePort\"].     enum: [LoadBalancer, ClusterIP, NodePort]     default: ClusterIP   ports:     type: array     description: >       Optional. List of service ports. If provided, each item must include \"port\".     items:       type: object       additionalProperties: true       required: [port]       properties:         port:           description: >             Port is the network port. Multiple listeners may use the same port             (subject to compatibility rules).           type: integer           minimum: 1           maximum: 65535         nodePort:           type: integer           minimum: 30000           maximum: 32767   loadBalancerClass:     type: string     description: >       Optional. LoadBalancerClass is the class of the load balancer to use.       Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class @schema",
                     "properties": {
+                        "loadBalancerClass": {
+                            "description": "Optional. LoadBalancerClass is the class of the load balancer to use. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class",
+                            "required": [],
+                            "type": "string"
+                        },
                         "ports": {
                             "description": "Optional. List of service ports. If provided, each item must include \"port\".\n",
                             "items": {
