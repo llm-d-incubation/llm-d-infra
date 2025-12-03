@@ -221,17 +221,51 @@ gateway:
   #           type: integer
   #           minimum: 30000
   #           maximum: 32767
-  #   loadBalancerClass: 
+  #   loadBalancerClass:
   #     type: string
   #     description: >
   #       Optional. LoadBalancerClass is the class of the load balancer to use.
   #       Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class
+  #   extraAnnotations:
+  #     type: object
+  #     additionalProperties:
+  #       type: string
+  #     default: {}
+  #     description: >
+  #       Extra annotations to apply to the Gateway Service metadata.
   # @schema
   service:
     type: ClusterIP
     # ports:
     #   - port: 80
     # loadBalancerClass: "metallb"
+    extraAnnotations: {}
+
+  # @schema
+  # type: object
+  # additionalProperties: false
+  # properties:
+  #   extraLabels:
+  #     type: object
+  #     additionalProperties:
+  #       type: string
+  #     default:
+  #       gateway: custom
+  #     description: >
+  #       Extra labels to apply to the Envoy proxy pods via
+  #       GatewayParameters.spec.kube.podTemplate.extraLabels.
+  #   affinity:
+  #     $ref: https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master/_definitions.json#/definitions/io.k8s.api.core.v1.Affinity
+  #     description: >
+  #       Pod affinity/anti-affinity and node affinity applied to the Envoy
+  #       proxy pods (GatewayParameters.spec.kube.podTemplate.affinity).
+  # @schema
+  # -- Pod template overrides for the kgateway Envoy proxy pods.
+  #    Maps to GatewayParameters.spec.kube.podTemplate.
+  podTemplate:
+    extraLabels:
+      gateway: custom
+    affinity: {}
 
 # -- Ingress configuration
 # @default -- See below

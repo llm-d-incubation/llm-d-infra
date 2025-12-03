@@ -39,11 +39,18 @@ spec:
       {{- if .Values.gateway.service.ports }}
       ports: {{ .Values.gateway.service.ports | toYaml | nindent 8 }}
       {{- end }}
+      {{- if .Values.gateway.service.extraAnnotations }}
+      extraAnnotations: {{ .Values.gateway.service.extraAnnotations | toYaml | nindent 8 }}
+      {{- end }}
       extraLabels:
         gateway: custom
     podTemplate:
-      extraLabels:
-        gateway: custom
+      {{- if .Values.gateway.podTemplate.extraLabels }}
+      extraLabels: {{ .Values.gateway.podTemplate.extraLabels | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .Values.gateway.podTemplate.affinity }}
+      affinity: {{ .Values.gateway.podTemplate.affinity | toYaml | nindent 8 }}
+      {{- end }}
     floatingUserId: true
     sdsContainer:
       securityContext:

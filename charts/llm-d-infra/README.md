@@ -115,6 +115,7 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.labels | Additional labels provided to the Gateway resource | object | `{}` |
 | gateway.listeners | Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled | list | `[{"allowedRoutes":{"namespaces":{"from":"All"}},"name":"default","port":80,"protocol":"HTTP"}]` |
 | gateway.nameOverride | String to partially override gateway.fullname | string | `""` |
+| gateway.podTemplate | Pod template overrides for the kgateway Envoy proxy pods.    Maps to GatewayParameters.spec.kube.podTemplate. | object | `{"affinity":{},"extraLabels":{"gateway":"custom"}}` |
 | ingress | Ingress configuration | object | See below |
 | ingress.annotations | Additional annotations for the Ingress resource | object | `{}` |
 | ingress.enabled | Deploy Ingress (service type must also be ClusterIP) | bool | `false` |
