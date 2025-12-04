@@ -203,18 +203,35 @@
                     "description": "References to Kubernetes Secrets containing TLS certificates.",
                     "items": {
                       "properties": {
+                        "group": {
+                          "default": "",
+                          "description": "Group is the group of the referent. When unspecified or empty string, core API group is inferred.",
+                          "maxLength": 253,
+                          "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$",
+                          "required": [],
+                          "type": "string"
+                        },
                         "kind": {
-                          "description": "Kind of the resource. Defaults to \"Secret\".",
+                          "default": "Secret",
+                          "description": "Kind is kind of the referent.",
+                          "maxLength": 63,
+                          "minLength": 1,
+                          "pattern": "^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$",
                           "required": [],
                           "type": "string"
                         },
                         "name": {
                           "description": "Name of the Secret containing the TLS certificate.",
+                          "maxLength": 253,
+                          "minLength": 1,
                           "required": [],
                           "type": "string"
                         },
                         "namespace": {
-                          "description": "Namespace of the Secret. If omitted, defaults to the Gateway's namespace.",
+                          "description": "Namespace is the namespace of the referenced object. When unspecified, the local namespace is inferred.",
+                          "maxLength": 63,
+                          "minLength": 1,
+                          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
                           "required": [],
                           "type": "string"
                         }

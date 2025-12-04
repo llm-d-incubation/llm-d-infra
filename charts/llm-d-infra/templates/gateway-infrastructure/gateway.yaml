@@ -46,12 +46,14 @@ spec:
         certificateRefs:
         {{- range . }}
           - name: {{ .name | quote }}
-            group: ""
-            {{- if hasKey . "namespace" }}
-            namespace: {{ .namespace | quote }}
+            {{- if hasKey . "group" }}
+            group: {{ .group | quote }}
             {{- end }}
             {{- if hasKey . "kind" }}
             kind: {{ .kind | quote }}
+            {{- end }}
+            {{- if hasKey . "namespace" }}
+            namespace: {{ .namespace | quote }}
             {{- end }}
         {{- end }}
         {{- end }}
