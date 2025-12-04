@@ -42,10 +42,18 @@ spec:
       hostname: {{ $l.tls.hostname | quote }}
       tls:
         mode: {{ $l.tls.mode | quote }}
-        {{- with $l.tls.certificateRef }}
-        certificateRef:
-          name: {{ .name | quote }}
-          namespace: {{ .namespace | quote }}
+        {{- with $l.tls.certificateRefs }}
+        certificateRefs:
+        {{- range . }}
+          - name: {{ .name | quote }}
+            group: ""
+            {{- if hasKey . "namespace" }}
+            namespace: {{ .namespace | quote }}
+            {{- end }}
+            {{- if hasKey . "kind" }}
+            kind: {{ .kind | quote }}
+            {{- end }}
+        {{- end }}
         {{- end }}
       {{- end }}
   {{- end}}
