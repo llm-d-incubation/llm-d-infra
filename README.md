@@ -48,8 +48,7 @@ For detailed configuration options, see the [Helm chart documentation](charts/ll
 **This repository contains:**
 
 - [Helm Chart Documentation](charts/llm-d-infra/README.md)
-- [Development Guide](quickstart/docs/development.md)
-- [Interactive Testing Tools](helpers/interactive-pod/README.md)
+- [Development Guide](docs/development.md)
 
 ## Contributing
 
