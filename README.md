@@ -58,7 +58,7 @@ For detailed configuration options, see the [Helm chart documentation](charts/ll
    - Helm chart improvements
    - Operational tooling enhancements
    - Infrastructure configuration updates
-3. **Development Setup:** See [development documentation](quickstart/docs/development.md)
+3. **Development Setup:** See [development documentation](docs/development.md)
 
 ### Code Owners
 
