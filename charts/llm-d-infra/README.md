@@ -110,7 +110,7 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.destinationRule | see: https://istio.io/latest/docs/reference/config/networking/destination-rule/ | object | `{"enabled":false,"exportTo":[],"host":"localhost","subsets":[],"trafficPolicy":{},"workloadSelector":{}}` |
 | gateway.enabled | Deploy resources related to Gateway | bool | `true` |
 | gateway.fullnameOverride | String to fully override gateway.fullname | string | `""` |
-| gateway.gatewayClassName | Gateway class that determines the backend used Currently supported values: "kgateway" or "agentgateway" for kgateway, "istio", or "gke-l7-regional-external-managed" | string | `"istio"` |
+| gateway.gatewayClassName | Gateway class that determines the backend used Currently supported values: "kgateway" or "agentgateway-v2" for kgateway, "istio", or "gke-l7-regional-external-managed" | string | `"istio"` |
 | gateway.gatewayParameters.resources | Resource requests/limits <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container | object | `{"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"100m","memory":"128Mi"}}` |
 | gateway.labels | Additional labels provided to the Gateway resource | object | `{}` |
 | gateway.listeners | Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled | list | `[{"allowedRoutes":{"namespaces":{"from":"All"}},"name":"default","port":80,"protocol":"HTTP"}]` |
