@@ -1,5 +1,5 @@
+{{- $gc := .Values.gateway.gatewayClassName -}}
 {{- if .Values.gateway.enabled }}
-{{ $isIstio := (eq .Values.gateway.gatewayClassName "istio") }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -14,7 +14,7 @@ metadata:
     {{- if .Values.gateway.labels }}
     {{- include "common.tplvalues.render" ( dict "value" .Values.gateway.labels "context" .) | nindent 4 }}
     {{- end }}
-    {{- if $isIstio }}
+    {{- if eq $gc "istio" }}
     istio.io/enable-inference-extproc: "true"
     {{- end }}
   annotations:

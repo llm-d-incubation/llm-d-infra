@@ -1,4 +1,5 @@
-{{ if and .Values.gateway.enabled (eq .Values.gateway.gatewayClassName "kgateway") .Values.gateway.gatewayParameters.enabled }}
+{{- $gc := .Values.gateway.gatewayClassName -}}
+{{- if and .Values.gateway.enabled (eq $gc "kgateway") .Values.gateway.gatewayParameters.enabled }}
 apiVersion: gateway.kgateway.dev/v1alpha1
 kind: GatewayParameters
 metadata:
@@ -44,7 +45,6 @@ spec:
     podTemplate:
       extraLabels:
         gateway: custom
-    floatingUserId: true
     sdsContainer:
       securityContext:
         allowPrivilegeEscalation: false

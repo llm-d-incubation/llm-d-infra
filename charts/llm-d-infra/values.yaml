@@ -58,7 +58,7 @@ gateway:
   nameOverride: ""
 
   # -- Gateway class that determines the backend used
-  # Currently supported values: "kgateway", "istio", or "gke-l7-regional-external-managed"
+  # Currently supported values: "kgateway" or "agentgateway-v2" for kgateway, "istio", or "gke-l7-regional-external-managed"
   gatewayClassName: istio
 
   # @schema
@@ -73,7 +73,7 @@ gateway:
   # -- Additional annotations provided to the Gateway resource
   annotations: {}
 
-  # Special parameters applied to kGateway via GatewayParameters resource
+  # Special parameters applied to Kgateway via GatewayParameters resource
   gatewayParameters:
     enabled: true
 
@@ -221,7 +221,7 @@ gateway:
   #           type: integer
   #           minimum: 30000
   #           maximum: 32767
-  #   loadBalancerClass: 
+  #   loadBalancerClass:
   #     type: string
   #     description: >
   #       Optional. LoadBalancerClass is the class of the load balancer to use.

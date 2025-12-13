@@ -119,13 +119,13 @@
                 },
                 "gatewayClassName": {
                     "default": "istio",
-                    "description": "Gateway class that determines the backend used Currently supported values: \"kgateway\", \"istio\", or \"gke-l7-regional-external-managed\"",
+                    "description": "Gateway class that determines the backend used Currently supported values: \"kgateway\" or \"agentgateway-v2\" for kgateway, \"istio\", or \"gke-l7-regional-external-managed\"",
                     "required": [],
                     "title": "gatewayClassName"
                 },
                 "gatewayParameters": {
                     "additionalProperties": false,
-                    "description": "Special parameters applied to kGateway via GatewayParameters resource",
+                    "description": "Special parameters applied to Kgateway via GatewayParameters resource",
                     "properties": {
                         "accessLogging": {
                             "default": true,
@@ -310,8 +310,13 @@
                 },
                 "service": {
                     "additionalProperties": false,
-                    "description": " type: object additionalProperties: false required: [type] properties:   type:     type: string     description: >       Gateway's service type. Ingress is only available if the service type       is set to LoadBalancer. Accepted values: [\"LoadBalancer\",\"ClusterIP\",\"NodePort\"].     enum: [LoadBalancer, ClusterIP, NodePort]     default: ClusterIP   ports:     type: array     description: >       Optional. List of service ports. If provided, each item must include \"port\".     items:       type: object       additionalProperties: true       required: [port]       properties:         port:           description: >             Port is the network port. Multiple listeners may use the same port             (subject to compatibility rules).           type: integer           minimum: 1           maximum: 65535         nodePort:           type: integer           minimum: 30000           maximum: 32767 @schema",
+                    "description": " type: object additionalProperties: false required: [type] properties:   type:     type: string     description: >       Gateway's service type. Ingress is only available if the service type       is set to LoadBalancer. Accepted values: [\"LoadBalancer\",\"ClusterIP\",\"NodePort\"].     enum: [LoadBalancer, ClusterIP, NodePort]     default: ClusterIP   ports:     type: array     description: >       Optional. List of service ports. If provided, each item must include \"port\".     items:       type: object       additionalProperties: true       required: [port]       properties:         port:           description: >             Port is the network port. Multiple listeners may use the same port             (subject to compatibility rules).           type: integer           minimum: 1           maximum: 65535         nodePort:           type: integer           minimum: 30000           maximum: 32767   loadBalancerClass:     type: string     description: >       Optional. LoadBalancerClass is the class of the load balancer to use.       Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class @schema",
                     "properties": {
+                        "loadBalancerClass": {
+                            "description": "Optional. LoadBalancerClass is the class of the load balancer to use. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class",
+                            "required": [],
+                            "type": "string"
+                        },
                         "ports": {
                             "description": "Optional. List of service ports. If provided, each item must include \"port\".\n",
                             "items": {
