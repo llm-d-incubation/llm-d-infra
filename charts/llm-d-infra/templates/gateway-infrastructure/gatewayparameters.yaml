@@ -1,5 +1,5 @@
 {{- $gc := .Values.gateway.gatewayClassName -}}
-{{- if and .Values.gateway.enabled (or (eq $gc "kgateway") (eq $gc "agentgateway")) .Values.gateway.gatewayParameters.enabled }}
+{{- if and .Values.gateway.enabled (eq $gc "kgateway") .Values.gateway.gatewayParameters.enabled }}
 apiVersion: gateway.kgateway.dev/v1alpha1
 kind: GatewayParameters
 metadata:
@@ -19,7 +19,6 @@ metadata:
     {{- end }}
 spec:
   kube:
-    {{- if eq $gc "kgateway" }}
     envoyContainer:
       securityContext:
         allowPrivilegeEscalation: false
@@ -36,20 +35,6 @@ spec:
       {{- if .Values.gateway.gatewayParameters.resources }}
       resources: {{ .Values.gateway.gatewayParameters.resources | toYaml | nindent 8 }}
       {{- end}}
-    {{- else if eq $gc "agentgateway" }}
-    agentgateway:
-      enabled: true
-      securityContext:
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: true
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
-      logLevel: {{ .Values.gateway.gatewayParameters.logLevel }}
-      {{- if .Values.gateway.gatewayParameters.resources }}
-      resources: {{ .Values.gateway.gatewayParameters.resources | toYaml | nindent 8 }}
-      {{- end}}
-    {{- end }}
     service:
       type: {{ .Values.gateway.service.type | default "ClusterIP" | quote }}
       {{- if .Values.gateway.service.ports }}

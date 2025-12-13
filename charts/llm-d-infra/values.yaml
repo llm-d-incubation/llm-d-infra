@@ -221,7 +221,7 @@ gateway:
   #           type: integer
   #           minimum: 30000
   #           maximum: 32767
-  #   loadBalancerClass: 
+  #   loadBalancerClass:
   #     type: string
   #     description: >
   #       Optional. LoadBalancerClass is the class of the load balancer to use.

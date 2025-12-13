@@ -24,8 +24,8 @@ This repository provides the Kubernetes infrastructure components, Helm charts, 
 
 - Kubernetes 1.28+ cluster
 - Helm 3.10+
-- Gateway API v1.3.0+ installed
-- Gateway controller (Istio, Kgateway, or GKE) deployed in your cluster
+- Gateway API v1.4.0+ installed
+- Gateway controller (Istio, Kgateway, AgentGateway or GKE) deployed in your cluster
 
 ### Install llm-d Infrastructure
 
