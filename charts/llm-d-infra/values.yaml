@@ -161,17 +161,19 @@ gateway:
   #           type: string
   #           description: TLS mode. Typically "Terminate" for TLS termination at the gateway.
   #           enum: [Terminate, Passthrough]
-  #         certificateRef:
-  #           type: object
-  #           description: Reference to a Kubernetes Secret containing the TLS certificate.
-  #           required: [name]
-  #           properties:
-  #             name:
-  #               type: string
-  #               description: Name of the Secret containing the TLS certificate.
-  #             namespace:
-  #               type: string
-  #               description: Namespace of the Secret. If omitted, defaults to the Gateway's namespace.
+  #         certificateRefs:
+  #           type: array
+  #           description: References to Kubernetes Secrets containing TLS certificates.
+  #           items:
+  #             type: object
+  #             required: [name]
+  #             properties:
+  #               name:
+  #                 type: string
+  #                 description: Name of the Secret containing the TLS certificate.
+  #               namespace:
+  #                 type: string
+  #                 description: Namespace of the Secret. If omitted, defaults to the Gateway's namespace.
   # @schema
   # -- Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled
   listeners:
@@ -185,9 +187,9 @@ gateway:
       # tls:
       #   hostname: "api.example.com"
       #   mode: "Terminate"  # or "Passthrough"
-      #   certificateRef:
-      #     name: "my-tls-cert"
-      #     namespace: "default"
+      #   certificateRefs:
+      #     - name: "my-tls-cert"
+      #       namespace: "default"
 
   # @schema
   # type: object

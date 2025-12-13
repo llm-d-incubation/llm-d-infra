@@ -253,24 +253,28 @@
                             "tls": {
                                 "description": "TLS configuration for the Listener. Required when protocol is HTTPS or TLS.",
                                 "properties": {
-                                    "certificateRef": {
-                                        "description": "Reference to a Kubernetes Secret containing the TLS certificate.",
-                                        "properties": {
-                                            "name": {
-                                                "description": "Name of the Secret containing the TLS certificate.",
-                                                "required": [],
-                                                "type": "string"
+                                    "certificateRefs": {
+                                        "description": "References to Kubernetes Secrets containing TLS certificates.",
+                                        "items": {
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Name of the Secret containing the TLS certificate.",
+                                                    "required": [],
+                                                    "type": "string"
+                                                },
+                                                "namespace": {
+                                                    "description": "Namespace of the Secret. If omitted, defaults to the Gateway's namespace.",
+                                                    "required": [],
+                                                    "type": "string"
+                                                }
                                             },
-                                            "namespace": {
-                                                "description": "Namespace of the Secret. If omitted, defaults to the Gateway's namespace.",
-                                                "required": [],
-                                                "type": "string"
-                                            }
+                                            "required": [
+                                                "name"
+                                            ],
+                                            "type": "object"
                                         },
-                                        "required": [
-                                            "name"
-                                        ],
-                                        "type": "object"
+                                        "required": [],
+                                        "type": "array"
                                     },
                                     "hostname": {
                                         "description": "Hostname to match for TLS SNI. Required for TLS termination.",
