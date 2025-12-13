@@ -1,4 +1,4 @@
-{{- $gc := .Values.gateway.gatewayClassName | default "istio" -}}
+{{- $gc := .Values.gateway.gatewayClassName -}}
 {{- if and .Values.gateway.enabled (or (eq $gc "kgateway") (eq $gc "agentgateway")) .Values.gateway.gatewayParameters.enabled }}
 apiVersion: gateway.kgateway.dev/v1alpha1
 kind: GatewayParameters
