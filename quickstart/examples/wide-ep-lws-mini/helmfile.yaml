@@ -1,0 +1,38 @@
+repositories:
+  - name: llm-d-modelservice
+    url: https://llm-d-incubation.github.io/llm-d-modelservice/
+
+releases:
+  - name: infra-wide-ep-mini
+    namespace: llm-d-wide-ep-mini
+    chart: https://llm-d-incubation.github.io/llm-d-infra/
+    version: v1.1.1
+    installed: true
+    values:
+      - infra-wide-ep-mini/values.yaml
+    labels:
+      managedBy: llm-d-infra-installer
+
+  - name: ms-wide-ep-mini
+    namespace: llm-d-wide-ep-mini
+    chart: llm-d-modelservice/llm-d-modelservice
+    version: v0.2.0
+    installed: true
+    needs:
+      - llm-d-wide-ep-mini/infra-wide-ep-mini
+    values:
+      - ms-wide-ep-mini/values.yaml
+    labels:
+      managedBy: helmfile
+
+    hooks:
+    - events: [ "postsync" ]
+      command: bash
+      args:
+        - -c
+        - |
+          echo "Patching HTTPRoute to trigger reconciliation..."
+          kubectl patch httproute ms-wide-ep-mini-llm-d-modelservice \
+            -n llm-d-wide-ep-mini \
+            -p '{"metadata":{"labels":{"inferencepool":"ms-wide-ep-mini"}}}' \
+            --type=merge
