@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - gatewayparameters.yaml
+
+commonLabels:
+  gateway.llm-d.ai/provider: kgateway
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/gatewayClassName
+        value: kgateway
+    target:
+      kind: Gateway
+      name: llm-d-gateway
+
+  - patch: |-
+      - op: add
+        path: /spec/infrastructure
+        value:
+          parametersRef:
+            name: llm-d-gateway
+            group: gateway.kgateway.dev
+            kind: GatewayParameters
+    target:
+      kind: Gateway
+      name: llm-d-gateway

@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - configmap.yaml
+  - telemetry.yaml
+
+commonLabels:
+  gateway.llm-d.ai/provider: istio
+
+patches:
+  - patch: |-
+      - op: add
+        path: /metadata/labels/istio.io~1enable-inference-extproc
+        value: "true"
+    target:
+      kind: Gateway
+      name: llm-d-gateway
+
+  - patch: |-
+      - op: add
+        path: /spec/infrastructure
+        value:
+          parametersRef:
+            name: llm-d-gateway
+            group: ""
+            kind: ConfigMap
+    target:
+      kind: Gateway
+      name: llm-d-gateway

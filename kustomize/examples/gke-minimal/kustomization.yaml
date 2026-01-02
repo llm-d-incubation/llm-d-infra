@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Basic GKE L7 Regional External Managed gateway
+# Use this for: GKE clusters with Gateway API support
+
+resources:
+  - ../../overlays/gke
+
+namespace: llm-d
+
+# Optional: customize for your environment
+# namePrefix: ""
+# commonLabels:
+#   environment: production

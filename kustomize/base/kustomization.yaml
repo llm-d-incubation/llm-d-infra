@@ -1,0 +1,15 @@
+# kustomize/base/kustomization.yaml
+  apiVersion: kustomize.config.k8s.io/v1beta1
+  kind: Kustomization
+
+  namespace: llm-d
+
+  commonLabels:
+    app.kubernetes.io/part-of: llm-d
+    app.kubernetes.io/managed-by: kustomize
+
+  resources:
+    - gateway.yaml
+
+  # Default name prefix(optional, users can override)
+  # namePrefix: ""

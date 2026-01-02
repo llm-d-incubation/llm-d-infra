@@ -1,0 +1,41 @@
+apiVersion: gateway.kgateway.dev/v1alpha1
+kind: GatewayParameters
+metadata:
+  name: llm-d-gateway
+  labels:
+    app.kubernetes.io/component: gateway-parameters
+spec:
+  kube:
+    envoyContainer:
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      bootstrap:
+        componentLogLevels:
+          upstream: warn
+          http: warn
+          connection: warn
+        logLevel: warn
+      resources:
+        limits:
+          cpu: "2"
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+    service:
+      type: ClusterIP
+      extraLabels:
+        gateway: custom
+    podTemplate:
+      extraLabels:
+        gateway: custom
+    sdsContainer:
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        seccompProfile:
+          type: RuntimeDefault

@@ -1,0 +1,38 @@
+# kustomize/overlays/istio/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llm-d-gateway
+  labels:
+    app.kubernetes.io/component: gateway-parameters
+data:
+  # Configure Istio proxy deployment
+  deployment: |
+    spec:
+      template:
+        spec:
+          containers:
+          - name: istio-proxy
+            args:
+              - proxy
+              - router
+              - --domain
+              - $(POD_NAMESPACE).svc.cluster.local
+              - --proxyLogLevel
+              - warn
+              - --proxyComponentLogLevel
+              - misc:warn
+              - --log_output_level
+              - default:warn
+            resources:
+              limits:
+                cpu: "2"
+                memory: 1Gi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+
+  # Configure service type
+  service: |
+    spec:
+      type: ClusterIP
