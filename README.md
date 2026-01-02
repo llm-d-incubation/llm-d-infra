@@ -27,7 +27,7 @@ This repository provides the Kubernetes infrastructure components, Helm charts, 
 - Gateway API v1.4.0+ installed
 - Gateway controller (Istio, Kgateway, AgentGateway or GKE) deployed in your cluster
 
-### Install llm-d Infrastructure
+### Install llm-d Infrastructure with Helm
 
 ```bash
 # Add the Helm repository
@@ -39,6 +39,24 @@ helm install my-llm-d-infra llm-d-infra/llm-d-infra
 ```
 
 For detailed configuration options, see the [Helm chart documentation](charts/llm-d-infra/README.md).
+
+## Installation llm-d Infrastructure with Kustomize
+
+For kustomize-based deployments, see [kustomize/README.md](kustomize/README.md).
+
+### Quick Start
+
+```bash
+# Istio gateway
+kubectl apply -k https://github.com/llm-d-incubation/llm-d-infra//kustomize/overlays/istio
+
+# Kgateway
+kubectl apply -k https://github.com/llm-d-incubation/llm-d-infra//kustomize/overlays/kgateway
+
+# GKE
+kubectl apply -k https://github.com/llm-d-incubation/llm-d-infra//kustomize/overlays/gke
+
+See kustomize/ for examples and customization guide.
 
 ## Documentation and Guides
 

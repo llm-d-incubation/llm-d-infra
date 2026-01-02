@@ -1,0 +1,26 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: llm-d-gateway
+spec:
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+    # HTTPS listener with TLS termination
+    - name: https
+      port: 443
+      protocol: HTTPS
+      hostname: llm-d.example.com
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        # TLS certificate secret should exist in the same namespace as the Gateway
+          - name: llm-d-tls-cert
+            kind: Secret

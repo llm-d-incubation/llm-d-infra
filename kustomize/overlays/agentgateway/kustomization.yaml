@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+commonLabels:
+  gateway.llm-d.ai/provider: agentgateway
+
+patches:
+  # Update gateway class to agentgateway-v2
+  # AgentGateway manages its own infrastructure, no GatewayParameters needed
+  - patch: |-
+      - op: replace
+        path: /spec/gatewayClassName
+        value: agentgateway-v2
+    target:
+      kind: Gateway
+      name: llm-d-gateway

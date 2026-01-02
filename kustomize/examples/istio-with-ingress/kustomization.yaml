@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Production Istio gateway with external Ingress
+# Use this for: Production, external access required
+
+resources:
+  - ../../overlays/istio
+
+components:
+  - ../../components/ingress
+
+# Production namespace
+namespace: llm-d-prod
+
+# Production name prefix
+namePrefix: prod-
+
+# Production labels
+commonLabels:
+  environment: production
+  # team: ml-platform
+
+
+
+patches:
+  # Strategic merge patch to replace ConfigMap data
+  - path: configmap-production.yaml
+    target:
+      kind: ConfigMap
+      name: llm-d-gateway
+  # Customize Ingress hostname and ingress class name
+  - patch: |-
+      - op: replace
+        path: /spec/ingressClassName
+        value: nginx
+      - op: add
+        path: /spec/rules/0/host
+        # replace with your own hostname
+        value: llm-d.example.com
+    target:
+      kind: Ingress

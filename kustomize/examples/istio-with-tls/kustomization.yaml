@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Production Istio gateway with TLS/HTTPS support
+# Use this for: Production with HTTPS termination at gateway
+
+resources:
+  - ../../overlays/istio
+
+components:
+  - ../../components/tls
+
+namespace: llm-d-prod
+namePrefix: prod-
+
+commonLabels:
+  environment: production
+  # team: ml-platform
+
+patches:
+  # Update TLS hostname to match your domain
+  - patch: |-
+      - op: replace
+        path: /spec/listeners/1/hostname
+        value: api.example.com
+      - op: replace
+        path: /spec/listeners/1/tls/certificateRefs/0/name
+        value: llm-d-tls-cert
+    target:
+      kind: Gateway
+      name: llm-d-gateway
