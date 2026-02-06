@@ -65,7 +65,7 @@ spec:
       name: {{ include "gateway.fullname" . }}
       group: gateway.kgateway.dev
       kind: GatewayParameters
-  {{- else if and (eq .Values.gateway.gatewayClassName "istio") .Values.gateway.gatewayParameters.enabled }}
+  {{- else if and (or (eq .Values.gateway.gatewayClassName "istio") (eq .Values.gateway.gatewayClassName "data-science-gateway-class")) .Values.gateway.gatewayParameters.enabled }}
   infrastructure:
     parametersRef:
       name: {{ include "gateway.fullname" . }}

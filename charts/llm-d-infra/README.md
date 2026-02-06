@@ -1,7 +1,7 @@
 
 # llm-d-infra Helm Chart
 
-![Version: v1.3.6](https://img.shields.io/badge/Version-v1.3.6-informational?style=flat-square)
+![Version: v1.3.7](https://img.shields.io/badge/Version-v1.3.7-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
@@ -110,11 +110,18 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.destinationRule | see: https://istio.io/latest/docs/reference/config/networking/destination-rule/ | object | `{"enabled":false,"exportTo":[],"host":"localhost","subsets":[],"trafficPolicy":{},"workloadSelector":{}}` |
 | gateway.enabled | Deploy resources related to Gateway | bool | `true` |
 | gateway.fullnameOverride | String to fully override gateway.fullname | string | `""` |
-| gateway.gatewayClassName | Gateway class that determines the backend used Currently supported values: "kgateway" or "agentgateway-v2" for kgateway, "istio", or "gke-l7-regional-external-managed" | string | `"istio"` |
+| gateway.gatewayClassName | Gateway class that determines the backend used Currently supported values: "kgateway" or "agentgateway-v2" for kgateway, "istio", "data-science-gateway-class", or "gke-l7-regional-external-managed" | string | `"istio"` |
 | gateway.gatewayParameters.resources | Resource requests/limits <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container | object | `{"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"100m","memory":"128Mi"}}` |
 | gateway.labels | Additional labels provided to the Gateway resource | object | `{}` |
 | gateway.listeners | Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled | list | `[{"allowedRoutes":{"namespaces":{"from":"All"}},"name":"default","port":80,"protocol":"HTTP"}]` |
 | gateway.nameOverride | String to partially override gateway.fullname | string | `""` |
+| gateway.tls | TLS configuration for gateway | object | See below |
+| gateway.tls.referenceGrant | ReferenceGrant configuration for cross-namespace TLS certificate access | object | See below |
+| gateway.tls.referenceGrant.enabled | Enable ReferenceGrant creation (disabled by default) | bool | `false` |
+| gateway.tls.referenceGrant.name | Name of the ReferenceGrant resource (defaults to gateway name with -tls suffix) | string | `""` |
+| gateway.tls.referenceGrant.secretName | Name of the TLS secret to grant access to | string | `"data-science-gateway-service-tls"` |
+| gateway.tls.referenceGrant.secretNamespace | Namespace where the TLS secret resides | string | `"openshift-ingress"` |
+| gateway.tls.servingCertSecretName | Name of the secret for serving certificates (used by data-science-gateway-class) | string | `"data-science-gateway-service-tls"` |
 | ingress | Ingress configuration | object | See below |
 | ingress.annotations | Additional annotations for the Ingress resource | object | `{}` |
 | ingress.enabled | Deploy Ingress (service type must also be ClusterIP) | bool | `false` |

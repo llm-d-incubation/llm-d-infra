@@ -119,7 +119,7 @@
         },
         "gatewayClassName": {
           "default": "istio",
-          "description": "Gateway class that determines the backend used Currently supported values: \"kgateway\" or \"agentgateway-v2\" for kgateway, \"istio\", or \"gke-l7-regional-external-managed\"",
+          "description": "Gateway class that determines the backend used Currently supported values: \"kgateway\" or \"agentgateway-v2\" for kgateway, \"istio\", \"data-science-gateway-class\", or \"gke-l7-regional-external-managed\"",
           "required": [],
           "title": "gatewayClassName"
         },
@@ -333,6 +333,54 @@
           ],
           "title": "service",
           "type": "object"
+        },
+        "tls": {
+          "additionalProperties": false,
+          "default": "See below",
+          "description": "TLS configuration for gateway",
+          "properties": {
+            "referenceGrant": {
+              "additionalProperties": false,
+              "default": "See below",
+              "description": "ReferenceGrant configuration for cross-namespace TLS certificate access",
+              "properties": {
+                "enabled": {
+                  "default": "false",
+                  "description": "Enable ReferenceGrant creation (disabled by default)",
+                  "required": [],
+                  "title": "enabled"
+                },
+                "name": {
+                  "default": "",
+                  "description": "Name of the ReferenceGrant resource (defaults to gateway name with -tls suffix)",
+                  "required": [],
+                  "title": "name"
+                },
+                "secretName": {
+                  "default": "data-science-gateway-service-tls",
+                  "description": "Name of the TLS secret to grant access to",
+                  "required": [],
+                  "title": "secretName"
+                },
+                "secretNamespace": {
+                  "default": "openshift-ingress",
+                  "description": "Namespace where the TLS secret resides",
+                  "required": [],
+                  "title": "secretNamespace"
+                }
+              },
+              "required": [],
+              "title": "referenceGrant"
+            },
+            "servingCertSecretName": {
+              "default": "data-science-gateway-service-tls",
+              "description": "Name of the secret for serving certificates (used by data-science-gateway-class)",
+              "required": [],
+              "title": "servingCertSecretName"
+            }
+          },
+          "required": [],
+          "title": "tls"
         }
       },
       "required": [],

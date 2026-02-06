@@ -1,0 +1,27 @@
+{{- if and .Values.gateway.enabled .Values.gateway.tls.referenceGrant.enabled }}
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: {{ .Values.gateway.tls.referenceGrant.name | default (printf "%s-tls" (include "gateway.fullname" .)) }}
+  namespace: {{ .Values.gateway.tls.referenceGrant.secretNamespace | default "openshift-ingress" }}
+  labels:
+    {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/gateway: {{ include "gateway.fullname" . }}
+    app.kubernetes.io/component: inference-gateway
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+    {{- end }}
+spec:
+  from:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    namespace: {{ .Release.Namespace }}
+  to:
+  - group: ""
+    kind: Secret
+    name: {{ .Values.gateway.tls.referenceGrant.secretName | default "data-science-gateway-service-tls" }}
+{{- end }}

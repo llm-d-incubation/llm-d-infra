@@ -1,4 +1,4 @@
-{{ if and .Values.gateway.enabled (eq .Values.gateway.gatewayClassName "istio") .Values.gateway.gatewayParameters.enabled }}
+{{ if and .Values.gateway.enabled (or (eq .Values.gateway.gatewayClassName "istio") (eq .Values.gateway.gatewayClassName "data-science-gateway-class")) .Values.gateway.gatewayParameters.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -17,6 +17,7 @@ metadata:
     {{- include "common.tplvalues.render" ( dict "value" .Values.gateway.annotations "context" $) | nindent 4 }}
     {{- end }}
 data:
+  {{- if eq .Values.gateway.gatewayClassName "istio" }}
   deployment: |
     spec:
       template:
@@ -37,7 +38,13 @@ data:
             {{- if .Values.gateway.gatewayParameters.resources }}
             resources: {{ .Values.gateway.gatewayParameters.resources | toYaml | nindent 14 }}
             {{- end}}
+  {{- end }}
   service: |
+    {{- if eq .Values.gateway.gatewayClassName "data-science-gateway-class" }}
+    metadata:
+      annotations:
+        service.beta.openshift.io/serving-cert-secret-name: {{ .Values.gateway.tls.servingCertSecretName | default "data-science-gateway-service-tls" | quote }}
+    {{- end }}
     spec:
       type: {{ .Values.gateway.service.type | quote }}
       {{- if .Values.gateway.service.ports }}
