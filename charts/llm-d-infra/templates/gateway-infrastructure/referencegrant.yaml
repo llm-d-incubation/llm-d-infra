@@ -1,9 +1,25 @@
 {{- if and .Values.gateway.enabled .Values.gateway.tls.referenceGrant.enabled }}
+{{- $secretName := .Values.gateway.tls.referenceGrant.secretName | default .Values.gateway.tls.servingCertSecretName }}
+{{- $secretNamespace := .Values.gateway.tls.referenceGrant.secretNamespace }}
+{{- range $listener := .Values.gateway.listeners }}
+  {{- if and $listener.tls $listener.tls.certificateRefs }}
+    {{- range $certRef := $listener.tls.certificateRefs }}
+      {{- if not $secretName }}
+        {{- $secretName = $certRef.name }}
+      {{- end }}
+      {{- if and (not $secretNamespace) $certRef.namespace }}
+        {{- $secretNamespace = $certRef.namespace }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- $secretName = $secretName | default "data-science-gateway-service-tls" }}
+{{- $secretNamespace = $secretNamespace | default "openshift-ingress" }}
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
 metadata:
   name: {{ .Values.gateway.tls.referenceGrant.name | default (printf "%s-tls" (include "gateway.fullname" .)) }}
-  namespace: {{ .Values.gateway.tls.referenceGrant.secretNamespace | default "openshift-ingress" }}
+  namespace: {{ $secretNamespace }}
   labels:
     {{- include "common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/gateway: {{ include "gateway.fullname" . }}
@@ -23,5 +39,8 @@ spec:
   to:
   - group: ""
     kind: Secret
-    name: {{ .Values.gateway.tls.referenceGrant.secretName | default "data-science-gateway-service-tls" }}
+    name: {{ $secretName }}
+  {{- if $secretNamespace }}
+    namespace: {{ $secretNamespace }}
+  {{- end }}
 {{- end }}

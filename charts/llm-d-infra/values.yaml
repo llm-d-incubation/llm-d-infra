@@ -270,10 +270,10 @@ gateway:
       name: ""
 
       # -- Namespace where the TLS secret resides
-      secretNamespace: openshift-ingress
+      secretNamespace: ""
 
       # -- Name of the TLS secret to grant access to
-      secretName: data-science-gateway-service-tls
+      secretName: ""
 
 # -- Ingress configuration
 # @default -- See below

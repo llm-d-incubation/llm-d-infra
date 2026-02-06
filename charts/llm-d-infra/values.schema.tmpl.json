@@ -357,13 +357,13 @@
                   "title": "name"
                 },
                 "secretName": {
-                  "default": "data-science-gateway-service-tls",
+                  "default": "",
                   "description": "Name of the TLS secret to grant access to",
                   "required": [],
                   "title": "secretName"
                 },
                 "secretNamespace": {
-                  "default": "openshift-ingress",
+                  "default": "",
                   "description": "Namespace where the TLS secret resides",
                   "required": [],
                   "title": "secretNamespace"

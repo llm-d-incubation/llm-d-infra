@@ -119,8 +119,8 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.tls.referenceGrant | ReferenceGrant configuration for cross-namespace TLS certificate access | object | See below |
 | gateway.tls.referenceGrant.enabled | Enable ReferenceGrant creation (disabled by default) | bool | `false` |
 | gateway.tls.referenceGrant.name | Name of the ReferenceGrant resource (defaults to gateway name with -tls suffix) | string | `""` |
-| gateway.tls.referenceGrant.secretName | Name of the TLS secret to grant access to | string | `"data-science-gateway-service-tls"` |
-| gateway.tls.referenceGrant.secretNamespace | Namespace where the TLS secret resides | string | `"openshift-ingress"` |
+| gateway.tls.referenceGrant.secretName | Name of the TLS secret to grant access to | string | `""` |
+| gateway.tls.referenceGrant.secretNamespace | Namespace where the TLS secret resides | string | `""` |
 | gateway.tls.servingCertSecretName | Name of the secret for serving certificates (used by data-science-gateway-class) | string | `"data-science-gateway-service-tls"` |
 | ingress | Ingress configuration | object | See below |
 | ingress.annotations | Additional annotations for the Ingress resource | object | `{}` |
