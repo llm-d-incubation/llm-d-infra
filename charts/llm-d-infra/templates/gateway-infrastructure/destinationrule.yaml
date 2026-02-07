@@ -1,4 +1,4 @@
-{{ if and .Values.gateway.enabled (eq .Values.gateway.gatewayClassName "istio") .Values.gateway.destinationRule.enabled }}
+{{ if and .Values.gateway.enabled (or (eq .Values.gateway.gatewayClassName "istio") (eq .Values.gateway.gatewayClassName "data-science-gateway-class")) .Values.gateway.destinationRule.enabled }}
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
