@@ -86,6 +86,9 @@ gateway:
     # @schema
     logLevel: warn
 
+    # @schema
+    # type: boolean
+    # @schema
     # -- Enable floating user ID for OpenShift compatibility
     # When true, allows OpenShift to assign user IDs from its allowed range instead of using a hardcoded user ID
     floatingUserId: false
