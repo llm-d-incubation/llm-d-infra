@@ -19,6 +19,9 @@ metadata:
     {{- end }}
 spec:
   kube:
+    {{- if .Values.gateway.gatewayParameters.floatingUserId }}
+    floatingUserId: {{ .Values.gateway.gatewayParameters.floatingUserId }}
+    {{- end }}
     envoyContainer:
       securityContext:
         allowPrivilegeEscalation: false
