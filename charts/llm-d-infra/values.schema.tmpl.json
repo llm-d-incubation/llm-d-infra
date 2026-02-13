@@ -140,6 +140,12 @@
               "title": "enabled",
               "type": "boolean"
             },
+            "floatingUserId": {
+              "default": "false",
+              "description": "Enable floating user ID for OpenShift compatibility When true, allows OpenShift to assign user IDs from its allowed range instead of using a hardcoded user ID",
+              "required": [],
+              "title": "floatingUserId"
+            },
             "logLevel": {
               "default": "warn",
               "description": " default: warn enum: [error,warn,info,debug] @schema",

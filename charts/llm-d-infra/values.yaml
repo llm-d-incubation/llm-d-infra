@@ -86,6 +86,10 @@ gateway:
     # @schema
     logLevel: warn
 
+    # -- Enable floating user ID for OpenShift compatibility
+    # When true, allows OpenShift to assign user IDs from its allowed range instead of using a hardcoded user ID
+    floatingUserId: false
+
     # @schema
     # $ref: https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master/_definitions.json#/definitions/io.k8s.api.core.v1.ResourceRequirements
     # @schema
