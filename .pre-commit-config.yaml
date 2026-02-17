@@ -27,6 +27,7 @@ repos:
     rev: v1.6.0
     hooks:
       - id: zizmor
+        exclude: \.lock\.yml$
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -43,12 +44,12 @@ repos:
     hooks:
       - id: vale
         files: \.(md(\.gotmpl)?|txt|rst)$
-        exclude: charts/llm-d-infra/README.md
+        exclude: (charts/llm-d-infra/README.md)|(^\.github/workflows/.*\.md$)
   - repo: https://github.com/crate-ci/typos
     rev: v1.32.0
     hooks:
       - id: typos
-        exclude: (^.vale/)|(values.schema.json$)
+        exclude: (^.vale/)|(values.schema.json$)|(^\.github/workflows/.*\.md$)
   - repo: https://github.com/gruntwork-io/pre-commit
     rev: v0.1.29
     hooks:
@@ -57,7 +58,7 @@ repos:
     rev: v0.17.2
     hooks:
       - id: markdownlint-cli2
-        exclude: (charts/llm-d-infra/README.md)|(^.vale/)
+        exclude: (charts/llm-d-infra/README.md)|(^.vale/)|(^\.github/workflows/.*\.md$)
   - repo: local
     hooks:
       - id: jsonschema-dereference
