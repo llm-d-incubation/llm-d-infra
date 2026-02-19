@@ -1,0 +1,9 @@
+name: Prow Remove LGTM
+on: pull_request
+
+permissions:
+  pull-requests: write
+
+jobs:
+  remove-lgtm:
+    uses: llm-d/llm-d-infra/.github/workflows/reusable-prow-remove-lgtm.yml@main
