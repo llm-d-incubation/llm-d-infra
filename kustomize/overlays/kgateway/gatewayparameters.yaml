@@ -21,11 +21,11 @@ spec:
         logLevel: warn
       resources:
         limits:
-          cpu: "2"
-          memory: 1Gi
+          cpu: 16
+          memory: 16Gi
         requests:
-          cpu: 100m
-          memory: 128Mi
+          cpu: 4m
+          memory: 4Gi
     service:
       type: ClusterIP
       extraLabels:

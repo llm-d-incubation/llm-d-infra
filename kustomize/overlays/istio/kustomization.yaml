@@ -4,7 +4,7 @@ kind: Kustomization
 resources:
   - ../../base
   - configmap.yaml
-  - telemetry.yaml
+ # - telemetry.yaml # Telemetry disabled by default, uncomment to add for debugging purposes
 
 commonLabels:
   gateway.llm-d.ai/provider: istio
