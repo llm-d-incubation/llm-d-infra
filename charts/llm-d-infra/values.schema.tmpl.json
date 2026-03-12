@@ -49,6 +49,68 @@
       "default": "See below",
       "description": "Gateway configuration",
       "properties": {
+        "agentgateway": {
+          "additionalProperties": false,
+          "description": "Shared AgentgatewayParameters for standalone \"agentgateway\" and the deprecated \"kgateway\" compatibility mode.",
+          "properties": {
+            "env": {
+              "description": "Additional environment variables for the agentgateway proxy",
+              "items": {
+                "additionalProperties": true,
+                "required": [],
+                "type": "object"
+              },
+              "required": [],
+              "title": "env",
+              "type": "array"
+            },
+            "istio": {
+              "additionalProperties": false,
+              "description": "Optional Istio integration settings for the agentgateway proxy",
+              "properties": {
+                "caAddress": {
+                  "required": [],
+                  "type": "string"
+                },
+                "trustDomain": {
+                  "required": [],
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "istio",
+              "type": "object"
+            },
+            "rawConfig": {
+              "additionalProperties": true,
+              "description": "Raw agentgateway config merged into the generated configuration",
+              "required": [],
+              "title": "rawConfig",
+              "type": "object"
+            },
+            "shutdown": {
+              "additionalProperties": false,
+              "description": "Optional shutdown behavior for the agentgateway proxy",
+              "properties": {
+                "max": {
+                  "minimum": 0,
+                  "required": [],
+                  "type": "integer"
+                },
+                "min": {
+                  "minimum": 0,
+                  "required": [],
+                  "type": "integer"
+                }
+              },
+              "required": [],
+              "title": "shutdown",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "agentgateway"
+        },
         "annotations": {
           "additionalProperties": true,
           "description": "Additional annotations provided to the Gateway resource",
@@ -118,14 +180,14 @@
           "title": "fullnameOverride"
         },
         "gatewayClassName": {
-          "default": "istio",
-          "description": "Gateway class that determines the backend used Currently supported values: \"kgateway\" or \"agentgateway-v2\" for kgateway, \"istio\", \"data-science-gateway-class\", or \"gke-l7-regional-external-managed\"",
+          "default": "",
+          "description": "Deprecated: \"kgateway\" and \"agentgateway-v2\" are compatibility aliases and are rendered as \"agentgateway\".",
           "required": [],
           "title": "gatewayClassName"
         },
         "gatewayParameters": {
           "additionalProperties": false,
-          "description": "Special parameters applied to Kgateway via GatewayParameters resource",
+          "description": "Shared parameters applied to provider-specific infrastructure resources",
           "properties": {
             "accessLogging": {
               "default": true,
@@ -138,13 +200,6 @@
               "default": true,
               "required": [],
               "title": "enabled",
-              "type": "boolean"
-            },
-            "floatingUserId": {
-              "default": false,
-              "description": "Enable floating user ID for OpenShift compatibility When true, allows OpenShift to assign user IDs from its allowed range instead of using a hardcoded user ID",
-              "required": [],
-              "title": "floatingUserId",
               "type": "boolean"
             },
             "logLevel": {
@@ -287,9 +342,23 @@
           "required": [],
           "title": "nameOverride"
         },
+        "provider": {
+          "default": "istio",
+          "description": "Deprecated: \"kgateway\" selects the deprecated kgateway compatibility mode and install path and will be removed in the next llm-d release.",
+          "enum": [
+            "",
+            "istio",
+            "kgateway",
+            "agentgateway",
+            "data-science-gateway-class",
+            "gke-l7-regional-external-managed"
+          ],
+          "required": [],
+          "title": "provider"
+        },
         "service": {
           "additionalProperties": false,
-          "description": " type: object additionalProperties: false required: [type] properties:   type:     type: string     description: \u003e       Gateway's service type. Ingress is only available if the service type       is set to LoadBalancer. Accepted values: [\"LoadBalancer\",\"ClusterIP\",\"NodePort\"].     enum: [LoadBalancer, ClusterIP, NodePort]     default: ClusterIP   ports:     type: array     description: \u003e       Optional. List of service ports. If provided, each item must include \"port\".     items:       type: object       additionalProperties: true       required: [port]       properties:         port:           description: \u003e             Port is the network port. Multiple listeners may use the same port             (subject to compatibility rules).           type: integer           minimum: 1           maximum: 65535         nodePort:           type: integer           minimum: 30000           maximum: 32767   loadBalancerClass:     type: string     description: \u003e       Optional. LoadBalancerClass is the class of the load balancer to use.       Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class @schema",
+          "description": " type: object additionalProperties: false properties:   type:     type: string     description: \u003e       Gateway's service type. Leave empty to default to LoadBalancer when       gateway.provider resolves to \"agentgateway\" or \"kgateway\", and ClusterIP       otherwise. Ingress is only available if the effective service type is       ClusterIP. Accepted values: [\"\", \"LoadBalancer\",\"ClusterIP\",\"NodePort\"].     enum: [\"\", LoadBalancer, ClusterIP, NodePort]     default: \"\"   ports:     type: array     description: \u003e       Optional. List of service ports. If provided, each item must include \"port\".     items:       type: object       additionalProperties: true       required: [port]       properties:         port:           description: \u003e             Port is the network port. Multiple listeners may use the same port             (subject to compatibility rules).           type: integer           minimum: 1           maximum: 65535         nodePort:           type: integer           minimum: 30000           maximum: 32767   loadBalancerClass:     type: string     description: \u003e       Optional. LoadBalancerClass is the class of the load balancer to use.       Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class @schema",
           "properties": {
             "loadBalancerClass": {
               "description": "Optional. LoadBalancerClass is the class of the load balancer to use. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class",
@@ -324,9 +393,10 @@
               "type": "array"
             },
             "type": {
-              "default": "ClusterIP",
-              "description": "Gateway's service type. Ingress is only available if the service type is set to LoadBalancer. Accepted values: [\"LoadBalancer\",\"ClusterIP\",\"NodePort\"].\n",
+              "default": "",
+              "description": "Gateway's service type. Leave empty to default to LoadBalancer when gateway.provider resolves to \"agentgateway\" or \"kgateway\", and ClusterIP otherwise. Ingress is only available if the effective service type is ClusterIP. Accepted values: [\"\", \"LoadBalancer\",\"ClusterIP\",\"NodePort\"].\n",
               "enum": [
+                "",
                 "LoadBalancer",
                 "ClusterIP",
                 "NodePort"
@@ -335,9 +405,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "type"
-          ],
+          "required": [],
           "title": "service",
           "type": "object"
         },
@@ -412,7 +480,7 @@
         },
         "enabled": {
           "default": "false",
-          "description": "Deploy Ingress (service type must also be ClusterIP)",
+          "description": "Deploy Ingress (effective gateway service type must be ClusterIP)",
           "required": [],
           "title": "enabled"
         },
@@ -435,7 +503,7 @@
         },
         "host": {
           "default": "",
-          "description": "Hostname to be used to expose the ClusterIP service to the inferencing gateway",
+          "description": "Hostname used to expose the gateway when the effective service type is ClusterIP",
           "required": [],
           "title": "host"
         },

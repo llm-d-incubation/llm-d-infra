@@ -57,9 +57,20 @@ gateway:
   # -- String to partially override gateway.fullname
   nameOverride: ""
 
+  # @schema
+  # default: istio
+  # enum: ["",istio,kgateway,agentgateway,data-science-gateway-class,gke-l7-regional-external-managed]
+  # @schema
+  # -- Gateway implementation used by this chart to render provider-specific infrastructure.
+  # -- Defaults to "istio". Set to empty to infer the implementation from gateway.gatewayClassName for backward compatibility.
+  # -- Deprecated: "kgateway" selects the deprecated kgateway compatibility mode and install path and will be removed in the next llm-d release.
+  provider: istio
+
   # -- Gateway class that determines the backend used
-  # Currently supported values: "kgateway" or "agentgateway-v2" for kgateway, "istio", "data-science-gateway-class", or "gke-l7-regional-external-managed"
-  gatewayClassName: istio
+  # -- Leave empty to use the default class name for the selected provider.
+  # -- With the default provider, this renders as "istio". With "kgateway" or "agentgateway", this renders as "agentgateway".
+  # -- Deprecated: "kgateway" and "agentgateway-v2" are compatibility aliases and are rendered as "agentgateway".
+  gatewayClassName: ""
 
   # @schema
   # additionalProperties: true
@@ -73,7 +84,7 @@ gateway:
   # -- Additional annotations provided to the Gateway resource
   annotations: {}
 
-  # Special parameters applied to Kgateway via GatewayParameters resource
+  # Shared parameters applied to provider-specific infrastructure resources
   gatewayParameters:
     enabled: true
 
@@ -87,16 +98,9 @@ gateway:
     logLevel: warn
 
     # @schema
-    # type: boolean
-    # @schema
-    # -- Enable floating user ID for OpenShift compatibility
-    # When true, allows OpenShift to assign user IDs from its allowed range instead of using a hardcoded user ID
-    floatingUserId: false
-
-    # @schema
     # $ref: https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master/_definitions.json#/definitions/io.k8s.api.core.v1.ResourceRequirements
     # @schema
-    # -- Modify resource limits/requests available to the envoy gateway container pod
+    # -- Modify resource limits/requests available to the provider-managed data plane pod
     # -- Resource requests/limits
     # <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container
     resources:
@@ -106,6 +110,54 @@ gateway:
       requests:
         cpu: 100m
         memory: 128Mi
+
+  # @schema
+  # additionalProperties: false
+  # @schema
+  # -- Agentgateway-specific parameters rendered into AgentgatewayParameters when gateway.provider resolves to "kgateway" or "agentgateway"
+  # -- Shared AgentgatewayParameters for standalone "agentgateway" and the deprecated "kgateway" compatibility mode.
+  agentgateway:
+    # @schema
+    # type: array
+    # items:
+    #   type: object
+    #   additionalProperties: true
+    # @schema
+    # -- Additional environment variables for the agentgateway proxy
+    env: []
+
+    # @schema
+    # type: object
+    # additionalProperties: true
+    # @schema
+    # -- Raw agentgateway config merged into the generated configuration
+    rawConfig: {}
+
+    # @schema
+    # type: object
+    # additionalProperties: false
+    # properties:
+    #   min:
+    #     type: integer
+    #     minimum: 0
+    #   max:
+    #     type: integer
+    #     minimum: 0
+    # @schema
+    # -- Optional shutdown behavior for the agentgateway proxy
+    shutdown: {}
+
+    # @schema
+    # type: object
+    # additionalProperties: false
+    # properties:
+    #   caAddress:
+    #     type: string
+    #   trustDomain:
+    #     type: string
+    # @schema
+    # -- Optional Istio integration settings for the agentgateway proxy
+    istio: {}
 
   # @schema
   # additionalProperties: true
@@ -220,15 +272,16 @@ gateway:
   # @schema
   # type: object
   # additionalProperties: false
-  # required: [type]
   # properties:
   #   type:
   #     type: string
   #     description: >
-  #       Gateway's service type. Ingress is only available if the service type
-  #       is set to LoadBalancer. Accepted values: ["LoadBalancer","ClusterIP","NodePort"].
-  #     enum: [LoadBalancer, ClusterIP, NodePort]
-  #     default: ClusterIP
+  #       Gateway's service type. Leave empty to default to LoadBalancer when
+  #       gateway.provider resolves to "agentgateway" or "kgateway", and ClusterIP
+  #       otherwise. Ingress is only available if the effective service type is
+  #       ClusterIP. Accepted values: ["", "LoadBalancer","ClusterIP","NodePort"].
+  #     enum: ["", LoadBalancer, ClusterIP, NodePort]
+  #     default: ""
   #   ports:
   #     type: array
   #     description: >
@@ -256,7 +309,7 @@ gateway:
   #       Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class
   # @schema
   service:
-    type: ClusterIP
+    type: ""
     # ports:
     #   - port: 80
     # loadBalancerClass: "metallb"
@@ -285,7 +338,7 @@ gateway:
 # -- Ingress configuration
 # @default -- See below
 ingress:
-  # -- Deploy Ingress (service type must also be ClusterIP)
+  # -- Deploy Ingress (effective gateway service type must be ClusterIP)
   enabled: false
 
   # -- Name of the IngressClass cluster resource which defines which controller will implement the resource (e.g nginx)
@@ -297,7 +350,7 @@ ingress:
   # -- Additional annotations for the Ingress resource
   annotations: {}
 
-  # -- Hostname to be used to expose the ClusterIP service to the inferencing gateway
+  # -- Hostname used to expose the gateway when the effective service type is ClusterIP
   host: ""
 
   # -- List of additional hostnames to be covered with this ingress record (e.g. a CNAME)

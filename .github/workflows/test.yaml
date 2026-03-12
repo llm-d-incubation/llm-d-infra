@@ -26,6 +26,11 @@ jobs:
     # Aligning job name with the OpenShift CI config: https://github.com/openshift/release/blob/master/core-services/prow/02_config/redhat-developer/rhdh-chart/_prowconfig.yaml#L18
     name: Test Latest Release
     runs-on: ubuntu-latest
+    # TODO: Switch this job to a provider matrix once the upstream prerequisite
+    # helmfiles are ready for agentgateway and other CI-supported providers:
+    # https://github.com/llm-d/llm-d/issues/399
+    env:
+      GATEWAY_PROVIDER: istio
     steps:
       - name: Checkout PR HEAD (handles forks)
         if: github.event_name == 'pull_request'
@@ -47,14 +52,14 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # renovate: tag=v3.5
         with:
-          version: v3.10.0
+          version: v3.18.6
 
       - uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         with:
           python-version: 3.13
 
       - name: Set up chart-testing
-        uses: helm/chart-testing-action@0d28d3144d3a25ea2cc349d6e59901c4ff469b3b # v2.7.0
+        uses: helm/chart-testing-action@6ec842c01de15ebb84c8627d2744a0c2f2755c9f # v2.8.0
 
       - name: Run chart-testing (list-changed)
         id: list-changed
@@ -75,9 +80,11 @@ jobs:
 
       - name: Create KIND Cluster
         if: steps.list-changed.outputs.changed == 'true'
-        uses: helm/kind-action@a1b0e391336a6ee6713a0583f8c6240d70863de3 # v1.12.0
+        uses: helm/kind-action@f5f117a566cacf2b7e54d9ddbfa40584fdf3b127 # v1.14.0
         with:
           config: helpers/kind-testing/kind-config.yaml
+          version: v0.31.0
+          kubectl_version: v1.35.0
 
       - name: Create custom storage class
         if: steps.list-changed.outputs.changed == 'true'
@@ -127,8 +134,8 @@ jobs:
           cd "${dir}"
           curl -LsSf https://raw.githubusercontent.com/llm-d/llm-d/refs/heads/main/guides/prereq/client-setup/install-deps.sh | /bin/bash
           curl -LsSf https://raw.githubusercontent.com/llm-d/llm-d/refs/heads/main/guides/prereq/gateway-provider/install-gateway-provider-dependencies.sh | /bin/bash
-          curl -sLO https://raw.githubusercontent.com/llm-d/llm-d/refs/heads/main/guides/prereq/gateway-provider/istio.helmfile.yaml
-          helmfile apply -f istio.helmfile.yaml
+          curl -sLO https://raw.githubusercontent.com/llm-d/llm-d/refs/heads/main/guides/prereq/gateway-provider/${GATEWAY_PROVIDER}.helmfile.yaml
+          helmfile apply -f "${GATEWAY_PROVIDER}.helmfile.yaml"
           cd -
           rm -rf "${dir}"
 
@@ -140,4 +147,5 @@ jobs:
           ct install \
             --debug \
             --config ct-install.yaml \
-            --target-branch "$TARGET_BRANCH"
+            --target-branch "$TARGET_BRANCH" \
+            --helm-extra-set-args "--set gateway.provider=${GATEWAY_PROVIDER}"

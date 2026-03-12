@@ -1,4 +1,6 @@
-{{- $gc := .Values.gateway.gatewayClassName -}}
+{{- $provider := include "gateway.provider" . -}}
+{{- $gc := include "gateway.className" . -}}
+{{- $useAgentgatewayParameters := eq (include "gateway.usesAgentgatewayParameters" .) "true" -}}
 {{- if .Values.gateway.enabled }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -14,7 +16,7 @@ metadata:
     {{- if .Values.gateway.labels }}
     {{- include "common.tplvalues.render" ( dict "value" .Values.gateway.labels "context" .) | nindent 4 }}
     {{- end }}
-    {{- if eq $gc "istio" }}
+    {{- if eq $provider "istio" }}
     istio.io/enable-inference-extproc: "true"
     {{- end }}
   annotations:
@@ -25,7 +27,7 @@ metadata:
     {{- include "common.tplvalues.render" ( dict "value" .Values.gateway.annotations "context" .) | nindent 4 }}
     {{- end }}
 spec:
-  gatewayClassName: {{ .Values.gateway.gatewayClassName | quote }}
+  gatewayClassName: {{ $gc | quote }}
   {{- $listeners := required "gateway.listeners must have at least 1 item" .Values.gateway.listeners }}
   listeners:
   {{- range $i, $l := $listeners }}
@@ -59,13 +61,13 @@ spec:
         {{- end }}
       {{- end }}
   {{- end}}
-  {{- if and (eq .Values.gateway.gatewayClassName "kgateway") .Values.gateway.gatewayParameters.enabled }}
+  {{- if and $useAgentgatewayParameters .Values.gateway.gatewayParameters.enabled }}
   infrastructure:
     parametersRef:
       name: {{ include "gateway.fullname" . }}
-      group: gateway.kgateway.dev
-      kind: GatewayParameters
-  {{- else if and (or (eq .Values.gateway.gatewayClassName "istio") (eq .Values.gateway.gatewayClassName "data-science-gateway-class")) .Values.gateway.gatewayParameters.enabled }}
+      group: agentgateway.dev
+      kind: AgentgatewayParameters
+  {{- else if and (or (eq $provider "istio") (eq $provider "data-science-gateway-class")) .Values.gateway.gatewayParameters.enabled }}
   infrastructure:
     parametersRef:
       name: {{ include "gateway.fullname" . }}
