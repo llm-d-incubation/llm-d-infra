@@ -1,0 +1,20 @@
+# kustomize/base/gateway.yaml
+  apiVersion: gateway.networking.k8s.io/v1
+  kind: Gateway
+  metadata:
+    name: llm-d-gateway
+    labels:
+      app.kubernetes.io/name: llm-d-infra
+      app.kubernetes.io/component: inference-gateway
+  spec:
+    # Default to istio
+    gatewayClassName: istio
+
+    # Default listeners - HTTP on port 80
+    listeners:
+      - name: http
+        port: 80
+        protocol: HTTP
+        allowedRoutes:
+          namespaces:
+            from: All
