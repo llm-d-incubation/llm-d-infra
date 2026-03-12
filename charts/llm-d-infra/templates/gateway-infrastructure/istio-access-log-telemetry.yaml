@@ -1,4 +1,4 @@
-{{ if and .Values.gateway.enabled (eq .Values.gateway.gatewayClassName "istio") .Values.gateway.gatewayParameters.enabled .Values.gateway.gatewayParameters.accessLogging }}
+{{ if and .Values.gateway.enabled (eq (include "gateway.provider" .) "istio") .Values.gateway.gatewayParameters.enabled .Values.gateway.gatewayParameters.istio.accessLogging }}
 apiVersion: telemetry.istio.io/v1
 kind: Telemetry
 metadata:

@@ -57,9 +57,22 @@ gateway:
   # -- String to partially override gateway.fullname
   nameOverride: ""
 
+  # @schema
+  # default: istio
+  # enum: ["",istio,kgateway,agentgateway,gke-l7-regional-external-managed]
+  # @schema
+  # -- Gateway implementation used by this chart to render provider-specific infrastructure.
+  # -- Defaults to "istio". Set to empty to infer the implementation from gateway.gatewayClassName for backward compatibility.
+  # -- Set gateway.gatewayClassName to "data-science-gateway-class" to use the OpenShift Service Mesh GatewayClass with Istio-backed rendering.
+  # -- Deprecated: "kgateway" selects the deprecated kgateway compatibility mode and install path and will be removed in the next llm-d release.
+  provider: istio
+
   # -- Gateway class that determines the backend used
-  # Currently supported values: "kgateway" or "agentgateway-v2" for kgateway, "istio", "data-science-gateway-class", or "gke-l7-regional-external-managed"
-  gatewayClassName: istio
+  # -- Leave empty to use the default class name for the selected provider.
+  # -- With the default provider, this renders as "istio". With "kgateway" or "agentgateway", this renders as "agentgateway".
+  # -- Set to "data-science-gateway-class" to use the OpenShift Service Mesh GatewayClass with Istio-backed rendering.
+  # -- Deprecated: "kgateway" and "agentgateway-v2" are compatibility aliases and are rendered as "agentgateway".
+  gatewayClassName: ""
 
   # @schema
   # additionalProperties: true
@@ -73,30 +86,22 @@ gateway:
   # -- Additional annotations provided to the Gateway resource
   annotations: {}
 
-  # Special parameters applied to Kgateway via GatewayParameters resource
+  # Shared parameters applied to provider-specific infrastructure resources
   gatewayParameters:
+    # -- Enable provider-specific infrastructure parameter resources
     enabled: true
-
-    # For istio to include access logging or not
-    accessLogging: true
 
     # @schema
     # default: warn
     # enum: [error,warn,info,debug]
     # @schema
+    # -- Log level for provider-managed gateway data plane components
     logLevel: warn
-
-    # @schema
-    # type: boolean
-    # @schema
-    # -- Enable floating user ID for OpenShift compatibility
-    # When true, allows OpenShift to assign user IDs from its allowed range instead of using a hardcoded user ID
-    floatingUserId: false
 
     # @schema
     # $ref: https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master/_definitions.json#/definitions/io.k8s.api.core.v1.ResourceRequirements
     # @schema
-    # -- Modify resource limits/requests available to the envoy gateway container pod
+    # -- Modify resource limits/requests available to the provider-managed data plane pod
     # -- Resource requests/limits
     # <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container
     resources:
@@ -106,6 +111,146 @@ gateway:
       requests:
         cpu: 100m
         memory: 128Mi
+
+    # @schema
+    # additionalProperties: false
+    # @schema
+    # -- Istio-specific parameters rendered into the gateway ConfigMap when gateway.provider resolves to "istio"
+    istio:
+      # -- For istio to include access logging or not
+      accessLogging: true
+
+    # @schema
+    # additionalProperties: false
+    # @schema
+    # -- Agentgateway-specific parameters rendered into AgentgatewayParameters when gateway.provider resolves to "kgateway" or "agentgateway"
+    # -- Shared AgentgatewayParameters for standalone "agentgateway" and the deprecated "kgateway" compatibility mode.
+    agentgateway:
+      # @schema
+      # type: array
+      # items:
+      #   type: object
+      #   additionalProperties: true
+      # @schema
+      # -- Additional environment variables for the agentgateway proxy
+      env: []
+
+      # @schema
+      # type: object
+      # additionalProperties: true
+      # @schema
+      # -- Raw agentgateway config merged into the generated configuration
+      rawConfig: {}
+
+      # @schema
+      # type: object
+      # additionalProperties: false
+      # properties:
+      #   min:
+      #     type: integer
+      #     minimum: 0
+      #   max:
+      #     type: integer
+      #     minimum: 0
+      # @schema
+      # -- Optional shutdown behavior for the agentgateway proxy
+      shutdown: {}
+
+      # @schema
+      # type: object
+      # additionalProperties: false
+      # properties:
+      #   caAddress:
+      #     type: string
+      #   trustDomain:
+      #     type: string
+      # @schema
+      # -- Optional Istio integration settings for the agentgateway proxy
+      istio: {}
+
+  # @schema
+  # type: object
+  # additionalProperties: false
+  # properties:
+  #   type:
+  #     type: string
+  #     description: >
+  #       Exposure intent for the gateway. Leave empty to use the chart's
+  #       provider-specific default. "external" defaults the effective service
+  #       type to LoadBalancer. "internal" defaults it to ClusterIP.
+  #     enum: ["", internal, external]
+  #     default: ""
+  # @schema
+  # -- Gateway exposure intent and defaults
+  exposure:
+    type: ""
+
+  # @schema
+  # type: object
+  # additionalProperties: false
+  # properties:
+  #   type:
+  #     type: string
+  #     description: >
+  #       Gateway's service type. Leave empty to derive it from
+  #       gateway.exposure.type, which defaults from the selected provider.
+  #       Ingress is only available if the effective service type is ClusterIP.
+  #       Accepted values: ["", "LoadBalancer","ClusterIP","NodePort"].
+  #     enum: ["", LoadBalancer, ClusterIP, NodePort]
+  #     default: ""
+  #   ports:
+  #     type: array
+  #     description: >
+  #       Optional. List of service ports. If provided, each item must include "port".
+  #     items:
+  #       type: object
+  #       additionalProperties: true
+  #       required: [port]
+  #       properties:
+  #         port:
+  #           description: >
+  #             Port is the network port. Multiple listeners may use the same port
+  #             (subject to compatibility rules).
+  #           type: integer
+  #           minimum: 1
+  #           maximum: 65535
+  #         nodePort:
+  #           type: integer
+  #           minimum: 30000
+  #           maximum: 32767
+  #   loadBalancerClass:
+  #     type: string
+  #     description: >
+  #       Optional. LoadBalancerClass is the class of the load balancer to use.
+  #       Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class
+  # @schema
+  # -- Gateway service configuration
+  service:
+    type: ""
+    # ports:
+    #   - port: 80
+    # loadBalancerClass: "metallb"
+
+  # -- TLS configuration for gateway
+  # @default -- See below
+  tls:
+    # -- Name of the secret for serving certificates (used by data-science-gateway-class)
+    servingCertSecretName: data-science-gateway-service-tls
+
+    # -- ReferenceGrant configuration for cross-namespace TLS certificate access
+    # @default -- See below
+    referenceGrant:
+      # -- Enable ReferenceGrant creation (disabled by default)
+      enabled: false
+
+      # -- Name of the ReferenceGrant resource (defaults to gateway name with -tls suffix)
+      name: ""
+
+      # -- Namespace where the TLS secret resides
+      secretNamespace: ""
+
+      # -- Name of the TLS secret to grant access to
+      secretName: ""
 
   # @schema
   # additionalProperties: true
@@ -217,75 +362,10 @@ gateway:
       #       # kind: "Secret"  # Optional. Defaults to "Secret"
       #       # namespace: "default"  # Optional. Defaults to Gateway's namespace
 
-  # @schema
-  # type: object
-  # additionalProperties: false
-  # required: [type]
-  # properties:
-  #   type:
-  #     type: string
-  #     description: >
-  #       Gateway's service type. Ingress is only available if the service type
-  #       is set to LoadBalancer. Accepted values: ["LoadBalancer","ClusterIP","NodePort"].
-  #     enum: [LoadBalancer, ClusterIP, NodePort]
-  #     default: ClusterIP
-  #   ports:
-  #     type: array
-  #     description: >
-  #       Optional. List of service ports. If provided, each item must include "port".
-  #     items:
-  #       type: object
-  #       additionalProperties: true
-  #       required: [port]
-  #       properties:
-  #         port:
-  #           description: >
-  #             Port is the network port. Multiple listeners may use the same port
-  #             (subject to compatibility rules).
-  #           type: integer
-  #           minimum: 1
-  #           maximum: 65535
-  #         nodePort:
-  #           type: integer
-  #           minimum: 30000
-  #           maximum: 32767
-  #   loadBalancerClass:
-  #     type: string
-  #     description: >
-  #       Optional. LoadBalancerClass is the class of the load balancer to use.
-  #       Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class
-  # @schema
-  service:
-    type: ClusterIP
-    # ports:
-    #   - port: 80
-    # loadBalancerClass: "metallb"
-
-  # -- TLS configuration for gateway
-  # @default -- See below
-  tls:
-    # -- Name of the secret for serving certificates (used by data-science-gateway-class)
-    servingCertSecretName: data-science-gateway-service-tls
-
-    # -- ReferenceGrant configuration for cross-namespace TLS certificate access
-    # @default -- See below
-    referenceGrant:
-      # -- Enable ReferenceGrant creation (disabled by default)
-      enabled: false
-
-      # -- Name of the ReferenceGrant resource (defaults to gateway name with -tls suffix)
-      name: ""
-
-      # -- Namespace where the TLS secret resides
-      secretNamespace: ""
-
-      # -- Name of the TLS secret to grant access to
-      secretName: ""
-
 # -- Ingress configuration
 # @default -- See below
 ingress:
-  # -- Deploy Ingress (service type must also be ClusterIP)
+  # -- Deploy Ingress (effective gateway service type must be ClusterIP)
   enabled: false
 
   # -- Name of the IngressClass cluster resource which defines which controller will implement the resource (e.g nginx)
@@ -297,7 +377,7 @@ ingress:
   # -- Additional annotations for the Ingress resource
   annotations: {}
 
-  # -- Hostname to be used to expose the ClusterIP service to the inferencing gateway
+  # -- Hostname used to expose the gateway when the effective service type is ClusterIP
   host: ""
 
   # -- List of additional hostnames to be covered with this ingress record (e.g. a CNAME)
