@@ -1,4 +1,4 @@
-{{- if and .Values.gateway.enabled .Values.ingress.enabled (eq .Values.gateway.service.type "ClusterIP") }}
+{{- if and .Values.gateway.enabled .Values.ingress.enabled (eq (include "gateway.serviceType" .) "ClusterIP") }}
 {{- $gatewayFullname := include "gateway.fullname" . }}
 {{- $gatewayServicename := include "gateway.serviceName" . }}
 {{- $host := include "gateway.ingressHost" . }}
@@ -40,7 +40,7 @@ spec:
     - http:
         paths:
         {{- range .Values.gateway.listeners }}
-          - path: {{ .path }}
+          - path: {{ default $.Values.ingress.path .path | default "/" }}
             pathType: {{ .pathType | default "Prefix" }}
             backend:
               service:
@@ -50,7 +50,7 @@ spec:
         {{- end }}
       {{- if $host }}
       host: {{ $host }}
-      {{- end}}
+      {{- end }}
 
     {{- range .Values.ingress.extraHosts }}
     - http:
