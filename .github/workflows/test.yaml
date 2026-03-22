@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Checkout PR HEAD (handles forks)
         if: github.event_name == 'pull_request'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref:        ${{ github.event.pull_request.head.sha }}
@@ -43,7 +43,7 @@ jobs:
 
       - name: Checkout tag ref
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
