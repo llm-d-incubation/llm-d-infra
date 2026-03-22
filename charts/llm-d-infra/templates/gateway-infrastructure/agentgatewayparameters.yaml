@@ -1,0 +1,50 @@
+{{- $useAgentgatewayParameters := eq (include "gateway.usesAgentgatewayParameters" .) "true" -}}
+{{- if and .Values.gateway.enabled $useAgentgatewayParameters .Values.gateway.gatewayParameters.enabled }}
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayParameters
+metadata:
+  name: {{ include "gateway.fullname" . }}
+  labels: {{ include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/gateway: {{ include "gateway.fullname" . }}
+    app.kubernetes.io/component: inference-gateway
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.gateway.annotations }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.gateway.annotations "context" $) | nindent 4 }}
+    {{- end }}
+spec:
+  logging:
+    level: {{ .Values.gateway.gatewayParameters.logLevel | quote }}
+  {{- if .Values.gateway.gatewayParameters.resources }}
+  resources: {{ .Values.gateway.gatewayParameters.resources | toYaml | nindent 4 }}
+  {{- end }}
+  {{- if .Values.gateway.gatewayParameters.agentgateway.env }}
+  env: {{ .Values.gateway.gatewayParameters.agentgateway.env | toYaml | nindent 4 }}
+  {{- end }}
+  {{- if .Values.gateway.gatewayParameters.agentgateway.rawConfig }}
+  rawConfig: {{ .Values.gateway.gatewayParameters.agentgateway.rawConfig | toYaml | nindent 4 }}
+  {{- end }}
+  {{- if .Values.gateway.gatewayParameters.agentgateway.shutdown }}
+  shutdown: {{ .Values.gateway.gatewayParameters.agentgateway.shutdown | toYaml | nindent 4 }}
+  {{- end }}
+  {{- if .Values.gateway.gatewayParameters.agentgateway.istio }}
+  istio: {{ .Values.gateway.gatewayParameters.agentgateway.istio | toYaml | nindent 4 }}
+  {{- end }}
+  service:
+    metadata:
+      labels:
+        gateway: custom
+    spec:
+      type: {{ include "gateway.serviceType" . | quote }}
+      {{- if .Values.gateway.service.ports }}
+      ports: {{ .Values.gateway.service.ports | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .Values.gateway.service.loadBalancerClass }}
+      loadBalancerClass: {{ .Values.gateway.service.loadBalancerClass | quote }}
+      {{- end }}
+{{- end}}

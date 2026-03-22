@@ -8,3 +8,12 @@ To learn more about the release, try:
 $ helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
 $ helm get all {{ .Release.Name }} -n {{ .Release.Namespace }}
 ```
+
+{{- if or (eq .Values.gateway.provider "kgateway") (eq .Values.gateway.gatewayClassName "kgateway") (eq .Values.gateway.gatewayClassName "agentgateway-v2") }}
+
+`gateway.provider=kgateway`, `gateway.gatewayClassName=kgateway`, and `gateway.gatewayClassName=agentgateway-v2` are deprecated.
+`gateway.provider=kgateway` enables the deprecated kgateway compatibility mode and install path.
+`gateway.gatewayClassName=kgateway` and `gateway.gatewayClassName=agentgateway-v2` are compatibility aliases and are rendered as `agentgateway`.
+Use standalone `agentgateway` instead. The kgateway compatibility mode will be removed in the next llm-d release.
+Set `gateway.provider=agentgateway` and leave `gateway.gatewayClassName` empty, or set it explicitly to `agentgateway`.
+{{- end }}
