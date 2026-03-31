@@ -386,8 +386,14 @@
           "additionalProperties": false,
           "description": "Gateway service configuration",
           "properties": {
+            "annotations": {
+              "additionalProperties": true,
+              "description": "Optional. Additional annotations applied to the gateway Service.",
+              "required": [],
+              "type": "object"
+            },
             "loadBalancerClass": {
-              "description": "Optional. LoadBalancerClass is the class of the load balancer to use. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class",
+              "description": "Optional. LoadBalancerClass is the class of the load balancer to use. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class\n",
               "required": [],
               "type": "string"
             },

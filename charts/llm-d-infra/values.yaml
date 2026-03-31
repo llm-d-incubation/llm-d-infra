@@ -223,10 +223,16 @@ gateway:
   #     description: >
   #       Optional. LoadBalancerClass is the class of the load balancer to use.
   #       Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class
+  #   annotations:
+  #     type: object
+  #     additionalProperties: true
+  #     description: >
+  #       Optional. Additional annotations applied to the gateway Service.
   # @schema
   # -- Gateway service configuration
   service:
     type: ""
+    annotations: {}
     # ports:
     #   - port: 80
     # loadBalancerClass: "metallb"

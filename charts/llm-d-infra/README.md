@@ -1,7 +1,7 @@
 
 # llm-d-infra Helm Chart
 
-![Version: v1.4.0](https://img.shields.io/badge/Version-v1.4.0-informational?style=flat-square)
+![Version: v1.4.1](https://img.shields.io/badge/Version-v1.4.1-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 llm-d-infra are the infrastructure components surrounding the llm-d system - a Kubernetes-native high-performance distributed LLM inference framework
@@ -127,7 +127,7 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.listeners | Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled | list | `[{"allowedRoutes":{"namespaces":{"from":"All"}},"name":"default","port":80,"protocol":"HTTP"}]` |
 | gateway.nameOverride | String to partially override gateway.fullname | string | `""` |
 | gateway.provider | Deprecated: "kgateway" selects the deprecated kgateway compatibility mode and install path and will be removed in the next llm-d release. | string | `"istio"` |
-| gateway.service | Gateway service configuration | object | `{"type":""}` |
+| gateway.service | Gateway service configuration | object | `{"annotations":{},"type":""}` |
 | gateway.tls | TLS configuration for gateway | object | See below |
 | gateway.tls.referenceGrant | ReferenceGrant configuration for cross-namespace TLS certificate access | object | See below |
 | gateway.tls.referenceGrant.enabled | Enable ReferenceGrant creation (disabled by default) | bool | `false` |
