@@ -98,6 +98,9 @@ gateway:
     # -- Log level for provider-managed gateway data plane components
     logLevel: warn
 
+    # -- Number of replicas for the gateway
+    replicas: 1
+
     # @schema
     # $ref: https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master/_definitions.json#/definitions/io.k8s.api.core.v1.ResourceRequirements
     # @schema

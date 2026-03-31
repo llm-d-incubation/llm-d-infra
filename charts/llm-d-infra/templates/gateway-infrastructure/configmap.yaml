@@ -22,6 +22,7 @@ data:
   {{- if eq $provider "istio" }}
   deployment: |
     spec:
+      replicas: {{ .Values.gateway.gatewayParameters.replicas }}
       template:
         spec:
           containers:
