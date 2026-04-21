@@ -241,6 +241,15 @@
                             "required": [],
                             "title": "logLevel"
                         },
+                        "nodeSelector": {
+                            "additionalProperties": {
+                                "type": "string"
+                            },
+                            "description": "Optional node selector for the gateway pod",
+                            "required": [],
+                            "title": "nodeSelector",
+                            "type": "object"
+                        },
                         "resources": {
                             "description": "ResourceRequirements describes the compute resource requirements.",
                             "properties": {

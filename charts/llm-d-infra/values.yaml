@@ -113,6 +113,17 @@ gateway:
         memory: 128Mi
 
     # @schema
+    # type: object
+    # additionalProperties:
+    #   type: string
+    # description: >
+    #   Optional. Node selector for the gateway pod.
+    #   Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+    # @schema
+    # -- Optional node selector for the gateway pod
+    nodeSelector: {}
+
+    # @schema
     # additionalProperties: false
     # @schema
     # -- Istio-specific parameters rendered into the gateway ConfigMap when gateway.provider resolves to "istio"

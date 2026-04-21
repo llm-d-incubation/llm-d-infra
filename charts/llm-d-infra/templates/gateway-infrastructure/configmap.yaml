@@ -40,6 +40,9 @@ data:
             {{- if .Values.gateway.gatewayParameters.resources }}
             resources: {{ .Values.gateway.gatewayParameters.resources | toYaml | nindent 14 }}
             {{- end}}
+          {{- if .Values.gateway.gatewayParameters.nodeSelector }}
+          nodeSelector: {{ .Values.gateway.gatewayParameters.nodeSelector | toYaml | nindent 12 }}
+          {{- end }}
   {{- end }}
   service: |
     {{- if eq $gatewayClassName "data-science-gateway-class" }}

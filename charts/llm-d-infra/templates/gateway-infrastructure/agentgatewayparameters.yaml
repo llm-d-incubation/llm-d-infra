@@ -35,6 +35,13 @@ spec:
   {{- if .Values.gateway.gatewayParameters.agentgateway.istio }}
   istio: {{ .Values.gateway.gatewayParameters.agentgateway.istio | toYaml | nindent 4 }}
   {{- end }}
+  {{- if and .Values.gateway.gatewayParameters.nodeSelector (eq (include "gateway.provider" .) "agentgateway") }}
+  deployment:
+    spec:
+      template:
+        spec:
+          nodeSelector: {{ .Values.gateway.gatewayParameters.nodeSelector | toYaml | nindent 12 }}
+  {{- end }}
   service:
     metadata:
       labels:

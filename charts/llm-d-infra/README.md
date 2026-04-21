@@ -122,6 +122,7 @@ Kubernetes: `>= 1.28.0-0`
 | gateway.gatewayParameters.istio | Istio-specific parameters rendered into the gateway ConfigMap when gateway.provider resolves to "istio" | object | `{"accessLogging":true}` |
 | gateway.gatewayParameters.istio.accessLogging | For istio to include access logging or not | bool | `true` |
 | gateway.gatewayParameters.logLevel | Log level for provider-managed gateway data plane components | string | `"warn"` |
+| gateway.gatewayParameters.nodeSelector | Optional node selector for the gateway pod | object | `{}` |
 | gateway.gatewayParameters.resources | Resource requests/limits <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container | object | `{"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"100m","memory":"128Mi"}}` |
 | gateway.labels | Additional labels provided to the Gateway resource | object | `{}` |
 | gateway.listeners | Set of listeners exposed via the Gateway, also propagated to the Ingress if enabled | list | `[{"allowedRoutes":{"namespaces":{"from":"All"}},"name":"default","port":80,"protocol":"HTTP"}]` |
