@@ -41,7 +41,7 @@ sudo mv kubectl /usr/local/bin/
 - Kubernetes 1.30+ (OpenShift 4.17+)
 - Helm 3.10+ or [latest release](https://github.com/helm/helm/releases)
 - [Gateway API v1.3.0](https://gateway-api.sigs.k8s.io/guides/) or [latest release](https://github.com/kubernetes-sigs/gateway-api/releases)
-- [agentgateway](https://agentgateway.dev/) or [Istio](http://istio.io/) installed in the cluster
+- [agentgateway](https://agentgateway.dev/), [Istio](http://istio.io/), or [Envoy AI Gateway](https://aigateway.envoyproxy.io/) installed in the cluster
 - `kgateway` remains supported as a deprecated compatibility mode and install path and will be removed in the next llm-d release in favor of standalone `agentgateway`
 
 ## Usage

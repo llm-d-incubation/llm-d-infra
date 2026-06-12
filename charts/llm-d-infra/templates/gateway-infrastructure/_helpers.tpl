@@ -16,7 +16,7 @@ Resolve the logical gateway provider used for provider-specific rendering.
 {{- define "gateway.provider" -}}
   {{- $provider := .Values.gateway.provider | default "" -}}
   {{- $className := .Values.gateway.gatewayClassName | default "" -}}
-  {{- $supported := list "istio" "kgateway" "agentgateway" "gke-l7-regional-external-managed" -}}
+  {{- $supported := list "istio" "kgateway" "agentgateway" "gke-l7-regional-external-managed" "envoy-ai-gateway" -}}
   {{- if and $provider (not (has $provider $supported)) -}}
     {{- fail (printf "unsupported gateway.provider %q" $provider) -}}
   {{- end -}}
@@ -30,6 +30,8 @@ Resolve the logical gateway provider used for provider-specific rendering.
     istio
   {{- else if eq $className "gke-l7-regional-external-managed" -}}
     gke-l7-regional-external-managed
+  {{- else if eq $className "envoy-ai-gateway" -}}
+    envoy-ai-gateway
   {{- else -}}
     {{- fail (printf "gateway.provider must be set when using custom gateway.gatewayClassName %q" $className) -}}
   {{- end -}}
@@ -71,7 +73,7 @@ Resolve the default exposure intent for the selected provider.
 */}}
 {{- define "gateway.defaultExposureType" -}}
   {{- $provider := include "gateway.provider" . -}}
-  {{- if or (eq $provider "kgateway") (eq $provider "agentgateway") (eq $provider "gke-l7-regional-external-managed") -}}
+  {{- if or (eq $provider "kgateway") (eq $provider "agentgateway") (eq $provider "gke-l7-regional-external-managed") (eq $provider "envoy-ai-gateway") -}}
     external
   {{- else -}}
     internal
