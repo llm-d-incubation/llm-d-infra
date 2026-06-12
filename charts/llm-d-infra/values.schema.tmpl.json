@@ -377,7 +377,8 @@
             "istio",
             "kgateway",
             "agentgateway",
-            "gke-l7-regional-external-managed"
+            "gke-l7-regional-external-managed",
+            "envoy-ai-gateway"
           ],
           "required": [],
           "title": "provider"

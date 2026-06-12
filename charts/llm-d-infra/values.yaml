@@ -59,7 +59,7 @@ gateway:
 
   # @schema
   # default: istio
-  # enum: ["",istio,kgateway,agentgateway,gke-l7-regional-external-managed]
+  # enum: ["",istio,kgateway,agentgateway,gke-l7-regional-external-managed,envoy-ai-gateway]
   # @schema
   # -- Gateway implementation used by this chart to render provider-specific infrastructure.
   # -- Defaults to "istio". Set to empty to infer the implementation from gateway.gatewayClassName for backward compatibility.
